@@ -1,7 +1,7 @@
 # verto
-A linear algebra library offering a wide selection of matrix decompositions and solvers.
+A linear algebra library offering a wide selection of matrix decompositions and direct solvers for real-valued dense matrices.
 
-One of the distinctive traits of *verto* is that all the algorithms are built upon in-place operations. This ensures a very small memory footprint. The library is fully implemented in plain C language, exploits single-precision arithmetic, and makes no use of dynamic memory allocation. All of these features make *verto* ideal for microcontrollers.
+One of the distinctive traits of *verto* is that all the algorithms are built around in-place operations, ensuring a minimal memory footprint. Fully implemented in plain C, the library adopts single-precision arithmetic and avoids dynamic memory allocation. All of these features make *verto* ideal for embedded systems.
 
 # References
 [1] Golub, Gene H., and Charles F. Van Loan. *Matrix computations*. JHU press, 2013.
