@@ -1,5 +1,5 @@
-#ifndef VERTO_ALLOC_H
-#define VERTO_ALLOC_H
+#ifndef DETEGO_ALLOC_H
+#define DETEGO_ALLOC_H
 
 #include <stdlib.h>
 

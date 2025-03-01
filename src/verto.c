@@ -1,4 +1,4 @@
-#include "verto.h"
+#include "detego.h"
 
 // This function swaps the columns i and j of the matrix A.
 static void swap_columns(Matrixf* A, int i, int j)
@@ -530,8 +530,8 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 	const int m = A->size[0];
 	const int n = A->size[1];
 	int i, j, k, q, r = n - 1, sweep = 0;
-	const int sweepmax = VERTO_SVD_SWEEPMAX;
-	const float tol = VERTO_SVD_TOL;
+	const int sweepmax = DETEGO_SVD_SWEEPMAX;
+	const float tol = DETEGO_SVD_TOL;
 	float small, norm1, tmp, cosine, sine, Xi, Xj;
 	float c00, c01, c11, y, z, mu;
 	float* s = A->data, * p = 0;
@@ -720,8 +720,8 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 	float a, b, p, q, v, Xij, Xik, s, sine, cosine;
 	const int m = A->size[0];
 	const int n = A->size[1];
-	const int sweepmax = VERTO_SVD_JACOBI_SWEEPMAX;
-	const float tol = VERTO_SVD_JACOBI_TOL;
+	const int sweepmax = DETEGO_SVD_JACOBI_SWEEPMAX;
+	const float tol = DETEGO_SVD_JACOBI_TOL;
 
 	if (m < n) {
 		matrixf_transpose(A);
@@ -855,8 +855,8 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 {
 	const int n = A->size[0];
 	int k, i, imin, imax, q, m = n - 1, sweep = 0;
-	const int sweepmax = VERTO_SCHUR_SYM_SWEEPMAX;
-	const float tol = VERTO_SCHUR_SYM_TOL;
+	const int sweepmax = DETEGO_SCHUR_SYM_SWEEPMAX;
+	const float tol = DETEGO_SCHUR_SYM_TOL;
 	float d, f, g, x, y, cosine, sine, Xk, Xk1;
 
 	if (matrixf_decomp_hess(A, U)) {
@@ -926,9 +926,9 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 {
 	const int n = A->size[0];
 	int i, j, k, q, m = n - 1, sweep = 0, ad_hoc_shift;
-	const int sweepmax = VERTO_SCHUR_SWEEPMAX;
-	const int ahsc = VERTO_SCHUR_AD_HOC_SHIFT_COUNT;
-	const float tol = VERTO_SCHUR_TOL;
+	const int sweepmax = DETEGO_SCHUR_SWEEPMAX;
+	const int ahsc = DETEGO_SCHUR_AD_HOC_SHIFT_COUNT;
+	const float tol = DETEGO_SCHUR_TOL;
 	float r, s, t, x, y, z, alpha, beta, v[3] = { 1, 0, 0 };
 	float sine, cosine, Xk, Xk1;
 
@@ -962,7 +962,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 						x = fabsf(s - _(A, m, m)) < fabsf(t - _(A, m, m)) ? s : t;
 					}
 					if (x == 0) {
-						x = VERTO_EPS;
+						x = DETEGO_EPS;
 					}
 					s = x + x;
 					t = x * x;
@@ -1766,7 +1766,7 @@ int matrixf_exp(Matrixf* A, float* work)
 {
 	int i, j, k, r, z, s;
 	const int n = A->size[0];
-	const int q = VERTO_EXPM_PADE_ORDER;
+	const int q = DETEGO_EXPM_PADE_ORDER;
 	float c, p, t, Xij;
 	Matrixf X = { { n, n }, work + n };
 	Matrixf N = { { n, n }, work + n + n * n };

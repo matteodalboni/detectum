@@ -1,5 +1,5 @@
-#include "verto.h"
-#include "verto_utils.h"
+#include "detego.h"
+#include "detego_utils.h"
 
 // This function extracts the eigenvalues from the quasitriangular Schur 
 // matrix T. The real and imaginary parts are stored in lambda_re and lambda_im, 

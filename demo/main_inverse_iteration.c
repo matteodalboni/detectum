@@ -1,6 +1,6 @@
-#include "verto.h"
-#include "verto_utils.h"
-#include "verto_alloc.h"
+#include "detego.h"
+#include "detego_utils.h"
+#include "detego_alloc.h"
 
 static int inverse_iteration(Matrixf* A, Matrixf* v,
 	float eigval_re, float eigval_im, float* work, int iter)

@@ -1,6 +1,6 @@
-#include "verto.h"
-#include "verto_utils.h"
-#include "verto_alloc.h"
+#include "detego.h"
+#include "detego_utils.h"
+#include "detego_alloc.h"
 
 static void print_complex_eigenvectors(Matrixf* T, Matrixf* V)
 {

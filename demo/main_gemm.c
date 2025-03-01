@@ -1,6 +1,6 @@
-#include "verto.h"
-#include "verto_utils.h"
-#include "verto_alloc.h"
+#include "detego.h"
+#include "detego_utils.h"
+#include "detego_alloc.h"
 
 #define M 2002
 #define N 2001

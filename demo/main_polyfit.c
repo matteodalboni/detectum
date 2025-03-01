@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "verto.h"
+#include "detego.h"
 
 #define PI 3.141592653589793f
 #define PTS 10

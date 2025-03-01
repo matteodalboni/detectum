@@ -1,5 +1,5 @@
-#include "verto.h"
-#include "verto_utils.h"
+#include "detego.h"
+#include "detego_utils.h"
 
 #define n 4
 #define p 4

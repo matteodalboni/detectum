@@ -1,5 +1,5 @@
-#ifndef VERTO_UTILS_H
-#define VERTO_UTILS_H
+#ifndef DETEGO_UTILS_H
+#define DETEGO_UTILS_H
 
 #include <stdio.h>
 

@@ -1,5 +1,5 @@
-#ifndef VERTO_H
-#define VERTO_H
+#ifndef DETEGO_H
+#define DETEGO_H
 
 #include <math.h>
 
@@ -8,38 +8,38 @@ typedef struct {
 	float* data;
 } Matrixf;
 
-#ifndef VERTO_EPS
-#define VERTO_EPS (1.1920929e-07f)
+#ifndef DETEGO_EPS
+#define DETEGO_EPS (1.1920929e-07f)
 #endif
-#ifndef VERTO_SVD_SWEEPMAX
-#define VERTO_SVD_SWEEPMAX (10000)
+#ifndef DETEGO_SVD_SWEEPMAX
+#define DETEGO_SVD_SWEEPMAX (10000)
 #endif
-#ifndef VERTO_SVD_TOL
-#define VERTO_SVD_TOL (2 * VERTO_EPS)
+#ifndef DETEGO_SVD_TOL
+#define DETEGO_SVD_TOL (2 * DETEGO_EPS)
 #endif
-#ifndef VERTO_SVD_JACOBI_SWEEPMAX
-#define VERTO_SVD_JACOBI_SWEEPMAX (1000)
+#ifndef DETEGO_SVD_JACOBI_SWEEPMAX
+#define DETEGO_SVD_JACOBI_SWEEPMAX (1000)
 #endif
-#ifndef VERTO_SVD_JACOBI_TOL
-#define VERTO_SVD_JACOBI_TOL (2 * VERTO_EPS)
+#ifndef DETEGO_SVD_JACOBI_TOL
+#define DETEGO_SVD_JACOBI_TOL (2 * DETEGO_EPS)
 #endif
-#ifndef VERTO_SCHUR_SYM_SWEEPMAX
-#define VERTO_SCHUR_SYM_SWEEPMAX (10000)
+#ifndef DETEGO_SCHUR_SYM_SWEEPMAX
+#define DETEGO_SCHUR_SYM_SWEEPMAX (10000)
 #endif
-#ifndef VERTO_SCHUR_SYM_TOL
-#define VERTO_SCHUR_SYM_TOL (2 * VERTO_EPS)
+#ifndef DETEGO_SCHUR_SYM_TOL
+#define DETEGO_SCHUR_SYM_TOL (2 * DETEGO_EPS)
 #endif
-#ifndef VERTO_SCHUR_SWEEPMAX
-#define VERTO_SCHUR_SWEEPMAX (10000)
+#ifndef DETEGO_SCHUR_SWEEPMAX
+#define DETEGO_SCHUR_SWEEPMAX (10000)
 #endif
-#ifndef VERTO_SCHUR_TOL
-#define VERTO_SCHUR_TOL (2 * VERTO_EPS)
+#ifndef DETEGO_SCHUR_TOL
+#define DETEGO_SCHUR_TOL (2 * DETEGO_EPS)
 #endif
-#ifndef VERTO_SCHUR_AD_HOC_SHIFT_COUNT
-#define VERTO_SCHUR_AD_HOC_SHIFT_COUNT (5)
+#ifndef DETEGO_SCHUR_AD_HOC_SHIFT_COUNT
+#define DETEGO_SCHUR_AD_HOC_SHIFT_COUNT (5)
 #endif
-#ifndef VERTO_EXPM_PADE_ORDER
-#define VERTO_EXPM_PADE_ORDER (4)
+#ifndef DETEGO_EXPM_PADE_ORDER
+#define DETEGO_EXPM_PADE_ORDER (4)
 #endif
 
 // This macro returns the positive distance from abs(x) to the next 
