@@ -53,7 +53,7 @@ static int is_quasitriu(Matrixf* T, float tol)
 {
 	int i = 0;
 	const int n = T->size[0];
-	const float eps = tol * get_norm2(T->data, n * n, 1);
+	const float eps = tol * normf(T->data, n * n, 1);
 
 	while (i < n - 2) {
 		if (fabsf(at(T, i + 1, i)) <= eps) {
@@ -156,7 +156,7 @@ int main()
 {
 	int i, n = (int)sqrtf(NUMEL), iter = ITER;
 	float s = 0;
-	const float eps1 = eps(1);
+	const float eps = epsf(1);
 	float lambda[NUMEL] = { 0 };
 	float U_data[NUMEL] = { 0 };
 	float Q_data[NUMEL] = { 0 };
@@ -179,7 +179,7 @@ int main()
 			at(&A, n - 1, n - 2), at(&A, n - 1, n - 1));
 		s = fabsf(lambda[0] - s) < fabsf(lambda[2] - s) ? lambda[0] : lambda[2];
 #endif
-		if (s == 0) s = eps1;
+		if (s == 0) s = eps;
 		for (i = 0; i < n; i++) at(&A, i, i) -= s;
 		matrixf_decomp_qr(&A, &Q, 0, &U);
 		for (i = 0; i < n * n; i++) R.data[i] = A.data[i];
@@ -280,7 +280,7 @@ int main()
 	Matrixf B = { {n, n}, B_data };
 
 	matrixf_transpose(&A);
-	disp(A, "%9.4f ");
+	printf("A = \n"); matrixf_print(&A, "%9.4f ");
 
 	iter = matrixf_decomp_schur(&A, &U);
 

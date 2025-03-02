@@ -317,7 +317,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 			i++;
 		}
 		if (i < m) {
-			alpha = get_norm2(&at(A, r, r), m - r, 1);
+			alpha = normf(&at(A, r, r), m - r, 1);
 			s = at(A, r, r) >= 0 ? 1.0f : -1.0f;
 			t = at(A, r, r) + s * alpha;
 			at(A, r, r) = -s * alpha;
@@ -465,7 +465,7 @@ int matrixf_bidiagonalize(Matrixf* A, Matrixf* U, Matrixf* V)
 			i++;
 		}
 		if (i < m) {
-			alpha = get_norm2(&at(A, k, k), m - k, 1);
+			alpha = normf(&at(A, k, k), m - k, 1);
 			s = at(A, k, k) >= 0 ? 1.0f : -1.0f;
 			t = at(A, k, k) + s * alpha;
 			at(A, k, k) = -s * alpha;
@@ -492,7 +492,7 @@ int matrixf_bidiagonalize(Matrixf* A, Matrixf* U, Matrixf* V)
 			i++;
 		}
 		if (i < n && k + 2 < n) {
-			alpha = get_norm2(&at(A, k, k + 1), n - k - 1, m);
+			alpha = normf(&at(A, k, k + 1), n - k - 1, m);
 			s = at(A, k, k + 1) >= 0 ? 1.0f : -1.0f;
 			t = at(A, k, k + 1) + s * alpha;
 			at(A, k, k + 1) = -s * alpha;
@@ -580,7 +580,7 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 				y = at(A, q, q) * at(A, q, q) - mu;
 				z = at(A, q, q + 1) * at(A, q, q);
 				for (j = q; j < r; j++) {
-					get_givensrot(y, z, &cosine, &sine);
+					givensrotf(y, z, &cosine, &sine);
 					for (k = (j - 1 < 0 ? 0 : j - 1); k <= j + 1; k++) {
 						Xi = at(A, k, j);
 						Xj = at(A, k, j + 1);
@@ -597,7 +597,7 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 					}
 					y = at(A, j, j);
 					z = at(A, j + 1, j);
-					get_givensrot(y, z, &cosine, &sine);
+					givensrotf(y, z, &cosine, &sine);
 					for (k = j; k <= (j + 2 < r ? j + 2 : r); k++) {
 						Xi = at(A, j, k);
 						Xj = at(A, j + 1, k);
@@ -621,7 +621,7 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 			}
 			else if (i < r) {
 				for (j = i + 1; j <= r; j++) {
-					get_givensrot(-at(A, j, j), at(A, i, j), &cosine, &sine);
+					givensrotf(-at(A, j, j), at(A, i, j), &cosine, &sine);
 					for (k = j; k <= (j + 1 < r ? j + 1 : r); k++) {
 						Xi = at(A, i, k);
 						Xj = at(A, j, k);
@@ -640,7 +640,7 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 			}
 			else {
 				for (j = r - 1; j >= q; j--) {
-					get_givensrot(at(A, j, j), at(A, j, r), &cosine, &sine);
+					givensrotf(at(A, j, j), at(A, j, r), &cosine, &sine);
 					for (k = (j - 1 > q ? j - 1 : q); k <= j; k++) {
 						Xi = at(A, k, j);
 						Xj = at(A, k, r);
@@ -826,7 +826,7 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
 			i++;
 		}
 		if (i < n) {
-			alpha = get_norm2(&at(A, r + 1, r), n - r - 1, 1);
+			alpha = normf(&at(A, r + 1, r), n - r - 1, 1);
 			s = at(A, r + 1, r) >= 0 ? 1.0f : -1.0f;
 			t = at(A, r + 1, r) + s * alpha;
 			at(A, r + 1, r) = -s * alpha;
@@ -877,7 +877,7 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 			x = at(A, q, q) - at(A, m, m) + g / (d + f * sqrtf(d * d + g));
 			y = at(A, q + 1, q);
 			for (k = q; k < m; k++) {
-				get_givensrot(x, y, &cosine, &sine);
+				givensrotf(x, y, &cosine, &sine);
 				imin = k - 1 < 0 ? 0 : k - 1;
 				imax = k + 2 > n - 1 ? n - 1 : k + 2;
 				for (i = imin; i <= imax; i++) {
@@ -929,7 +929,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 	const int sweepmax = DETEGO_SCHUR_SWEEPMAX;
 	const int ahsc = DETEGO_SCHUR_AD_HOC_SHIFT_COUNT;
 	const float tol = DETEGO_SCHUR_TOL;
-	const float eps1 = eps(1);
+	const float eps = epsf(1);
 	float r, s, t, x, y, z, alpha, beta, v[3] = { 1, 0, 0 };
 	float sine, cosine, Xk, Xk1;
 
@@ -963,7 +963,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 						x = fabsf(s - at(A, m, m)) < fabsf(t - at(A, m, m)) ? s : t;
 					}
 					if (x == 0) {
-						x = eps1;
+						x = eps;
 					}
 					s = x + x;
 					t = x * x;
@@ -1096,7 +1096,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 	k = 0;
 	while (k < n) {
 		if (k == n - 1 || at(T, k + 1, k) == 0) { // real eigenvalue
-			lamre = at(T, k, k) + eps(at(T, k, k));
+			lamre = at(T, k, k) + epsf(at(T, k, k));
 			if (V && k > 0) { // right eigenvector
 				C.size[0] = C.size[1] = k;
 				matrixf_init(&d, k, 1, &at(V, 0, k), 0);
@@ -1110,7 +1110,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 				if (matrixf_solve_lu(&C, &d)) {
 					return 1;
 				}
-				norm = get_norm2(&at(V, 0, k), n, 1);
+				norm = normf(&at(V, 0, k), n, 1);
 				for (j = 0; j < n; j++) {
 					at(V, j, k) /= norm;
 				}
@@ -1129,7 +1129,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 				if (matrixf_solve_lu(&C, &d)) {
 					return 1;
 				}
-				norm = get_norm2(&at(W, 0, k), n, 1);
+				norm = normf(&at(W, 0, k), n, 1);
 				for (j = 0; j < n; j++) {
 					at(W, j, k) /= norm;
 				}
@@ -1171,7 +1171,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 					at(V, k + 1, k) = at(T, k + 1, k);
 					at(V, k, k + 1) = lamim;
 					at(V, k + 1, k + 1) = -g;
-					norm = get_norm2(&at(V, 0, k), 2 * n, 1);
+					norm = normf(&at(V, 0, k), 2 * n, 1);
 					for (j = 0; j < n; j++) {
 						at(V, j, k) /= norm;
 						at(V, j, k + 1) /= norm;
@@ -1207,7 +1207,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 					at(W, k + 1, k) = lamim;
 					at(W, k, k + 1) = at(T, k + 1, k);
 					at(W, k + 1, k + 1) = 1;
-					norm = get_norm2(&at(W, 0, k), 2 * n, 1);
+					norm = normf(&at(W, 0, k), 2 * n, 1);
 					for (j = 0; j < n; j++) {
 						at(W, j, k) /= norm;
 						at(W, j, k + 1) /= norm;
@@ -1242,7 +1242,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 					at(V, k, k) = at(V, k + 1, k + 1) = 0;
 					at(V, k + 1, k) = at(T, k + 1, k);
 					at(V, k, k + 1) = lamim;
-					norm = get_norm2(&at(V, 0, k), 2 * n, 1);
+					norm = normf(&at(V, 0, k), 2 * n, 1);
 					for (j = 0; j < 2 * n; j++) {
 						at(V, j, k) /= norm;
 					}
@@ -1276,7 +1276,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 					at(W, k, k) = at(W, k + 1, k + 1) = 0;
 					at(W, k + 1, k) = at(T, k, k + 1);
 					at(W, k, k + 1) = -lamim;
-					norm = get_norm2(&at(W, 0, k), 2 * n, 1);
+					norm = normf(&at(W, 0, k), 2 * n, 1);
 					for (j = 0; j < 2 * n; j++) {
 						at(W, j, k) /= norm;
 					}
@@ -1633,7 +1633,7 @@ int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X, float tol)
 	}
 	at(A, p - 1, p - 1) = s;
 	if (tol < 0) {
-		tol = (m > n ? m : n) * eps(at(A, 0, 0));
+		tol = (m > n ? m : n) * epsf(at(A, 0, 0));
 	}
 	j = 0;
 	while (j < p && fabsf(at(A, j, j)) > tol) {
@@ -1681,7 +1681,7 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 	}
 	matrixf_decomp_qr(A, 0, &perm, B);
 	if (tol < 0) {
-		tol = q * eps(at(A, 0, 0));
+		tol = q * epsf(at(A, 0, 0));
 	}
 	j = 0;
 	while (j < p && fabsf(at(A, j, j)) > tol) {
@@ -1731,10 +1731,10 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work)
 	}
 	sweep = matrixf_decomp_svd_jacobi(A, 0, &V);
 	if (tol < 0) {
-		tol = q * eps(get_norm2(&at(A, 0, 0), q, 1));
+		tol = q * epsf(normf(&at(A, 0, 0), q, 1));
 	}
 	for (j = 0; j < p; j++) {
-		sj = get_norm2(&at(A, 0, j), q, 1);
+		sj = normf(&at(A, 0, j), q, 1);
 		if (sj > 0) {
 			rj = sj > tol ? 1.0f / sj : 0.0f;
 			for (i = 0; i < q; i++) {

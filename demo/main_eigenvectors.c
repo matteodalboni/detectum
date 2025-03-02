@@ -2,6 +2,9 @@
 #define DETEGO_USE_PRINT
 #include "detego.h"
 
+#define disp(A, format) \
+do{ printf(#A" = \n"); matrixf_print(&A, format); } while (0)
+
 static void print_complex_eigenvectors(Matrixf* T, Matrixf* V)
 {
 	int i, j;

@@ -13,7 +13,7 @@ int main()
 	unsigned int p = 15;
 
 	matrixf_init(&A, 3, 3, A_data, 1);
-	disp(A, "%9.4f ");
+	printf("A = \n"); matrixf_print(&A, "%9.4f ");
 	matrixf_pow(&A, p, work);
 	printf("A^%d = \n", p); matrixf_print(&A, "%9.4f ");
 

@@ -26,9 +26,9 @@ int main()
 	if (transB) matrixf_transpose(&B);
 
 #if PRINT_MATRIX
-	disp(A, "%7.0f ");
-	disp(B, "%7.0f ");
-	disp(C, "%7.0f ");
+	printf("A = \n"); matrixf_print(&A, "%7.0f ");
+	printf("B = \n"); matrixf_print(&B, "%7.0f ");
+	printf("C = \n"); matrixf_print(&C, "%7.0f ");
 #endif
 #ifdef TIME_TICK_H
 	tick(&t0);

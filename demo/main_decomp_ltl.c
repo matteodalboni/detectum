@@ -24,7 +24,7 @@ int main()
 	Matrixf B = { {n, n}, B_data };
 
 	matrixf_init(&A, n, n, A_data, 1);
-	disp(A, "%9.4f ");
+	printf("A = \n"); matrixf_print(&A, "%9.4f ");
 	for (i = 0; i < n * n; i++) A_copy[i] = A_data[i];
 	matrixf_decomp_ltl(&A);
 	P.data[0] = 1;
@@ -42,15 +42,15 @@ int main()
 		}
 	}
 	printf("L = \n"); matrixf_print(&A, "%9.4f ");
-	disp(T, "%9.4f ");
-	disp(P, "%3.0f ");
+	printf("T = \n"); matrixf_print(&T, "%9.4f ");
+	printf("P = \n"); matrixf_print(&P, "%3.0f ");
 
 	matrixf_multiply(&P, &A, &B, 1, 0, 1, 0);
 	matrixf_multiply(&B, &T, &P, 1, 0, 0, 0);
 	matrixf_multiply(&P, &B, &A, 1, 0, 0, 1);
 	printf("P'*L*T*L'*P = \n"); matrixf_print(&A, "%9.4f ");
 	for (i = 0; i < n * n; i++) A_copy[i] -= A.data[i];
-	printf("||A - P'*L*T*L'*P||_F = %g\n\n", get_norm2(A_copy, n * n, 1));
+	printf("||A - P'*L*T*L'*P||_F = %g\n\n", normf(A_copy, n * n, 1));
 
 	return 0;
 }

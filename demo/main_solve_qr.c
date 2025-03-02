@@ -16,8 +16,8 @@ int main()
 	for (j = 0; j < B.size[1]; j++)
 		for (i = 0; i < B.size[0]; i++) 
 			at(&B, i, j) = j + 1.0f;
-	disp(A, "%9.4f ");
-	disp(B, "%9.4f ");
+	printf("A = \n"); matrixf_print(&A, "%9.4f ");
+	printf("B = \n"); matrixf_print(&B, "%9.4f ");
 
 #if 0
 	// Minimum norm solution to full-rank underdetermined system
@@ -32,7 +32,7 @@ int main()
 #else
 	matrixf_solve_qr(&A, &B, &X, -1);
 #endif
-	disp(X, "%9.4f ");
+	printf("X = \n"); matrixf_print(&X, "%9.4f ");
 
 	free(A.data);
 	free(B.data);

@@ -39,16 +39,19 @@ typedef struct {
 #define DETEGO_EXPM_PADE_ORDER (4)
 #endif
 
-// This macro returns the positive distance from abs(x) to the next 
-// larger floating-point number.
-#define eps(x) powf(2.0f, floorf(log2f(fabsf(x))) - 23.0f)
-
 // This macro allows accessing the element A(i, j).
 #define at(A, i, j) ((A)->data[(i) + (j) * (A)->size[0]])
 
+// This function returns the positive distance from abs(x) to the next 
+// larger floating-point number.
+static inline float epsf(const float x)
+{
+	return powf(2.0f, floorf(log2f(fabsf(x))) - 23.0f);
+}
+
 // This function returns the 2-norm of the vector vec. The length of the
 // vector is len, and stride is its increment.
-static inline float get_norm2(const float* vec, const int len, const int stride)
+static inline float normf(const float* vec, const int len, const int stride)
 {
 	int i;
 	float x = 0, s = 0, t;
@@ -71,7 +74,7 @@ static inline float get_norm2(const float* vec, const int len, const int stride)
 
 // This function computes the Givens rotation pair (c,s) so that 
 // [c -s; s c]*[a; b] = [r; 0].
-static inline void get_givensrot(const float a, const float b, float* c, float* s)
+static inline void givensrotf(const float a, const float b, float* c, float* s)
 {
 	float tau = 0;
 
@@ -108,11 +111,6 @@ static inline void matrixf_print(Matrixf* A, char* format)
 	}
 	printf("\n");
 }
-
-// This macro prints the matrix A and its name on the standard output 
-// according to the specified format. 
-#define disp(A, format) \
-do{ printf(#A" = \n"); matrixf_print(&A, format); } while (0)
 #endif
 
 #ifdef DETEGO_USE_ALLOC

@@ -28,7 +28,7 @@ static int inverse_iteration(Matrixf* A, Matrixf* v,
 		matrixf_permute(v, &p, 0);
 		matrixf_solve_tril(&C, v, v, 1);
 		matrixf_solve_triu(&C, v, v, 0);
-		norm = get_norm2(v->data, 2 * n, 1);
+		norm = normf(v->data, 2 * n, 1);
 		for (j = 0; j < 2 * n; j++) {
 			v->data[j] /= norm;
 		}
@@ -61,9 +61,9 @@ int main()
 	matrixf_transpose(&H);
 	matrixf_decomp_hess(&H, &P);
 	for (i = 0; i < n * n; i++) T.data[i] = H.data[i];
-	disp(H, "%9.4f ");
+	printf("H = \n"); matrixf_print(&H, "%9.4f ");
 	matrixf_decomp_schur(&T, 0);
-	disp(T, "%9.4f ");
+	printf("T = \n"); matrixf_print(&T, "%9.4f ");
 
 	for (k = 0; k < n; k++) {
 		x.size[0] = 2 * n; x.size[1] = 1;

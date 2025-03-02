@@ -144,7 +144,7 @@ int main()
 	matrixf_multiply(&W, &V, &A, 1, 0, 0, 1);
 	printf("U*S*V' = \n"); matrixf_print(&A, "%9.4f ");
 	for (i = 0; i < m * n; i++) A_copy[i] -= A.data[i];
-	printf("||A - U*S*V'||_F = %g\n\n", get_norm2(A_copy, m * n, 1));
+	printf("||A - U*S*V'||_F = %g\n\n", normf(A_copy, m * n, 1));
 
 	matrixf_init(&P, m, m, P_data, 0);
 	matrixf_multiply(&U, &U, &P, 1, 0, 0, 1); 
