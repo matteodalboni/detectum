@@ -22,9 +22,9 @@
 
 int main()
 {
-	Matrixf A = MATRIXF(5, 3);
-	Matrixf b = MATRIXF(A.size[0], 1);
-	Matrixf x = MATRIXF(A.size[1], 1);
+	Matrixf A = matrixf(5, 3);
+	Matrixf b = matrixf(A.size[0], 1);
+	Matrixf x = matrixf(A.size[1], 1);
 	FILE* A_file = fopen("../A.bin", "rb");
 	int i;
 

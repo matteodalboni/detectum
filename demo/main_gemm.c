@@ -13,7 +13,7 @@ int main()
 {
 	int i, transA = 1, transB = 1;
 	float alpha = 2, beta = 3;
-	Matrixf A = MATRIXF(M, P), B = MATRIXF(P, N), C = MATRIXF(M, N);
+	Matrixf A = matrixf(M, P), B = matrixf(P, N), C = matrixf(M, N);
 #ifdef TIME_TICK_H
 	struct timespec t0;
 #endif

@@ -49,10 +49,10 @@ int main()
 		 1, 1, 3, 1,
 		-2, 1, 1, 4
 	};
-	Matrixf H = MATRIXF(n, n);
-	Matrixf T = MATRIXF(n, n);
-	Matrixf P = MATRIXF(n, n);
-	Matrixf x = MATRIXF(2 * n, 1);
+	Matrixf H = matrixf(n, n);
+	Matrixf T = matrixf(n, n);
+	Matrixf P = matrixf(n, n);
+	Matrixf x = matrixf(2 * n, 1);
 	Matrixf v = { { n, 2 }, work };
 
 	if (!H.data || !T.data || !P.data || !x.data) return -1;

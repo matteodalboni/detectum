@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-#define MATRIXF(rows, cols) \
+#define matrixf(rows, cols) \
 { rows, cols, calloc(sizeof(float), (rows) * (cols)) }
 
 #endif

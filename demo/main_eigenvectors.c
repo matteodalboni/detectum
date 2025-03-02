@@ -29,12 +29,12 @@ static void print_complex_eigenvectors(Matrixf* T, Matrixf* V)
 int main()
 {
 	int i;
-	Matrixf A = MATRIXF(n, n);
-	Matrixf T = MATRIXF(n, n);
-	Matrixf U = MATRIXF(n, n);
-	Matrixf V = MATRIXF(n, n);
-	Matrixf W = MATRIXF(n, n);
-	Matrixf D = MATRIXF(n, n);
+	Matrixf A = matrixf(n, n);
+	Matrixf T = matrixf(n, n);
+	Matrixf U = matrixf(n, n);
+	Matrixf V = matrixf(n, n);
+	Matrixf W = matrixf(n, n);
+	Matrixf D = matrixf(n, n);
 	if (!A.data || !T.data || !U.data || !V.data || !W.data || !D.data) return -1;
 	float work[4 * (n - 2) * (n - 2) + 5] = { 0 };
 #if 1

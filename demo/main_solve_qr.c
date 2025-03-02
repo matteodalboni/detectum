@@ -5,9 +5,9 @@
 int main()
 {
 	int i, j;
-	Matrixf A = MATRIXF(5, 7);
-	Matrixf B = MATRIXF(A.size[0], 2);
-	Matrixf X = MATRIXF(A.size[1], B.size[1]);
+	Matrixf A = matrixf(5, 7);
+	Matrixf B = matrixf(A.size[0], 2);
+	Matrixf X = matrixf(A.size[1], B.size[1]);
 	FILE* A_file = fopen("../A.bin", "rb");
 
 	if (!A.data) return -1;

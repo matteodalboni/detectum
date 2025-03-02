@@ -46,7 +46,7 @@ int main()
 	FILE* A_file = fopen("../A.bin", "rb");
 	FILE* b_file = fopen("../b.bin", "rb");
 	FILE* x_file = fopen("../x.bin", "wb");
-	Matrixf A = MATRIXF(M, N), B = MATRIXF(M, P);
+	Matrixf A = matrixf(M, N), B = matrixf(M, P);
 #ifdef TIME_TICK_H
 	struct timespec t0;
 #endif
