@@ -855,8 +855,8 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 {
 	const int n = A->size[0];
 	int k, i, imin, imax, q, m = n - 1, sweep = 0;
-	const int sweepmax = DETEGO_SCHUR_SYM_SWEEPMAX;
-	const float tol = DETEGO_SCHUR_SYM_TOL;
+	const int sweepmax = DETEGO_SCHUR_SYMM_SWEEPMAX;
+	const float tol = DETEGO_SCHUR_SYMM_TOL;
 	float d, f, g, x, y, cosine, sine, Xk, Xk1;
 
 	if (matrixf_decomp_hess(A, U)) {
@@ -929,6 +929,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 	const int sweepmax = DETEGO_SCHUR_SWEEPMAX;
 	const int ahsc = DETEGO_SCHUR_AD_HOC_SHIFT_COUNT;
 	const float tol = DETEGO_SCHUR_TOL;
+	const float eps = EPS(1);
 	float r, s, t, x, y, z, alpha, beta, v[3] = { 1, 0, 0 };
 	float sine, cosine, Xk, Xk1;
 
@@ -962,7 +963,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 						x = fabsf(s - _(A, m, m)) < fabsf(t - _(A, m, m)) ? s : t;
 					}
 					if (x == 0) {
-						x = DETEGO_EPS;
+						x = eps;
 					}
 					s = x + x;
 					t = x * x;
