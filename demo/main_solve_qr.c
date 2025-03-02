@@ -1,6 +1,6 @@
+#define DETEGO_USE_PRINT
+#define DETEGO_USE_ALLOC
 #include "detego.h"
-#include "detego_utils.h"
-#include "detego_alloc.h"
 
 int main()
 {
@@ -16,8 +16,8 @@ int main()
 	for (j = 0; j < B.size[1]; j++)
 		for (i = 0; i < B.size[0]; i++) 
 			at(&B, i, j) = j + 1.0f;
-	DISP("%9.4f ", A);
-	DISP("%9.4f ", B);
+	disp(A, "%9.4f ");
+	disp(B, "%9.4f ");
 
 #if 0
 	// Minimum norm solution to full-rank underdetermined system
@@ -32,7 +32,7 @@ int main()
 #else
 	matrixf_solve_qr(&A, &B, &X, -1);
 #endif
-	DISP("%9.4f ", X);
+	disp(X, "%9.4f ");
 
 	free(A.data);
 	free(B.data);

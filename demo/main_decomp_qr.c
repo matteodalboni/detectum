@@ -1,5 +1,5 @@
+#define DETEGO_USE_PRINT
 #include "detego.h"
-#include "detego_utils.h"
 
 #define TEST 3
 
@@ -58,20 +58,20 @@ int main()
 	matrixf_init(&A, M, N, A_data, 1);
 	matrixf_init(&Q, M, M, Q_data, 0);
 	matrixf_init(&P, N, N, P_data, 0);
-	printf("A = \n"); PRINT("%9.4f ", &A);
+	printf("A = \n"); matrixf_print(&A, "%9.4f ");
 
 	matrixf_decomp_qr(&A, &Q, &P, 0);
-	printf("Q = \n"); PRINT("%9.4f ", &Q);
-	printf("R = \n"); PRINT("%9.4f ", &A);
-	printf("P = \n"); PRINT("%9.4f ", &P);
+	printf("Q = \n"); matrixf_print(&Q, "%9.4f ");
+	printf("R = \n"); matrixf_print(&A, "%9.4f ");
+	printf("P = \n"); matrixf_print(&P, "%9.4f ");
 
 	matrixf_init(&QR, M, N, QR_data, 0);
 	matrixf_multiply(&Q, &A, &QR, 1, 0, 0, 0);
-	printf("Q*R = \n"); PRINT("%9.4f ", &QR);
+	printf("Q*R = \n"); matrixf_print(&QR, "%9.4f ");
 	A.size[0] = M;
 	A.size[1] = N;
 	matrixf_multiply(&QR, &P, &A, 1, 0, 0, 1);
-	printf("Q*R*P' = \n"); PRINT("%9.4f ", &A);
+	printf("Q*R*P' = \n"); matrixf_print(&A, "%9.4f ");
 
 	return 0;
 }

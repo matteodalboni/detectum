@@ -1,6 +1,6 @@
+#define DETEGO_USE_PRINT
+#define DETEGO_USE_ALLOC
 #include "detego.h"
-#include "detego_utils.h"
-#include "detego_alloc.h"
 
 #define M 2002
 #define N 2001
@@ -26,9 +26,9 @@ int main()
 	if (transB) matrixf_transpose(&B);
 
 #if PRINT_MATRIX
-	DISP("%7.0f ", A);
-	DISP("%7.0f ", B);
-	DISP("%7.0f ", C);
+	disp(A, "%7.0f ");
+	disp(B, "%7.0f ");
+	disp(C, "%7.0f ");
 #endif
 #ifdef TIME_TICK_H
 	tick(&t0);
@@ -56,7 +56,7 @@ int main()
 #if PRINT_MATRIX
 	printf("%g * A%s * B%s + %g * C = \n", alpha,
 		transA ? "'" : "", transB ? "'" : "", beta);
-	PRINT("%7.0f ", &C);
+	matrixf_print(&C, "%7.0f ");
 #endif
 
 	free(A.data);

@@ -1,6 +1,6 @@
+#define DETEGO_USE_ALLOC
+#define DETEGO_USE_PRINT
 #include "detego.h"
-#include "detego_utils.h"
-#include "detego_alloc.h"
 
 static void print_complex_eigenvectors(Matrixf* T, Matrixf* V)
 {
@@ -55,14 +55,14 @@ int main()
 	matrixf_decomp_schur(&T, &U);
 	matrixf_multiply(&U, &T, &V, 1, 0, 0, 0);
 	matrixf_multiply(&V, &U, &A, 1, 0, 0, 1);
-	DISP("%9.4f ", A);
-	DISP("%9.4f ", T);
-	DISP("%9.4f ", U);
+	disp(A, "%9.4f ");
+	disp(T, "%9.4f ");
+	disp(U, "%9.4f ");
 
 	printf("Eigenvectors (compact form):\n\n");
 	if (matrixf_get_eigenvectors(&T, &U, &V, &W, 0, work)) return 1;
-	DISP("%9.4f ", V);
-	DISP("%9.4f ", W);
+	disp(V, "%9.4f ");
+	disp(W, "%9.4f ");
 
 	printf("Eigenvectors (full form):\n\n");
 	printf("V = \n"); print_complex_eigenvectors(&T, &V);
@@ -70,22 +70,22 @@ int main()
 
 	printf("Pseudo-eigenvectors:\n\n");
 	if (matrixf_get_eigenvectors(&T, &U, &V, &W, 1, work)) return 1;
-	DISP("%9.4f ", V);
-	DISP("%9.4f ", W);
+	disp(V, "%9.4f ");
+	disp(W, "%9.4f ");
 	
 	printf("If V is invertible, block-diagonalize A:\n\n");
 	matrixf_multiply(&A, &V, &D, 1, 0, 0, 0);
 	matrixf_solve_lu(&V, &D);
 	for (i = 0; i < n * n; i++)
 		if (fabsf(D.data[i]) < TOL) D.data[i] = 0;
-	printf("inv(V)*A*V = "); DISP("%9.4g ", D);
+	printf("inv(V)*A*V = "); disp(D, "%9.4g ");
 	
 	printf("If W is invertible, block-diagonalize A:\n\n");
 	matrixf_multiply(&A, &W, &D, 1, 0, 1, 0);
 	matrixf_solve_lu(&W, &D); matrixf_transpose(&D);
 	for (i = 0; i < n * n; i++)
 		if (fabsf(D.data[i]) < TOL) D.data[i] = 0;
-	printf("W'*A*inv(W') = "); DISP("%9.4g ", D);
+	printf("W'*A*inv(W') = "); disp(D, "%9.4g ");
 
 	free(A.data);
 	free(T.data);

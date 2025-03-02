@@ -7,3 +7,5 @@ One of the distinctive traits of *detego* is that all the algorithms are built a
 [1] Golub, Gene H., and Charles F. Van Loan. *Matrix computations*. JHU press, 2013.
 
 [2] Nash, John C. *Compact numerical methods for computers: linear algebra and function minimisation*. Routledge, 2018.
+
+[3] MATLAB documentation.

@@ -1,5 +1,5 @@
+#define DETEGO_USE_PRINT
 #include "detego.h"
-#include "detego_utils.h"
 
 #define N 3
 
@@ -14,9 +14,9 @@ int main()
 	Matrixf A = { 0 };
 
 	matrixf_init(&A, N, N, A_data, 1);
-	printf("A = \n"); PRINT("%9.4f ", &A);
+	printf("A = \n"); matrixf_print(&A, "%9.4f ");
 	matrixf_exp(&A, work);
-	printf("exp(A) = \n"); PRINT("%9.4f ", &A);
+	printf("exp(A) = \n"); matrixf_print(&A, "%9.4f ");
 
 	return 0;
 }

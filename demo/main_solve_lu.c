@@ -1,5 +1,5 @@
+#define DETEGO_USE_PRINT
 #include "detego.h"
-#include "detego_utils.h"
 
 #define n 4
 #define p 4
@@ -24,11 +24,11 @@ int main()
 	Matrixf A, B, P, L;
 	int i, j;
 
-	matrixf_init(&A, n, n, A_data, 1); DISP("%9.4f ", A);
+	matrixf_init(&A, n, n, A_data, 1); disp(A, "%9.4f ");
 	if (1) {
-		matrixf_init(&B, n, p, B_data, 1); DISP("%9.4f ", B);
+		matrixf_init(&B, n, p, B_data, 1); disp(B, "%9.4f ");
 		if (matrixf_solve_lu(&A, &B)) return 1; 
-		printf("X = \n"); PRINT("%9.4f ", &B);
+		printf("X = \n"); matrixf_print(&B, "%9.4f ");
 	}
 	else
 	{
@@ -45,9 +45,9 @@ int main()
 				at(&L, i, j) = at(&A, i, j);
 				at(&A, i, j) = 0;
 			}
-		printf("U = \n"); PRINT("%9.4f ", &A);
-		DISP("%9.4f ", L);
-		DISP("%9.4f ", P);
+		printf("U = \n"); matrixf_print(&A, "%9.4f ");
+		disp(L, "%9.4f ");
+		disp(P, "%9.4f ");
 	}
 
 	return 0;

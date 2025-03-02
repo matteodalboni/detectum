@@ -1,5 +1,5 @@
+#define DETEGO_USE_PRINT
 #include "detego.h"
-#include "detego_utils.h"
 
 #define n 6
 
@@ -22,17 +22,17 @@ int main()
 
 	matrixf_init(&A, n, n, A_data, 1);
 	matrixf_init(&B, n, 1, B_data, 1);
-	DISP("%9.4f ", A);
+	disp(A, "%9.4f ");
 	if (matrixf_solve_spd(&A, &B)) {
 		printf("The matrix is not positive definite!\n");
 		return 1;
 	}
 	for (j = 0; j < n; j++)
 		for (i = j + 1; i < n; i++) at(&A, i, j) = 0;
-	printf("R = \n"); PRINT("%9.4f ", &A);
-	DISP("%9.4f ", B);
+	printf("R = \n"); matrixf_print(&A, "%9.4f ");
+	disp(B, "%9.4f ");
 	matrixf_multiply(&A, &A, &C, 1, 0, 1, 0);
-	printf("C = \n"); PRINT("%9.4f ", &C);
+	printf("C = \n"); matrixf_print(&C, "%9.4f ");
 
 	return 0;
 }

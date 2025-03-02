@@ -1,5 +1,5 @@
+#define DETEGO_USE_PRINT
 #include "detego.h"
-#include "detego_utils.h"
 
 int main()
 {
@@ -21,11 +21,11 @@ int main()
     
     matrixf_init(&A, 8, 6, A_data, 1);
     matrixf_init(&b, 8, 1, b_data, 0);
-    DISP("%9.0f", A);
+    disp(A, "%9.0f");
     matrixf_pseudoinv(&A, -1, work);
-    DISP("%9.4f", A);
+    disp(A, "%9.4f");
     matrixf_multiply(&A, &b, &x, 1, 0, 0, 0);
-    DISP("%9.4f", x);
+    disp(x, "%9.4f");
 
 	return 0;
 }

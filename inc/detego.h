@@ -91,6 +91,39 @@ static inline void get_givensrot(const float a, const float b, float* c, float* 
 	}
 }
 
+#ifdef DETEGO_USE_PRINT
+#include <stdio.h>
+
+// This function prints the matrix A on the standard output according to
+// the specified format.
+static inline void matrixf_print(Matrixf* A, char* format)
+{
+	int i, j;
+
+	for (i = 0; i < A->size[0]; i++) {
+		for (j = 0; j < A->size[1]; j++) {
+			printf(format, at(A, i, j));
+		}
+		printf("\n");
+	}
+	printf("\n");
+}
+
+// This macro prints the matrix A and its name on the standard output 
+// according to the specified format. 
+#define disp(A, format) \
+do{ printf(#A" = \n"); matrixf_print(&A, format); } while (0)
+#endif
+
+#ifdef DETEGO_USE_ALLOC
+#include <stdlib.h>
+
+// This macro initializes a matrix instance while dynamically allocating 
+// its data memory.
+#define matrixf(rows, cols) \
+{ rows, cols, calloc(sizeof(float), (rows) * (cols)) }
+#endif
+
 // This function initializes the rows-by-cols matrix A. The array data
 // collects the matrix elements, which must be stored in column-major order.
 // If the data are initially arranged in row-major layout, the flag ordmem 

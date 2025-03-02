@@ -32,9 +32,9 @@ figure; plot(x(:)-xc(:))
 
 #define _CRT_SECURE_NO_WARNINGS
 
+#define DETEGO_USE_PRINT
+#define DETEGO_USE_ALLOC
 #include "detego.h"
-#include "detego_utils.h"
-#include "detego_alloc.h"
 //#include "time_tick.h"
 
 #define M 200
