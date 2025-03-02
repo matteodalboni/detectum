@@ -22,7 +22,7 @@ int polyfit(float* x, float* y, int pts, int deg, float* work)
 
 	for (j = 0; j < n; j++)
 		for (i = 0; i < m; i++)
-			_(&A, i, j) = powf(x[i], (float)(n - 1 - j));
+			at(&A, i, j) = powf(x[i], (float)(n - 1 - j));
 
 	return matrixf_solve_lsq(&A, &b);
 }

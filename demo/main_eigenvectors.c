@@ -9,12 +9,12 @@ static void print_complex_eigenvectors(Matrixf* T, Matrixf* V)
 
 	for (i = 0; i < n; i++) {
 		for (j = 0; j < n; j++) {
-			if (j == n - 1 || _(T, j + 1, j) == 0) {
-				printf("%9.4f ", _(V, i, j));
+			if (j == n - 1 || at(T, j + 1, j) == 0) {
+				printf("%9.4f ", at(V, i, j));
 			}
 			else {
-				printf("%9.4f%+.4fi ", _(V, i, j), +_(V, i, j + 1));
-				printf("%9.4f%+.4fi ", _(V, i, j), -_(V, i, j + 1));
+				printf("%9.4f%+.4fi ", at(V, i, j), +at(V, i, j + 1));
+				printf("%9.4f%+.4fi ", at(V, i, j), -at(V, i, j + 1));
 				j++;
 			}
 		}

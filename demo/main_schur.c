@@ -12,16 +12,16 @@ static void get_eigvals(Matrixf* T, float* lambda_re, float* lambda_im)
 
 	while (i < n)
 	{
-		if (i == n - 1 || _(T, i + 1, i) == 0) {
-			lambda_re[i] = _(T, i, i);
+		if (i == n - 1 || at(T, i + 1, i) == 0) {
+			lambda_re[i] = at(T, i, i);
 			lambda_im[i] = 0;
 			i += 1;
 		}
 		else {
-			t = 0.5f * (_(T, i, i) - _(T, i + 1, i + 1));
-			s = t * t + _(T, i + 1, i) * _(T, i, i + 1);
+			t = 0.5f * (at(T, i, i) - at(T, i + 1, i + 1));
+			s = t * t + at(T, i + 1, i) * at(T, i, i + 1);
 			r = (s < 0) ? sqrtf(-s) : sqrtf(s);
-			lambda_re[i] = lambda_re[i + 1] = _(T, i + 1, i + 1) + t;
+			lambda_re[i] = lambda_re[i + 1] = at(T, i + 1, i + 1) + t;
 			lambda_im[i] = lambda_im[i + 1] = 0;
 			if (s >= 0) {
 				lambda_re[i + 0] -= r;
@@ -56,12 +56,12 @@ static int is_quasitriu(Matrixf* T, float tol)
 	const float eps = tol * get_norm2(T->data, n * n, 1);
 
 	while (i < n - 2) {
-		if (fabsf(_(T, i + 1, i)) <= eps) {
-			_(T, i + 1, i) = 0; i += 1;
+		if (fabsf(at(T, i + 1, i)) <= eps) {
+			at(T, i + 1, i) = 0; i += 1;
 		}
 		else {
-			if (fabsf(_(T, i + 2, i + 1)) <= eps) {
-				_(T, i + 2, i + 1) = 0; i += 2;
+			if (fabsf(at(T, i + 2, i + 1)) <= eps) {
+				at(T, i + 2, i + 1) = 0; i += 2;
 			}
 			else return 0;
 		}
@@ -156,7 +156,7 @@ int main()
 {
 	int i, n = (int)sqrtf(NUMEL), iter = ITER;
 	float s = 0;
-	const float eps = EPS(1);
+	const float eps1 = eps(1);
 	float lambda[NUMEL] = { 0 };
 	float U_data[NUMEL] = { 0 };
 	float Q_data[NUMEL] = { 0 };
@@ -172,19 +172,19 @@ int main()
 	matrixf_decomp_hess(&A, &U);
 	matrixf_transpose(&U);
 	while (iter && !is_quasitriu(&A, TOL)) {
-		s = _(&A, n - 1, n - 1);
+		s = at(&A, n - 1, n - 1);
 #if 1 // Demmel shift
 		get_eigvals2x2(lambda,
-			_(&A, n - 2, n - 2), _(&A, n - 2, n - 1),
-			_(&A, n - 1, n - 2), _(&A, n - 1, n - 1));
+			at(&A, n - 2, n - 2), at(&A, n - 2, n - 1),
+			at(&A, n - 1, n - 2), at(&A, n - 1, n - 1));
 		s = fabsf(lambda[0] - s) < fabsf(lambda[2] - s) ? lambda[0] : lambda[2];
 #endif
-		if (s == 0) s = eps;
-		for (i = 0; i < n; i++) _(&A, i, i) -= s;
+		if (s == 0) s = eps1;
+		for (i = 0; i < n; i++) at(&A, i, i) -= s;
 		matrixf_decomp_qr(&A, &Q, 0, &U);
 		for (i = 0; i < n * n; i++) R.data[i] = A.data[i];
 		matrixf_multiply(&R, &Q, &A, 1, 0, 0, 0);
-		for (i = 0; i < n; i++) _(&A, i, i) += s;
+		for (i = 0; i < n; i++) at(&A, i, i) += s;
 		iter--;
 	}
 	matrixf_transpose(&U);
@@ -248,7 +248,7 @@ int main()
 	matrixf_multiply(&P, &A, &U, 1, 0, 0, 0);
 
 	for (i = 0; i < n - 1; i++)
-		if (fabsf(_(&T, i + 1, i)) < TOL) _(&T, i + 1, i) = 0;
+		if (fabsf(at(&T, i + 1, i)) < TOL) at(&T, i + 1, i) = 0;
 
 	printf("T = \n"); PRINT("%9.4f ", &T);
 	printf("U = \n"); PRINT("%9.4f ", &U);

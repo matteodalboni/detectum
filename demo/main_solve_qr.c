@@ -15,7 +15,7 @@ int main()
 	fclose(A_file);
 	for (j = 0; j < B.size[1]; j++)
 		for (i = 0; i < B.size[0]; i++) 
-			_(&B, i, j) = j + 1.0f;
+			at(&B, i, j) = j + 1.0f;
 	DISP("%9.4f ", A);
 	DISP("%9.4f ", B);
 

@@ -5,8 +5,8 @@ static void swap_columns(Matrixf* A, int i, int j)
 {
 	int k;
 	const int m = A->size[0];
-	float* x = &_(A, 0, i);
-	float* y = &_(A, 0, j);
+	float* x = &at(A, 0, i);
+	float* y = &at(A, 0, j);
 	float xk;
 
 	for (k = 0; k < m; k++) {
@@ -25,13 +25,13 @@ static void apply_householder_left(Matrixf* X, float* v, const float beta,
 	float h;
 
 	for (j = j0; j <= jend; j++) {
-		h = _(X, i0, j) * v[0];
+		h = at(X, i0, j) * v[0];
 		for (i = i0 + 1; i <= iend; i++) {
-			h += _(X, i, j) * v[(i - i0) * stride];
+			h += at(X, i, j) * v[(i - i0) * stride];
 		}
-		_(X, i0, j) -= beta * h;
+		at(X, i0, j) -= beta * h;
 		for (i = i0 + 1; i <= iend; i++) {
-			_(X, i, j) -= beta * h * v[(i - i0) * stride];
+			at(X, i, j) -= beta * h * v[(i - i0) * stride];
 		}
 	}
 }
@@ -45,13 +45,13 @@ static void apply_householder_right(Matrixf* X, float* v, const float beta,
 	float h;
 
 	for (i = i0; i <= iend; i++) {
-		h = _(X, i, j0) * v[0];
+		h = at(X, i, j0) * v[0];
 		for (j = j0 + 1; j <= jend; j++) {
-			h += _(X, i, j) * v[(j - j0) * stride];
+			h += at(X, i, j) * v[(j - j0) * stride];
 		}
-		_(X, i, j0) -= beta * h;
+		at(X, i, j0) -= beta * h;
 		for (j = j0 + 1; j <= jend; j++) {
-			_(X, i, j) -= beta * h * v[(j - j0) * stride];
+			at(X, i, j) -= beta * h * v[(j - j0) * stride];
 		}
 	}
 }
@@ -146,8 +146,8 @@ int matrixf_decomp_chol(Matrixf* A)
 	}
 	for (j = 0; j < n; j++) {
 		for (i = j; i < n; i++) {
-			for (v = _(A, j, i), k = 0; k < j; k++) {
-				v -= _(A, k, i) * _(A, k, j);
+			for (v = at(A, j, i), k = 0; k < j; k++) {
+				v -= at(A, k, i) * at(A, k, j);
 			}
 			if (i == j) {
 				if (v > 0) {
@@ -157,7 +157,7 @@ int matrixf_decomp_chol(Matrixf* A)
 					return 1;
 				}
 			}
-			_(A, j, i) = v / r;
+			at(A, j, i) = v / r;
 		}
 	}
 	return 0;
@@ -173,26 +173,26 @@ int matrixf_decomp_ltl(Matrixf* A)
 		return -1;
 	}
 	for (j = 1; j < n; j++) {
-		_(A, 0, j) = (float)j;
+		at(A, 0, j) = (float)j;
 	}
 	for (j = 0; j < n; j++) {
 		if (j) {
-			h[0] = (j == 1) ? _(A, 0, 1) : _(A, 0, 1) * _(A, j, 1);
+			h[0] = (j == 1) ? at(A, 0, 1) : at(A, 0, 1) * at(A, j, 1);
 			for (k = 1; k < j; k++) {
-				Ljj = (j == k + 1) ? 1.0f : _(A, j, k + 1);
-				h[k] = _(A, k - 1, k) * _(A, j, k - 1) * (k > 1)
-					+ _(A, k, k) * _(A, j, k) + _(A, k, k + 1) * Ljj;
+				Ljj = (j == k + 1) ? 1.0f : at(A, j, k + 1);
+				h[k] = at(A, k - 1, k) * at(A, j, k - 1) * (k > 1)
+					+ at(A, k, k) * at(A, j, k) + at(A, k, k + 1) * Ljj;
 			}
 			for (s = 0, k = 1; k < j; k++) {
-				s += _(A, j, k) * h[k];
+				s += at(A, j, k) * h[k];
 			}
-			h[j] = _(A, j, j) - s;
-			_(A, j, j) = h[j] - _(A, j - 1, j) * _(A, j, j - 1) * (j > 1);
+			h[j] = at(A, j, j) - s;
+			at(A, j, j) = h[j] - at(A, j - 1, j) * at(A, j, j - 1) * (j > 1);
 			for (i = j + 1; i < n; i++) {
 				for (s = 0, k = 1; k <= j; k++) {
-					s += _(A, i, k) * h[k];
+					s += at(A, i, k) * h[k];
 				}
-				h[i] = _(A, j, i) - s;
+				h[i] = at(A, j, i) - s;
 			}
 		}
 		if (j < n - 1) {
@@ -202,18 +202,18 @@ int matrixf_decomp_ltl(Matrixf* A)
 				}
 			}
 			for (k = 0; k < n; k++) {
-				s = _(A, m, k);
-				_(A, m, k) = _(A, j + 1, k);
-				_(A, j + 1, k) = s;
+				s = at(A, m, k);
+				at(A, m, k) = at(A, j + 1, k);
+				at(A, j + 1, k) = s;
 			}
 			swap_columns(A, m, j + 1);
 			if (!j) {
-				P1 = _(A, 0, 1);
+				P1 = at(A, 0, 1);
 			}
-			_(A, j, j + 1) = h[j + 1];
+			at(A, j, j + 1) = h[j + 1];
 			if (j < n - 2) {
 				for (i = j + 2; i < n; i++) {
-					_(A, i, j + 1) = h[m] ? h[i] / h[j + 1] : 0;
+					at(A, i, j + 1) = h[m] ? h[i] / h[j + 1] : 0;
 				}
 			}
 		}
@@ -223,9 +223,9 @@ int matrixf_decomp_ltl(Matrixf* A)
 		A->data[1] = P1;
 	}
 	for (j = 2; j < n; j++) {
-		_(A, j, 0) = _(A, 0, j);
+		at(A, j, 0) = at(A, 0, j);
 		for (i = 0; i < j - 1; i++) {
-			_(A, i, j) = 0;
+			at(A, i, j) = 0;
 		}
 	}
 	return 0;
@@ -244,9 +244,9 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* P)
 	matrixf_transpose(P);
 	for (i = 0; i < n - 1; i++) {
 		k = j = i;
-		a = fabsf(_(A, i, j));
+		a = fabsf(at(A, i, j));
 		for (j = i + 1; j < n; j++) {
-			b = fabsf(_(A, i, j));
+			b = fabsf(at(A, i, j));
 			if (b > a) {
 				k = j;
 				a = b;
@@ -255,12 +255,12 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* P)
 		swap_columns(A, k, i);
 		swap_columns(P, k, i);
 		for (k = i + 1; k < n; k++) {
-			a = _(A, i, i);
+			a = at(A, i, i);
 			if (a != 0) {
-				_(A, i, k) /= a;
+				at(A, i, k) /= a;
 			}
 			for (j = i + 1; j < n; j++) {
-				_(A, j, k) -= _(A, j, i) * _(A, i, k);
+				at(A, j, k) -= at(A, j, i) * at(A, i, k);
 			}
 		}
 	}
@@ -293,7 +293,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 		}
 		for (cm = 0, km = 0, k = 0; k < n; k++) {
 			for (c = 0, i = 0; i < m; i++) {
-				c += _(A, i, k) * _(A, i, k);
+				c += at(A, i, k) * at(A, i, k);
 			}
 			if (c > cm) {
 				cm = c;
@@ -313,20 +313,20 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 			P->data[km] = t;
 		}
 		i = r + 1;
-		while (i < m && _(A, i, r) == 0) {
+		while (i < m && at(A, i, r) == 0) {
 			i++;
 		}
 		if (i < m) {
-			alpha = get_norm2(&_(A, r, r), m - r, 1);
-			s = _(A, r, r) >= 0 ? 1.0f : -1.0f;
-			t = _(A, r, r) + s * alpha;
-			_(A, r, r) = -s * alpha;
+			alpha = get_norm2(&at(A, r, r), m - r, 1);
+			s = at(A, r, r) >= 0 ? 1.0f : -1.0f;
+			t = at(A, r, r) + s * alpha;
+			at(A, r, r) = -s * alpha;
 			for (i = r + 1; i < m; i++) {
-				_(A, i, r) /= t;
+				at(A, i, r) /= t;
 			}
 			beta = t * s / alpha;
-			v0 = _(A, r, r);
-			v = &_(A, r, r);
+			v0 = at(A, r, r);
+			v = &at(A, r, r);
 			v[0] = 1;
 			apply_householder_left(A, v, beta, r, m - 1, r + 1, n - 1, 1);
 			if (B) {
@@ -335,15 +335,15 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 			if (Q && q == m) {
 				apply_householder_right(Q, v, beta, 0, m - 1, r, m - 1, 1);
 				for (i = r + 1; i < m; i++) {
-					_(A, i, r) = 0;
+					at(A, i, r) = 0;
 				}
 			}
-			_(A, r, r) = v0;
+			at(A, r, r) = v0;
 		}
 		if (P && r + 1 <= rmax) {
 			for (cm = 0, km = 0, k = r + 1; k < n; k++) {
 				for (c = 0, i = r + 1; i < m; i++) {
-					c += _(A, i, k) * _(A, i, k);
+					c += at(A, i, k) * at(A, i, k);
 				}
 				if (c > cm) {
 					cm = c;
@@ -357,7 +357,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 		matrixf_accumulate_bwd(A, Q);
 		for (k = 0; k < n; k++) {
 			for (i = 0; i < n; i++) {
-				_(&A_econ, i, k) = (i <= k) ? _(A, i, k) : 0.0f;
+				at(&A_econ, i, k) = (i <= k) ? at(A, i, k) : 0.0f;
 			}
 		}
 		A->size[0] = n;
@@ -368,8 +368,8 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 		}
 		for (i = n - 1; i >= 0; i--) {
 			k = (int)P->data[i];
-			_(P, i, 0) = 0;
-			_(P, k, i) = 1;
+			at(P, i, 0) = 0;
+			at(P, k, i) = 1;
 		}
 	}
 	return 0;
@@ -389,14 +389,14 @@ int matrixf_accumulate_fwd(Matrixf* H, Matrixf* B)
 	}
 	for (k = 0; k <= kmax; k++) {
 		for (alpha = 1, i = k + 1; i < m; i++) {
-			alpha += _(H, i, k) * _(H, i, k);
+			alpha += at(H, i, k) * at(H, i, k);
 		}
 		if (alpha > 1) {
-			v0 = _(H, k, k);
-			v = &_(H, k, k);
+			v0 = at(H, k, k);
+			v = &at(H, k, k);
 			v[0] = 1;
 			apply_householder_left(B, v, 2.0f / alpha, k, m - 1, 0, p - 1, 1);
-			_(H, k, k) = v0;
+			at(H, k, k) = v0;
 		}
 	}
 	return 0;
@@ -416,14 +416,14 @@ int matrixf_accumulate_bwd(Matrixf* H, Matrixf* B)
 	}
 	for (k = kmax; k >= 0; k--) {
 		for (alpha = 1, i = k + 1; i < m; i++) {
-			alpha += _(H, i, k) * _(H, i, k);
+			alpha += at(H, i, k) * at(H, i, k);
 		}
 		if (alpha > 1) {
-			v0 = _(H, k, k);
-			v = &_(H, k, k);
+			v0 = at(H, k, k);
+			v = &at(H, k, k);
 			v[0] = 1;
 			apply_householder_left(B, v, 2.0f / alpha, k, m - 1, 0, p - 1, 1);
-			_(H, k, k) = v0;
+			at(H, k, k) = v0;
 		}
 	}
 	return 0;
@@ -461,20 +461,20 @@ int matrixf_bidiagonalize(Matrixf* A, Matrixf* U, Matrixf* V)
 	}
 	for (k = 0; k <= kmax; k++) {
 		i = k + 1;
-		while (i < m && _(A, i, k) == 0) {
+		while (i < m && at(A, i, k) == 0) {
 			i++;
 		}
 		if (i < m) {
-			alpha = get_norm2(&_(A, k, k), m - k, 1);
-			s = _(A, k, k) >= 0 ? 1.0f : -1.0f;
-			t = _(A, k, k) + s * alpha;
-			_(A, k, k) = -s * alpha;
+			alpha = get_norm2(&at(A, k, k), m - k, 1);
+			s = at(A, k, k) >= 0 ? 1.0f : -1.0f;
+			t = at(A, k, k) + s * alpha;
+			at(A, k, k) = -s * alpha;
 			for (i = k + 1; i < m; i++) {
-				_(A, i, k) /= t;
+				at(A, i, k) /= t;
 			}
 			beta = t * s / alpha;
-			v0 = _(A, k, k);
-			v = &_(A, k, k);
+			v0 = at(A, k, k);
+			v = &at(A, k, k);
 			v[0] = 1;
 			apply_householder_left(A, v, beta, k, m - 1, k + 1, n - 1, 1);
 			if (U && q == m) {
@@ -482,42 +482,42 @@ int matrixf_bidiagonalize(Matrixf* A, Matrixf* U, Matrixf* V)
 			}
 			if (q == m) {
 				for (i = k + 1; i < m; i++) {
-					_(A, i, k) = 0;
+					at(A, i, k) = 0;
 				}
 			}
-			_(A, k, k) = v0;
+			at(A, k, k) = v0;
 		}
 		i = k + 2;
-		while (i < n && _(A, k, i) == 0) {
+		while (i < n && at(A, k, i) == 0) {
 			i++;
 		}
 		if (i < n && k + 2 < n) {
-			alpha = get_norm2(&_(A, k, k + 1), n - k - 1, m);
-			s = _(A, k, k + 1) >= 0 ? 1.0f : -1.0f;
-			t = _(A, k, k + 1) + s * alpha;
-			_(A, k, k + 1) = -s * alpha;
+			alpha = get_norm2(&at(A, k, k + 1), n - k - 1, m);
+			s = at(A, k, k + 1) >= 0 ? 1.0f : -1.0f;
+			t = at(A, k, k + 1) + s * alpha;
+			at(A, k, k + 1) = -s * alpha;
 			for (i = k + 2; i < n; i++) {
-				_(A, k, i) /= t;
+				at(A, k, i) /= t;
 			}
 			beta = t * s / alpha;
-			v0 = _(A, k, k + 1);
-			v = &_(A, k, k + 1);
+			v0 = at(A, k, k + 1);
+			v = &at(A, k, k + 1);
 			v[0] = 1;
 			apply_householder_right(A, v, beta, k + 1, m - 1, k + 1, n - 1, m);
 			if (V) {
 				apply_householder_right(V, v, beta, 0, n - 1, k + 1, n - 1, m);
 			}
 			for (i = k + 2; i < n; i++) {
-				_(A, k, i) = 0;
+				at(A, k, i) = 0;
 			}
-			_(A, k, k + 1) = v0;
+			at(A, k, k + 1) = v0;
 		}
 	}
 	if (U && q < m) {
 		matrixf_accumulate_bwd(A, U);
 		for (k = 0; k < n; k++) {
 			for (i = 0; i < n; i++) {
-				_(&A_econ, i, k) = (i <= k) ? _(A, i, k) : 0.0f;
+				at(&A_econ, i, k) = (i <= k) ? at(A, i, k) : 0.0f;
 			}
 		}
 		A->size[0] = n;
@@ -546,30 +546,30 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 	if (matrixf_bidiagonalize(A, U, V)) {
 		return -1;
 	}
-	for (norm1 = fabsf(_(A, 0, 0)), j = 1; j < n; j++) {
-		tmp = fabsf(_(A, j - 1, j)) + fabsf(_(A, j, j));
+	for (norm1 = fabsf(at(A, 0, 0)), j = 1; j < n; j++) {
+		tmp = fabsf(at(A, j - 1, j)) + fabsf(at(A, j, j));
 		if (norm1 < tmp) {
 			norm1 = tmp;
 		}
 	}
 	small = tol * norm1;
 	while (r > 0 && sweep < sweepmax) {
-		while (r > 0 && fabsf(_(A, r - 1, r)) <= small) {
+		while (r > 0 && fabsf(at(A, r - 1, r)) <= small) {
 			r--;
 		}
 		if (r > 0) {
 			q = i = r;
-			while (q > 0 && fabsf(_(A, q - 1, q)) > small) {
+			while (q > 0 && fabsf(at(A, q - 1, q)) > small) {
 				q--;
 			}
-			while (i >= q && fabsf(_(A, i, i)) > small) {
+			while (i >= q && fabsf(at(A, i, i)) > small) {
 				i--;
 			}
 			if (i == q - 1) {
 				c00 = c01 = c11 = 0;
 				for (k = (r - 2 < 0 ? 0 : r - 2); k <= r; k++) {
-					Xi = _(A, k, r - 1);
-					Xj = _(A, k, r);
+					Xi = at(A, k, r - 1);
+					Xj = at(A, k, r);
 					c00 += Xi * Xi;
 					c01 += Xi * Xj;
 					c11 += Xj * Xj;
@@ -577,82 +577,82 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 				y = 0.5f * (c00 - c11);
 				z = sqrtf(y * y + c01 * c01);
 				mu = fabsf(y + z) < fabsf(y - z) ? c11 + y + z : c11 + y - z;
-				y = _(A, q, q) * _(A, q, q) - mu;
-				z = _(A, q, q + 1) * _(A, q, q);
+				y = at(A, q, q) * at(A, q, q) - mu;
+				z = at(A, q, q + 1) * at(A, q, q);
 				for (j = q; j < r; j++) {
 					get_givensrot(y, z, &cosine, &sine);
 					for (k = (j - 1 < 0 ? 0 : j - 1); k <= j + 1; k++) {
-						Xi = _(A, k, j);
-						Xj = _(A, k, j + 1);
-						_(A, k, j) = cosine * Xi - sine * Xj;
-						_(A, k, j + 1) = sine * Xi + cosine * Xj;
+						Xi = at(A, k, j);
+						Xj = at(A, k, j + 1);
+						at(A, k, j) = cosine * Xi - sine * Xj;
+						at(A, k, j + 1) = sine * Xi + cosine * Xj;
 					}
 					if (V) {
 						for (k = 0; k < n; k++) {
-							Xi = _(V, k, j);
-							Xj = _(V, k, j + 1);
-							_(V, k, j) = cosine * Xi - sine * Xj;
-							_(V, k, j + 1) = sine * Xi + cosine * Xj;
+							Xi = at(V, k, j);
+							Xj = at(V, k, j + 1);
+							at(V, k, j) = cosine * Xi - sine * Xj;
+							at(V, k, j + 1) = sine * Xi + cosine * Xj;
 						}
 					}
-					y = _(A, j, j);
-					z = _(A, j + 1, j);
+					y = at(A, j, j);
+					z = at(A, j + 1, j);
 					get_givensrot(y, z, &cosine, &sine);
 					for (k = j; k <= (j + 2 < r ? j + 2 : r); k++) {
-						Xi = _(A, j, k);
-						Xj = _(A, j + 1, k);
-						_(A, j, k) = cosine * Xi - sine * Xj;
-						_(A, j + 1, k) = sine * Xi + cosine * Xj;
+						Xi = at(A, j, k);
+						Xj = at(A, j + 1, k);
+						at(A, j, k) = cosine * Xi - sine * Xj;
+						at(A, j + 1, k) = sine * Xi + cosine * Xj;
 					}
 					if (U) {
 						for (k = 0; k < m; k++) {
-							Xi = _(U, k, j);
-							Xj = _(U, k, j + 1);
-							_(U, k, j) = cosine * Xi - sine * Xj;
-							_(U, k, j + 1) = sine * Xi + cosine * Xj;
+							Xi = at(U, k, j);
+							Xj = at(U, k, j + 1);
+							at(U, k, j) = cosine * Xi - sine * Xj;
+							at(U, k, j + 1) = sine * Xi + cosine * Xj;
 						}
 					}
 					if (j < r - 1) {
-						y = _(A, j, j + 1);
-						z = _(A, j, j + 2);
+						y = at(A, j, j + 1);
+						z = at(A, j, j + 2);
 					}
 				}
 				sweep++;
 			}
 			else if (i < r) {
 				for (j = i + 1; j <= r; j++) {
-					get_givensrot(-_(A, j, j), _(A, i, j), &cosine, &sine);
+					get_givensrot(-at(A, j, j), at(A, i, j), &cosine, &sine);
 					for (k = j; k <= (j + 1 < r ? j + 1 : r); k++) {
-						Xi = _(A, i, k);
-						Xj = _(A, j, k);
-						_(A, i, k) = cosine * Xi - sine * Xj;
-						_(A, j, k) = sine * Xi + cosine * Xj;
+						Xi = at(A, i, k);
+						Xj = at(A, j, k);
+						at(A, i, k) = cosine * Xi - sine * Xj;
+						at(A, j, k) = sine * Xi + cosine * Xj;
 					}
 					if (U) {
 						for (k = 0; k < m; k++) {
-							Xi = _(U, k, i);
-							Xj = _(U, k, j);
-							_(U, k, i) = cosine * Xi - sine * Xj;
-							_(U, k, j) = sine * Xi + cosine * Xj;
+							Xi = at(U, k, i);
+							Xj = at(U, k, j);
+							at(U, k, i) = cosine * Xi - sine * Xj;
+							at(U, k, j) = sine * Xi + cosine * Xj;
 						}
 					}
 				}
 			}
 			else {
 				for (j = r - 1; j >= q; j--) {
-					get_givensrot(_(A, j, j), _(A, j, r), &cosine, &sine);
+					get_givensrot(at(A, j, j), at(A, j, r), &cosine, &sine);
 					for (k = (j - 1 > q ? j - 1 : q); k <= j; k++) {
-						Xi = _(A, k, j);
-						Xj = _(A, k, r);
-						_(A, k, j) = cosine * Xi - sine * Xj;
-						_(A, k, r) = sine * Xi + cosine * Xj;
+						Xi = at(A, k, j);
+						Xj = at(A, k, r);
+						at(A, k, j) = cosine * Xi - sine * Xj;
+						at(A, k, r) = sine * Xi + cosine * Xj;
 					}
 					if (V) {
 						for (k = 0; k < n; k++) {
-							Xi = _(V, k, j);
-							Xj = _(V, k, r);
-							_(V, k, j) = cosine * Xi - sine * Xj;
-							_(V, k, r) = sine * Xi + cosine * Xj;
+							Xi = at(V, k, j);
+							Xj = at(V, k, r);
+							at(V, k, j) = cosine * Xi - sine * Xj;
+							at(V, k, r) = sine * Xi + cosine * Xj;
 						}
 					}
 				}
@@ -664,17 +664,17 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 		perm.data = p;
 	}
 	for (j = 0; j < n; j++) {
-		s[j] = _(A, j, j);
+		s[j] = at(A, j, j);
 		if (j > 1) {
 			for (i = 0; i < n; i++) {
-				_(A, i, j) = 0;
+				at(A, i, j) = 0;
 			}
 		}
 		if (s[j] < 0) {
 			s[j] *= -1.0f;
 			if (U) {
 				for (i = 0; i < m; i++) {
-					_(U, i, j) *= -1.0f;
+					at(U, i, j) *= -1.0f;
 				}
 			}
 		}
@@ -707,7 +707,7 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 		p[0] = 0;
 		for (j = 1; j < n; j++) {
 			p[j] = 0;
-			_(A, j, j) = s[j];
+			at(A, j, j) = s[j];
 			s[j] = 0;
 		}
 	}
@@ -748,9 +748,9 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 			for (k = j + 1; k < n; k++) {
 				a = b = p = 0;
 				for (i = 0; i < m; i++) {
-					a += _(A, i, j) * _(A, i, j);
-					b += _(A, i, k) * _(A, i, k);
-					p += _(A, i, j) * _(A, i, k);
+					a += at(A, i, j) * at(A, i, j);
+					b += at(A, i, k) * at(A, i, k);
+					p += at(A, i, j) * at(A, i, k);
 				}
 				p *= 2.0f;
 				q = a - b;
@@ -771,17 +771,17 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 						sine = p / (2.0f * v * cosine);
 					}
 					for (i = 0; i < m; i++) {
-						Xij = _(A, i, j);
-						Xik = _(A, i, k);
-						_(A, i, j) = +Xij * cosine + Xik * sine;
-						_(A, i, k) = -Xij * sine + Xik * cosine;
+						Xij = at(A, i, j);
+						Xik = at(A, i, k);
+						at(A, i, j) = +Xij * cosine + Xik * sine;
+						at(A, i, k) = -Xij * sine + Xik * cosine;
 					}
 					if (V) {
 						for (i = 0; i < n; i++) {
-							Xij = _(V, i, j);
-							Xik = _(V, i, k);
-							_(V, i, j) = +Xij * cosine + Xik * sine;
-							_(V, i, k) = -Xij * sine + Xik * cosine;
+							Xij = at(V, i, j);
+							Xik = at(V, i, k);
+							at(V, i, j) = +Xij * cosine + Xik * sine;
+							at(V, i, k) = -Xij * sine + Xik * cosine;
 						}
 					}
 				}
@@ -792,14 +792,14 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 	if (U) {
 		matrixf_decomp_qr(A, U, 0, 0);
 		for (j = 0; j < n; j++) {
-			if (_(A, j, j) < 0) {
-				_(A, j, j) *= -1.0f;
+			if (at(A, j, j) < 0) {
+				at(A, j, j) *= -1.0f;
 				for (i = 0; i < m; i++) {
-					_(U, i, j) *= -1.0f;
+					at(U, i, j) *= -1.0f;
 				}
 			}
 			for (i = 0; i < j; i++) {
-				_(A, i, j) = 0;
+				at(A, i, j) = 0;
 			}
 		}
 	}
@@ -822,29 +822,29 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
 	}
 	for (r = 0; r < n - 2; r++) {
 		i = r + 2;
-		while (i < n && _(A, i, r) == 0) {
+		while (i < n && at(A, i, r) == 0) {
 			i++;
 		}
 		if (i < n) {
-			alpha = get_norm2(&_(A, r + 1, r), n - r - 1, 1);
-			s = _(A, r + 1, r) >= 0 ? 1.0f : -1.0f;
-			t = _(A, r + 1, r) + s * alpha;
-			_(A, r + 1, r) = -s * alpha;
+			alpha = get_norm2(&at(A, r + 1, r), n - r - 1, 1);
+			s = at(A, r + 1, r) >= 0 ? 1.0f : -1.0f;
+			t = at(A, r + 1, r) + s * alpha;
+			at(A, r + 1, r) = -s * alpha;
 			for (i = r + 2; i < n; i++) {
-				_(A, i, r) /= t;
+				at(A, i, r) /= t;
 			}
 			beta = t * s / alpha;
-			v0 = _(A, r + 1, r);
-			v = &_(A, r + 1, r);
+			v0 = at(A, r + 1, r);
+			v = &at(A, r + 1, r);
 			v[0] = 1;
 			apply_householder_left(A, v, beta, r + 1, n - 1, r + 1, n - 1, 1);
 			apply_householder_right(A, v, beta, 0, n - 1, r + 1, n - 1, 1);
 			if (P) {
 				apply_householder_right(P, v, beta, 0, n - 1, r + 1, n - 1, 1);
 			}
-			_(A, r + 1, r) = v0;
+			at(A, r + 1, r) = v0;
 			for (i = r + 2; i < n; i++) {
-				_(A, i, r) = 0;
+				at(A, i, r) = 0;
 			}
 		}
 	}
@@ -863,52 +863,52 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 		return -1;
 	}
 	while (m > 0 && sweep < sweepmax) {
-		while (m > 0 && _(A, m, m - 1) == 0) {
+		while (m > 0 && at(A, m, m - 1) == 0) {
 			m--;
 		}
 		if (m > 0) {
 			q = m - 1;
-			while (q > 0 && _(A, q, q - 1) != 0) {
+			while (q > 0 && at(A, q, q - 1) != 0) {
 				q--;
 			}
-			d = 0.5f * (_(A, m - 1, m - 1) - _(A, m, m));
+			d = 0.5f * (at(A, m - 1, m - 1) - at(A, m, m));
 			f = d < 0 ? -1.0f : 1.0f;
-			g = _(A, m, m - 1) * _(A, m, m - 1);
-			x = _(A, q, q) - _(A, m, m) + g / (d + f * sqrtf(d * d + g));
-			y = _(A, q + 1, q);
+			g = at(A, m, m - 1) * at(A, m, m - 1);
+			x = at(A, q, q) - at(A, m, m) + g / (d + f * sqrtf(d * d + g));
+			y = at(A, q + 1, q);
 			for (k = q; k < m; k++) {
 				get_givensrot(x, y, &cosine, &sine);
 				imin = k - 1 < 0 ? 0 : k - 1;
 				imax = k + 2 > n - 1 ? n - 1 : k + 2;
 				for (i = imin; i <= imax; i++) {
-					Xk = _(A, k, i);
-					Xk1 = _(A, k + 1, i);
-					_(A, k, i) = cosine * Xk - sine * Xk1;
-					_(A, k + 1, i) = sine * Xk + cosine * Xk1;
+					Xk = at(A, k, i);
+					Xk1 = at(A, k + 1, i);
+					at(A, k, i) = cosine * Xk - sine * Xk1;
+					at(A, k + 1, i) = sine * Xk + cosine * Xk1;
 				}
 				for (i = imin; i <= imax; i++) {
-					Xk = _(A, i, k);
-					Xk1 = _(A, i, k + 1);
-					_(A, i, k) = cosine * Xk - sine * Xk1;
-					_(A, i, k + 1) = sine * Xk + cosine * Xk1;
+					Xk = at(A, i, k);
+					Xk1 = at(A, i, k + 1);
+					at(A, i, k) = cosine * Xk - sine * Xk1;
+					at(A, i, k + 1) = sine * Xk + cosine * Xk1;
 				}
 				if (U) {
 					for (i = 0; i < n; i++) {
-						Xk = _(U, i, k);
-						Xk1 = _(U, i, k + 1);
-						_(U, i, k) = cosine * Xk - sine * Xk1;
-						_(U, i, k + 1) = sine * Xk + cosine * Xk1;
+						Xk = at(U, i, k);
+						Xk1 = at(U, i, k + 1);
+						at(U, i, k) = cosine * Xk - sine * Xk1;
+						at(U, i, k + 1) = sine * Xk + cosine * Xk1;
 					}
 				}
 				if (k < m - 1) {
-					x = _(A, k + 1, k);
-					y = _(A, k + 2, k);
+					x = at(A, k + 1, k);
+					y = at(A, k + 2, k);
 				}
 			}
 			for (k = q; k < m; k++) {
-				if (fabsf(_(A, k + 1, k)) <=
-					tol * (fabsf(_(A, k, k)) + fabsf(_(A, k + 1, k + 1)))) {
-					_(A, k + 1, k) = 0;
+				if (fabsf(at(A, k + 1, k)) <=
+					tol * (fabsf(at(A, k, k)) + fabsf(at(A, k + 1, k + 1)))) {
+					at(A, k + 1, k) = 0;
 				}
 			}
 			sweep++;
@@ -929,7 +929,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 	const int sweepmax = DETEGO_SCHUR_SWEEPMAX;
 	const int ahsc = DETEGO_SCHUR_AD_HOC_SHIFT_COUNT;
 	const float tol = DETEGO_SCHUR_TOL;
-	const float eps = EPS(1);
+	const float eps1 = eps(1);
 	float r, s, t, x, y, z, alpha, beta, v[3] = { 1, 0, 0 };
 	float sine, cosine, Xk, Xk1;
 
@@ -937,44 +937,44 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 		return -1;
 	}
 	while (m > 1 && sweep < sweepmax) {
-		while (m > 1 && (_(A, m, m - 1) == 0 || _(A, m - 1, m - 2) == 0)) {
-			if (_(A, m, m - 1) == 0) {
+		while (m > 1 && (at(A, m, m - 1) == 0 || at(A, m - 1, m - 2) == 0)) {
+			if (at(A, m, m - 1) == 0) {
 				m--;
 			}
-			else if (_(A, m - 1, m - 2) == 0) {
+			else if (at(A, m - 1, m - 2) == 0) {
 				m -= 2;
 			}
 		}
 		if (m > 0) {
 			q = m - 1;
-			while (q > 0 && _(A, q, q - 1) != 0) {
+			while (q > 0 && at(A, q, q - 1) != 0) {
 				q--;
 			}
 			ad_hoc_shift = !((sweep + 1) % ahsc);
 			if (m - q > 1) {
 				if (ad_hoc_shift) {
-					x = 0.5f * (_(A, m - 1, m - 1) - _(A, m, m));
-					y = x * x + _(A, m - 1, m) * _(A, m, m - 1);
-					s = t = x = _(A, m, m) + x;
+					x = 0.5f * (at(A, m - 1, m - 1) - at(A, m, m));
+					y = x * x + at(A, m - 1, m) * at(A, m, m - 1);
+					s = t = x = at(A, m, m) + x;
 					if (y > 0) {
 						z = sqrtf(y);
 						s -= z;
 						t += z;
-						x = fabsf(s - _(A, m, m)) < fabsf(t - _(A, m, m)) ? s : t;
+						x = fabsf(s - at(A, m, m)) < fabsf(t - at(A, m, m)) ? s : t;
 					}
 					if (x == 0) {
-						x = eps;
+						x = eps1;
 					}
 					s = x + x;
 					t = x * x;
 				}
 				else {
-					s = _(A, m - 1, m - 1) + _(A, m, m);
-					t = _(A, m - 1, m - 1) * _(A, m, m) - _(A, m - 1, m) * _(A, m, m - 1);
+					s = at(A, m - 1, m - 1) + at(A, m, m);
+					t = at(A, m - 1, m - 1) * at(A, m, m) - at(A, m - 1, m) * at(A, m, m - 1);
 				}
-				x = _(A, q, q) * _(A, q, q) + _(A, q, q + 1) * _(A, q + 1, q) - s * _(A, q, q) + t;
-				y = _(A, q + 1, q) * (_(A, q, q) + _(A, q + 1, q + 1) - s);
-				z = _(A, q + 1, q) * _(A, q + 2, q + 1);
+				x = at(A, q, q) * at(A, q, q) + at(A, q, q + 1) * at(A, q + 1, q) - s * at(A, q, q) + t;
+				y = at(A, q + 1, q) * (at(A, q, q) + at(A, q + 1, q + 1) - s);
+				z = at(A, q + 1, q) * at(A, q + 2, q + 1);
 				for (k = q - 1; k <= m - 3; k++) {
 					t = hypotf(x, y);
 					alpha = hypotf(t, z);
@@ -988,10 +988,10 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 					if (U) {
 						apply_householder_right(U, v, beta, 0, n - 1, k + 1, k + 3, 1);
 					}
-					x = _(A, k + 2, k + 1);
-					y = _(A, k + 3, k + 1);
+					x = at(A, k + 2, k + 1);
+					y = at(A, k + 3, k + 1);
 					if (k < m - 3) {
-						z = _(A, k + 4, k + 1);
+						z = at(A, k + 4, k + 1);
 					}
 				}
 				alpha = hypotf(x, y);
@@ -1006,9 +1006,9 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 				}
 			}
 			for (k = q; k < m; k++) {
-				if (fabsf(_(A, k + 1, k)) <=
-					tol * (fabsf(_(A, k, k)) + fabsf(_(A, k + 1, k + 1)))) {
-					_(A, k + 1, k) = 0;
+				if (fabsf(at(A, k + 1, k)) <=
+					tol * (fabsf(at(A, k, k)) + fabsf(at(A, k + 1, k + 1)))) {
+					at(A, k + 1, k) = 0;
 				}
 			}
 			sweep++;
@@ -1018,52 +1018,52 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 	// and transform the blocks with complex eigenvalues so that the real part
 	// of the eigenvalues appears on the main diagonal. 
 	for (k = 0; k < n - 1; k++) {
-		if (_(A, k + 1, k) != 0) {
+		if (at(A, k + 1, k) != 0) {
 			sine = 0;
-			x = 0.5f * (_(A, k, k) - _(A, k + 1, k + 1));
-			y = x * x + _(A, k + 1, k) * _(A, k, k + 1);
+			x = 0.5f * (at(A, k, k) - at(A, k + 1, k + 1));
+			y = x * x + at(A, k + 1, k) * at(A, k, k + 1);
 			if (y >= 0) { // real eigenvalues
-				r = _(A, k, k + 1);
-				s = _(A, k, k) - _(A, k + 1, k + 1) - x + sqrtf(y);
+				r = at(A, k, k + 1);
+				s = at(A, k, k) - at(A, k + 1, k + 1) - x + sqrtf(y);
 				t = hypotf(r, s);
 				cosine = r / t;
 				sine = s / t;
 			}
-			else if (_(A, k, k) != _(A, k + 1, k + 1)) {
-				r = (_(A, k + 1, k) + _(A, k, k + 1)) /
-					(_(A, k + 1, k + 1) - _(A, k, k));
+			else if (at(A, k, k) != at(A, k + 1, k + 1)) {
+				r = (at(A, k + 1, k) + at(A, k, k + 1)) /
+					(at(A, k + 1, k + 1) - at(A, k, k));
 				t = r - sqrtf(r * r + 1);
 				cosine = 1.0f / sqrtf(t * t + 1);
 				sine = cosine * t;
 			}
 			if (sine != 0) {
 				for (i = 0; i <= k + 1; i++) {
-					Xk = _(A, i, k);
-					Xk1 = _(A, i, k + 1);
-					_(A, i, k) = Xk * cosine - Xk1 * sine;
-					_(A, i, k + 1) = Xk * sine + Xk1 * cosine;
+					Xk = at(A, i, k);
+					Xk1 = at(A, i, k + 1);
+					at(A, i, k) = Xk * cosine - Xk1 * sine;
+					at(A, i, k + 1) = Xk * sine + Xk1 * cosine;
 				}
 				for (j = k; j < n; j++) {
-					Xk = _(A, k, j);
-					Xk1 = _(A, k + 1, j);
-					_(A, k, j) = Xk * cosine - Xk1 * sine;
-					_(A, k + 1, j) = Xk * sine + Xk1 * cosine;
+					Xk = at(A, k, j);
+					Xk1 = at(A, k + 1, j);
+					at(A, k, j) = Xk * cosine - Xk1 * sine;
+					at(A, k + 1, j) = Xk * sine + Xk1 * cosine;
 				}
 				if (U) {
 					for (i = 0; i < n; i++) {
-						Xk = _(U, i, k);
-						Xk1 = _(U, i, k + 1);
-						_(U, i, k) = Xk * cosine - Xk1 * sine;
-						_(U, i, k + 1) = Xk * sine + Xk1 * cosine;
+						Xk = at(U, i, k);
+						Xk1 = at(U, i, k + 1);
+						at(U, i, k) = Xk * cosine - Xk1 * sine;
+						at(U, i, k + 1) = Xk * sine + Xk1 * cosine;
 					}
 				}
 			}
 			if (y >= 0) {
-				_(A, k + 1, k) = 0;
+				at(A, k + 1, k) = 0;
 			}
 		}
 		for (i = k + 2; i < n; i++) {
-			_(A, i, k) = 0;
+			at(A, i, k) = 0;
 		}
 	}
 	return sweep;
@@ -1095,43 +1095,43 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 	}
 	k = 0;
 	while (k < n) {
-		if (k == n - 1 || _(T, k + 1, k) == 0) { // real eigenvalue
-			lamre = _(T, k, k) + EPS(_(T, k, k));
+		if (k == n - 1 || at(T, k + 1, k) == 0) { // real eigenvalue
+			lamre = at(T, k, k) + eps(at(T, k, k));
 			if (V && k > 0) { // right eigenvector
 				C.size[0] = C.size[1] = k;
-				matrixf_init(&d, k, 1, &_(V, 0, k), 0);
+				matrixf_init(&d, k, 1, &at(V, 0, k), 0);
 				for (j = 0; j < k; j++) {
 					for (i = 0; i < k; i++) {
-						_(&C, i, j) = _(T, i, j);
+						at(&C, i, j) = at(T, i, j);
 					}
-					_(&C, j, j) -= lamre;
-					_(&d, j, 0) = -_(T, j, k);
+					at(&C, j, j) -= lamre;
+					at(&d, j, 0) = -at(T, j, k);
 				}
 				if (matrixf_solve_lu(&C, &d)) {
 					return 1;
 				}
-				norm = get_norm2(&_(V, 0, k), n, 1);
+				norm = get_norm2(&at(V, 0, k), n, 1);
 				for (j = 0; j < n; j++) {
-					_(V, j, k) /= norm;
+					at(V, j, k) /= norm;
 				}
 			}
 			if (W && k < n - 1) { // left eigenvector
 				h = n - 1 - k;
 				C.size[0] = C.size[1] = h;
-				matrixf_init(&d, h, 1, &_(W, k + 1, k), 0);
+				matrixf_init(&d, h, 1, &at(W, k + 1, k), 0);
 				for (j = 0; j < h; j++) {
 					for (i = 0; i < h; i++) {
-						_(&C, j, i) = _(T, k + 1 + i, k + 1 + j);
+						at(&C, j, i) = at(T, k + 1 + i, k + 1 + j);
 					}
-					_(&C, j, j) -= lamre;
-					_(&d, j, 0) = -_(T, k, k + 1 + j);
+					at(&C, j, j) -= lamre;
+					at(&d, j, 0) = -at(T, k, k + 1 + j);
 				}
 				if (matrixf_solve_lu(&C, &d)) {
 					return 1;
 				}
-				norm = get_norm2(&_(W, 0, k), n, 1);
+				norm = get_norm2(&at(W, 0, k), n, 1);
 				for (j = 0; j < n; j++) {
-					_(W, j, k) /= norm;
+					at(W, j, k) /= norm;
 				}
 			}
 			k += 1;
@@ -1139,78 +1139,78 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 		else { // complex conjugate pair of eigenvalues
 			// It is assumed that the 2-by-2 blocks have been transformed so 
 			// that the real part of the eigenvalues appears on the diagonal
-			lamre = _(T, k, k);
-			lamim = sqrtf(-_(T, k + 1, k) * _(T, k, k + 1));
+			lamre = at(T, k, k);
+			lamim = sqrtf(-at(T, k + 1, k) * at(T, k, k + 1));
 			if (pseudo) { // pseudo-eigenvectors
-				g = _(T, k + 1, k) / lamim;
+				g = at(T, k + 1, k) / lamim;
 				if (V) { // right eigenvectors
 					if (k > 0) {
 						C.size[0] = C.size[1] = 2 * k;
-						matrixf_init(&d, 2 * k, 1, &_(V, 0, k), 0);
+						matrixf_init(&d, 2 * k, 1, &at(V, 0, k), 0);
 						for (j = 0; j < k; j++) {
 							for (i = 0; i < k; i++) {
-								_(&C, i, j) = _(&C, k + i, k + j) = _(T, i, j);
-								_(&C, i, k + j) = _(&C, k + i, j) = 0;
+								at(&C, i, j) = at(&C, k + i, k + j) = at(T, i, j);
+								at(&C, i, k + j) = at(&C, k + i, j) = 0;
 							}
-							_(&C, j, j) -= _(T, k, k);
-							_(&C, k + j, k + j) -= _(T, k + 1, k + 1);
-							_(&C, j, k + j) = +lamim;
-							_(&C, k + j, j) = -lamim;
-							_(&d, j, 0) = -_(T, j, k) - _(T, k + 1, k) * _(T, j, k + 1);
-							_(&d, k + j, 0) = -lamim * _(T, j, k) + g * _(T, j, k + 1);
+							at(&C, j, j) -= at(T, k, k);
+							at(&C, k + j, k + j) -= at(T, k + 1, k + 1);
+							at(&C, j, k + j) = +lamim;
+							at(&C, k + j, j) = -lamim;
+							at(&d, j, 0) = -at(T, j, k) - at(T, k + 1, k) * at(T, j, k + 1);
+							at(&d, k + j, 0) = -lamim * at(T, j, k) + g * at(T, j, k + 1);
 						}
 						if (matrixf_solve_lu(&C, &d)) {
 							return 1;
 						}
 						for (j = k - 1; j >= 0; j--) {
-							_(V, j, k + 1) = d.data[k + j];
+							at(V, j, k + 1) = d.data[k + j];
 							d.data[k + j] = 0;
 						}
 					}
-					_(V, k, k) = 1;
-					_(V, k + 1, k) = _(T, k + 1, k);
-					_(V, k, k + 1) = lamim;
-					_(V, k + 1, k + 1) = -g;
-					norm = get_norm2(&_(V, 0, k), 2 * n, 1);
+					at(V, k, k) = 1;
+					at(V, k + 1, k) = at(T, k + 1, k);
+					at(V, k, k + 1) = lamim;
+					at(V, k + 1, k + 1) = -g;
+					norm = get_norm2(&at(V, 0, k), 2 * n, 1);
 					for (j = 0; j < n; j++) {
-						_(V, j, k) /= norm;
-						_(V, j, k + 1) /= norm;
+						at(V, j, k) /= norm;
+						at(V, j, k + 1) /= norm;
 					}
 				}
 				if (W) { // left eigenvectors
 					if (k < n - 2) {
 						h = n - 2 - k;
 						C.size[0] = C.size[1] = 2 * h;
-						matrixf_init(&d, 2 * h, 1, &_(W, k + 2, k), 0);
+						matrixf_init(&d, 2 * h, 1, &at(W, k + 2, k), 0);
 						for (j = 0; j < h; j++) {
 							for (i = 0; i < h; i++) {
-								_(&C, j, i) = _(&C, h + j, h + i) =
-									_(T, k + 2 + i, k + 2 + j);
-								_(&C, i, h + j) = _(&C, h + i, j) = 0;
+								at(&C, j, i) = at(&C, h + j, h + i) =
+									at(T, k + 2 + i, k + 2 + j);
+								at(&C, i, h + j) = at(&C, h + i, j) = 0;
 							}
-							_(&C, j, j) -= _(T, k, k);
-							_(&C, h + j, h + j) -= _(T, k + 1, k + 1);
-							_(&C, h + j, j) = +lamim;
-							_(&C, j, h + j) = -lamim;
-							_(&d, j, 0) = g * _(T, k, k + 2 + j) - lamim * _(T, k + 1, k + 2 + j);
-							_(&d, h + j, 0) = -_(T, k + 1, k) * _(T, k, k + 2 + j) - _(T, k + 1, k + 2 + j);
+							at(&C, j, j) -= at(T, k, k);
+							at(&C, h + j, h + j) -= at(T, k + 1, k + 1);
+							at(&C, h + j, j) = +lamim;
+							at(&C, j, h + j) = -lamim;
+							at(&d, j, 0) = g * at(T, k, k + 2 + j) - lamim * at(T, k + 1, k + 2 + j);
+							at(&d, h + j, 0) = -at(T, k + 1, k) * at(T, k, k + 2 + j) - at(T, k + 1, k + 2 + j);
 						}
 						if (matrixf_solve_lu(&C, &d)) {
 							return 1;
 						}
 						for (j = h - 1; j >= 0; j--) {
-							_(W, k + 2 + j, k + 1) = _(W, j, k + 1);
-							_(W, j, k + 1) = 0;
+							at(W, k + 2 + j, k + 1) = at(W, j, k + 1);
+							at(W, j, k + 1) = 0;
 						}
 					}
-					_(W, k, k) = -g;
-					_(W, k + 1, k) = lamim;
-					_(W, k, k + 1) = _(T, k + 1, k);
-					_(W, k + 1, k + 1) = 1;
-					norm = get_norm2(&_(W, 0, k), 2 * n, 1);
+					at(W, k, k) = -g;
+					at(W, k + 1, k) = lamim;
+					at(W, k, k + 1) = at(T, k + 1, k);
+					at(W, k + 1, k + 1) = 1;
+					norm = get_norm2(&at(W, 0, k), 2 * n, 1);
 					for (j = 0; j < n; j++) {
-						_(W, j, k) /= norm;
-						_(W, j, k + 1) /= norm;
+						at(W, j, k) /= norm;
+						at(W, j, k + 1) /= norm;
 					}
 				}
 			}
@@ -1218,67 +1218,67 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 				if (V) { // right eigenvectors
 					if (k > 0) {
 						C.size[0] = C.size[1] = 2 * k;
-						matrixf_init(&d, 2 * k, 1, &_(V, 0, k), 0);
+						matrixf_init(&d, 2 * k, 1, &at(V, 0, k), 0);
 						for (j = 0; j < k; j++) {
 							for (i = 0; i < k; i++) {
-								_(&C, i, j) = _(&C, k + i, k + j) = _(T, i, j);
-								_(&C, i, k + j) = _(&C, k + i, j) = 0;
+								at(&C, i, j) = at(&C, k + i, k + j) = at(T, i, j);
+								at(&C, i, k + j) = at(&C, k + i, j) = 0;
 							}
-							_(&C, j, j) -= lamre;
-							_(&C, k + j, k + j) -= lamre;
-							_(&C, k + j, j) = -lamim;
-							_(&C, j, k + j) = +lamim;
-							_(&d, j, 0) = -_(T, j, k + 1) * _(T, k + 1, k);
-							_(&d, k + j, 0) = -_(T, j, k) * lamim;
+							at(&C, j, j) -= lamre;
+							at(&C, k + j, k + j) -= lamre;
+							at(&C, k + j, j) = -lamim;
+							at(&C, j, k + j) = +lamim;
+							at(&d, j, 0) = -at(T, j, k + 1) * at(T, k + 1, k);
+							at(&d, k + j, 0) = -at(T, j, k) * lamim;
 						}
 						if (matrixf_solve_lu(&C, &d)) {
 							return 1;
 						}
 						for (j = k - 1; j >= 0; j--) {
-							_(V, j, k + 1) = d.data[k + j];
+							at(V, j, k + 1) = d.data[k + j];
 							d.data[k + j] = 0;
 						}
 					}
-					_(V, k, k) = _(V, k + 1, k + 1) = 0;
-					_(V, k + 1, k) = _(T, k + 1, k);
-					_(V, k, k + 1) = lamim;
-					norm = get_norm2(&_(V, 0, k), 2 * n, 1);
+					at(V, k, k) = at(V, k + 1, k + 1) = 0;
+					at(V, k + 1, k) = at(T, k + 1, k);
+					at(V, k, k + 1) = lamim;
+					norm = get_norm2(&at(V, 0, k), 2 * n, 1);
 					for (j = 0; j < 2 * n; j++) {
-						_(V, j, k) /= norm;
+						at(V, j, k) /= norm;
 					}
 				}
 				if (W) { // left eigenvectors
 					if (k < n - 2) {
 						h = n - 2 - k;
 						C.size[0] = C.size[1] = 2 * h;
-						matrixf_init(&d, 2 * h, 1, &_(W, k + 2, k), 0);
+						matrixf_init(&d, 2 * h, 1, &at(W, k + 2, k), 0);
 						for (j = 0; j < h; j++) {
 							for (i = 0; i < h; i++) {
-								_(&C, j, i) = _(&C, h + j, h + i) =
-									_(T, k + 2 + i, k + 2 + j);
-								_(&C, i, h + j) = _(&C, h + i, j) = 0;
+								at(&C, j, i) = at(&C, h + j, h + i) =
+									at(T, k + 2 + i, k + 2 + j);
+								at(&C, i, h + j) = at(&C, h + i, j) = 0;
 							}
-							_(&C, j, j) -= lamre;
-							_(&C, h + j, h + j) -= lamre;
-							_(&C, h + j, j) = +lamim;
-							_(&C, j, h + j) = -lamim;
-							_(&d, j, 0) = -_(T, k + 1, k + 2 + j) * _(T, k, k + 1);
-							_(&d, h + j, 0) = _(T, k, k + 2 + j) * lamim;
+							at(&C, j, j) -= lamre;
+							at(&C, h + j, h + j) -= lamre;
+							at(&C, h + j, j) = +lamim;
+							at(&C, j, h + j) = -lamim;
+							at(&d, j, 0) = -at(T, k + 1, k + 2 + j) * at(T, k, k + 1);
+							at(&d, h + j, 0) = at(T, k, k + 2 + j) * lamim;
 						}
 						if (matrixf_solve_lu(&C, &d)) {
 							return 1;
 						}
 						for (j = h - 1; j >= 0; j--) {
-							_(W, k + 2 + j, k + 1) = _(W, j, k + 1);
-							_(W, j, k + 1) = 0;
+							at(W, k + 2 + j, k + 1) = at(W, j, k + 1);
+							at(W, j, k + 1) = 0;
 						}
 					}
-					_(W, k, k) = _(W, k + 1, k + 1) = 0;
-					_(W, k + 1, k) = _(T, k, k + 1);
-					_(W, k, k + 1) = -lamim;
-					norm = get_norm2(&_(W, 0, k), 2 * n, 1);
+					at(W, k, k) = at(W, k + 1, k + 1) = 0;
+					at(W, k + 1, k) = at(T, k, k + 1);
+					at(W, k, k + 1) = -lamim;
+					norm = get_norm2(&at(W, 0, k), 2 * n, 1);
 					for (j = 0; j < 2 * n; j++) {
-						_(W, j, k) /= norm;
+						at(W, j, k) /= norm;
 					}
 				}
 			}
@@ -1317,18 +1317,18 @@ int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri)
 	}
 	for (k = 0; k < h; k++) {
 		for (i = 0; i < q; i++) {
-			Bik = _(B, i, k);
+			Bik = at(B, i, k);
 			for (j = 0; j < i; j++) {
-				Bik -= _(L, i, j) * _(X, j, k);
+				Bik -= at(L, i, j) * at(X, j, k);
 			}
 			if (!unitri) {
-				Lii = _(L, i, i);
+				Lii = at(L, i, i);
 				if (Lii == 0) {
 					return 1;
 				}
 				Bik /= Lii;
 			}
-			_(X, i, k) = Bik;
+			at(X, i, k) = Bik;
 		}
 	}
 	return 0;
@@ -1350,18 +1350,18 @@ int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri)
 	}
 	for (k = 0; k < h; k++) {
 		for (i = q - 1; i >= 0; i--) {
-			Bik = _(B, i, k);
+			Bik = at(B, i, k);
 			for (j = i + 1; j < q; j++) {
-				Bik -= _(U, i, j) * _(X, j, k);
+				Bik -= at(U, i, j) * at(X, j, k);
 			}
 			if (!unitri) {
-				Uii = _(U, i, i);
+				Uii = at(U, i, i);
 				if (Uii == 0) {
 					return 1;
 				}
 				Bik /= Uii;
 			}
-			_(X, i, k) = Bik;
+			at(X, i, k) = Bik;
 		}
 	}
 	return 0;
@@ -1380,45 +1380,45 @@ int matrixf_solve_tridiag(Matrixf* T, Matrixf* B)
 	matrixf_transpose(B);
 	for (j = 0; j < n - 1; j++) {
 		if (j + 2 < n) {
-			_(T, j, j + 2) = 0;
+			at(T, j, j + 2) = 0;
 		}
-		if (fabsf(_(T, j, j)) < fabsf(_(T, j + 1, j))) {
-			t = _(T, j, j);
-			_(T, j, j) = _(T, j + 1, j);
-			_(T, j + 1, j) = t;
-			t = _(T, j, j + 1);
-			_(T, j, j + 1) = _(T, j + 1, j + 1);
-			_(T, j + 1, j + 1) = t;
+		if (fabsf(at(T, j, j)) < fabsf(at(T, j + 1, j))) {
+			t = at(T, j, j);
+			at(T, j, j) = at(T, j + 1, j);
+			at(T, j + 1, j) = t;
+			t = at(T, j, j + 1);
+			at(T, j, j + 1) = at(T, j + 1, j + 1);
+			at(T, j + 1, j + 1) = t;
 			if (j + 2 < n) {
-				t = _(T, j, j + 2);
-				_(T, j, j + 2) = _(T, j + 1, j + 2);
-				_(T, j + 1, j + 2) = t;
+				t = at(T, j, j + 2);
+				at(T, j, j + 2) = at(T, j + 1, j + 2);
+				at(T, j + 1, j + 2) = t;
 			}
 			swap_columns(B, j, j + 1);
 		}
-		if (_(T, j, j)) {
-			tau = _(T, j + 1, j) / _(T, j, j);
-			_(T, j + 1, j + 1) -= tau * _(T, j, j + 1);
+		if (at(T, j, j)) {
+			tau = at(T, j + 1, j) / at(T, j, j);
+			at(T, j + 1, j + 1) -= tau * at(T, j, j + 1);
 			if (j + 2 < n) {
-				_(T, j + 1, j + 2) -= tau * _(T, j, j + 2);
+				at(T, j + 1, j + 2) -= tau * at(T, j, j + 2);
 			}
 			for (i = 0; i < p; i++) {
-				_(B, i, j + 1) -= tau * _(B, i, j);
+				at(B, i, j + 1) -= tau * at(B, i, j);
 			}
 		}
 	}
 	for (i = n - 1; i >= 0; i--) {
 		for (k = 0; k < p; k++) {
 			if (i < n - 1) {
-				_(B, k, i) -= _(T, i, i + 1) * _(B, k, i + 1);
+				at(B, k, i) -= at(T, i, i + 1) * at(B, k, i + 1);
 			}
 			if (i < n - 2) {
-				_(B, k, i) -= _(T, i, i + 2) * _(B, k, i + 2);
+				at(B, k, i) -= at(T, i, i + 2) * at(B, k, i + 2);
 			}
-			if (_(T, i, i) == 0) {
+			if (at(T, i, i) == 0) {
 				return 1;
 			}
-			_(B, k, i) /= _(T, i, i);
+			at(B, k, i) /= at(T, i, i);
 		}
 	}
 	matrixf_transpose(B);
@@ -1441,18 +1441,18 @@ int matrixf_solve_spd(Matrixf* A, Matrixf* B)
 	}
 	for (k = 0; k < p; k++) {
 		for (i = 0; i < n; i++) {
-			Bik = _(B, i, k);
+			Bik = at(B, i, k);
 			for (j = 0; j < i; j++) {
-				Bik -= _(A, j, i) * _(B, j, k);
+				Bik -= at(A, j, i) * at(B, j, k);
 			}
-			_(B, i, k) = Bik / _(A, i, i);
+			at(B, i, k) = Bik / at(A, i, i);
 		}
 		for (i = n - 1; i >= 0; i--) {
-			Bik = _(B, i, k);
+			Bik = at(B, i, k);
 			for (j = i + 1; j < n; j++) {
-				Bik -= _(A, i, j) * _(B, j, k);
+				Bik -= at(A, i, j) * at(B, j, k);
 			}
-			_(B, i, k) = Bik / _(A, i, i);
+			at(B, i, k) = Bik / at(A, i, i);
 		}
 	}
 	return 0;
@@ -1478,57 +1478,57 @@ int matrixf_solve_symm(Matrixf* A, Matrixf* B)
 	for (i = 1; i < n; i++) {
 		for (j = 1; j < i; j++) {
 			for (k = 0; k < p; k++) {
-				_(B, k, i) -= _(A, i, j) * _(B, k, j);
+				at(B, k, i) -= at(A, i, j) * at(B, k, j);
 			}
 		}
 	}
 	for (j = 0; j < n - 1; j++) {
-		beta = _(A, j - s, j + 1);
+		beta = at(A, j - s, j + 1);
 		s = 0;
-		if (fabsf(_(A, j, j)) < fabsf(beta)) {
+		if (fabsf(at(A, j, j)) < fabsf(beta)) {
 			s = 1;
-			t = _(A, j, j + 1);
-			_(A, j, j + 1) = _(A, j + 1, j + 1);
-			_(A, j + 1, j + 1) = t;
+			t = at(A, j, j + 1);
+			at(A, j, j + 1) = at(A, j + 1, j + 1);
+			at(A, j + 1, j + 1) = t;
 			if (j + 2 < n) {
-				t = _(A, j, j + 2);
-				_(A, j, j + 2) = _(A, j + 1, j + 2);
-				_(A, j + 1, j + 2) = t;
+				t = at(A, j, j + 2);
+				at(A, j, j + 2) = at(A, j + 1, j + 2);
+				at(A, j + 1, j + 2) = t;
 			}
-			t = _(A, j, j);
-			_(A, j, j) = beta;
+			t = at(A, j, j);
+			at(A, j, j) = beta;
 			beta = t;
 			swap_columns(B, j, j + 1);
 		}
-		if (_(A, j, j)) {
-			tau = beta / _(A, j, j);
-			_(A, j + 1, j + 1) -= tau * _(A, j, j + 1);
+		if (at(A, j, j)) {
+			tau = beta / at(A, j, j);
+			at(A, j + 1, j + 1) -= tau * at(A, j, j + 1);
 			if (j + 2 < n) {
-				_(A, j + 1, j + 2) -= tau * _(A, j, j + 2);
+				at(A, j + 1, j + 2) -= tau * at(A, j, j + 2);
 			}
 			for (i = 0; i < p; i++) {
-				_(B, i, j + 1) -= tau * _(B, i, j);
+				at(B, i, j + 1) -= tau * at(B, i, j);
 			}
 		}
 	}
 	for (i = n - 1; i >= 0; i--) {
 		for (k = 0; k < p; k++) {
 			if (i < n - 1) {
-				_(B, k, i) -= _(A, i, i + 1) * _(B, k, i + 1);
+				at(B, k, i) -= at(A, i, i + 1) * at(B, k, i + 1);
 			}
 			if (i < n - 2) {
-				_(B, k, i) -= _(A, i, i + 2) * _(B, k, i + 2);
+				at(B, k, i) -= at(A, i, i + 2) * at(B, k, i + 2);
 			}
-			if (_(A, i, i) == 0) {
+			if (at(A, i, i) == 0) {
 				return 1;
 			}
-			_(B, k, i) /= _(A, i, i);
+			at(B, k, i) /= at(A, i, i);
 		}
 	}
 	for (i = n - 1; i > 0; i--) {
 		for (j = i + 1; j < n; j++) {
 			for (k = 0; k < p; k++) {
-				_(B, k, i) -= _(A, j, i) * _(B, k, j);
+				at(B, k, i) -= at(A, j, i) * at(B, k, j);
 			}
 		}
 	}
@@ -1557,22 +1557,22 @@ int matrixf_solve_lu(Matrixf* A, Matrixf* B)
 	}
 	for (k = 0; k < p; k++) {
 		for (i = 1; i < n; i++) {
-			Bik = _(B, i, k);
+			Bik = at(B, i, k);
 			for (j = 0; j < i; j++) {
-				Bik -= _(A, i, j) * _(B, j, k);
+				Bik -= at(A, i, j) * at(B, j, k);
 			}
-			_(B, i, k) = Bik;
+			at(B, i, k) = Bik;
 		}
 		for (i = n - 1; i >= 0; i--) {
-			Bik = _(B, i, k);
+			Bik = at(B, i, k);
 			for (j = i + 1; j < n; j++) {
-				Bik -= _(A, i, j) * _(B, j, k);
+				Bik -= at(A, i, j) * at(B, j, k);
 			}
-			Aii = _(A, i, i);
+			Aii = at(A, i, i);
 			if (Aii == 0) {
 				return 1;
 			}
-			_(B, i, k) = Bik / Aii;
+			at(B, i, k) = Bik / Aii;
 		}
 	}
 	return 0;
@@ -1593,19 +1593,19 @@ int matrixf_solve_lsq(Matrixf* A, Matrixf* B)
 	matrixf_decomp_qr(A, 0, 0, B);
 	for (k = 0; k < p; k++) {
 		for (i = n - 1; i >= 0; i--) {
-			Bik = _(B, i, k);
+			Bik = at(B, i, k);
 			for (j = i + 1; j < n; j++) {
-				Bik -= _(A, i, j) * _(B, j, k);
+				Bik -= at(A, i, j) * at(B, j, k);
 			}
-			Aii = _(A, i, i);
+			Aii = at(A, i, i);
 			if (Aii == 0) {
 				return 1;
 			}
-			_(B, i, k) = Bik / Aii;
+			at(B, i, k) = Bik / Aii;
 		}
 		if (m != n && k > 0) {
 			for (i = 0; i < n; i++) {
-				_(&X, i, k) = _(B, i, k);
+				at(&X, i, k) = at(B, i, k);
 			}
 		}
 	}
@@ -1627,35 +1627,35 @@ int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X, float tol)
 		return -1;
 	}
 	t = X->data[p - 1];
-	s = _(A, p - 1, p - 1);
+	s = at(A, p - 1, p - 1);
 	for (j = 0; j < n; j++) {
-		_(A, m - 1, j) = X->data[j];
+		at(A, m - 1, j) = X->data[j];
 	}
-	_(A, p - 1, p - 1) = s;
+	at(A, p - 1, p - 1) = s;
 	if (tol < 0) {
-		tol = (m > n ? m : n) * EPS(_(A, 0, 0));
+		tol = (m > n ? m : n) * eps(at(A, 0, 0));
 	}
 	j = 0;
-	while (j < p && fabsf(_(A, j, j)) > tol) {
+	while (j < p && fabsf(at(A, j, j)) > tol) {
 		j++;
 	}
 	rank = j;
 	for (k = 0; k < h; k++) {
 		for (i = n - 1; i >= 0; i--) {
 			if (i < rank) {
-				Bik = _(B, i, k);
+				Bik = at(B, i, k);
 				for (j = i + 1; j < rank; j++) {
-					Bik -= _(A, i, j) * _(X, j, k);
+					Bik -= at(A, i, j) * at(X, j, k);
 				}
-				_(X, i, k) = Bik / _(A, i, i);
+				at(X, i, k) = Bik / at(A, i, i);
 			}
 			else {
-				_(X, i, k) = 0;
+				at(X, i, k) = 0;
 			}
 		}
 	}
 	for (j = 0; j < n; j++) {
-		A->data[j] = _(A, m - 1, j);
+		A->data[j] = at(A, m - 1, j);
 	}
 	A->data[p - 1] = t;
 	perm.data = A->data;
@@ -1681,12 +1681,12 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 	}
 	matrixf_decomp_qr(A, 0, &perm, B);
 	if (tol < 0) {
-		tol = q * EPS(_(A, 0, 0));
+		tol = q * eps(at(A, 0, 0));
 	}
 	j = 0;
-	while (j < p && fabsf(_(A, j, j)) > tol) {
+	while (j < p && fabsf(at(A, j, j)) > tol) {
 		for (i = j + 1; i < m; i++) {
-			_(A, i, j) = 0;
+			at(A, i, j) = 0;
 		}
 		j++;
 	}
@@ -1697,14 +1697,14 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 	for (k = 0; k < h; k++) {
 		for (i = 0; i < n; i++) {
 			if (i < rank) {
-				Bik = _(B, i, k);
+				Bik = at(B, i, k);
 				for (j = 0; j < i; j++) {
-					Bik -= _(A, j, i) * _(X, j, k);
+					Bik -= at(A, j, i) * at(X, j, k);
 				}
-				_(X, i, k) = Bik / _(A, i, i);
+				at(X, i, k) = Bik / at(A, i, i);
 			}
 			else {
-				_(X, i, k) = 0;
+				at(X, i, k) = 0;
 			}
 		}
 	}
@@ -1731,30 +1731,30 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work)
 	}
 	sweep = matrixf_decomp_svd_jacobi(A, 0, &V);
 	if (tol < 0) {
-		tol = q * EPS(get_norm2(&_(A, 0, 0), q, 1));
+		tol = q * eps(get_norm2(&at(A, 0, 0), q, 1));
 	}
 	for (j = 0; j < p; j++) {
-		sj = get_norm2(&_(A, 0, j), q, 1);
+		sj = get_norm2(&at(A, 0, j), q, 1);
 		if (sj > 0) {
 			rj = sj > tol ? 1.0f / sj : 0.0f;
 			for (i = 0; i < q; i++) {
-				_(A, i, j) /= sj;
+				at(A, i, j) /= sj;
 			}
 			for (i = 0; i < n; i++) {
-				_(X, i, j) *= rj;
+				at(X, i, j) *= rj;
 			}
 		}
 	}
 	matrixf_transpose(A);
 	for (j = 0; j < q; j++) {
 		for (i = 0; i < p; i++) {
-			work[i] = _(A, i, j);
+			work[i] = at(A, i, j);
 		}
 		for (i = 0; i < p; i++) {
 			for (Aij = 0, k = 0; k < p; k++) {
-				Aij += work[k] * _(&V, i, k);
+				Aij += work[k] * at(&V, i, k);
 			}
-			_(A, i, j) = Aij;
+			at(A, i, j) = Aij;
 		}
 	}
 	if (m < n) {
@@ -1778,7 +1778,7 @@ int matrixf_exp(Matrixf* A, float* work)
 	}
 	for (p = 0, i = 0; i < n; i++) {
 		for (t = 0, j = 0; j < n; j++) {
-			t += fabsf(_(A, i, j));
+			t += fabsf(at(A, i, j));
 		}
 		if (t > p) {
 			p = t;
@@ -1797,13 +1797,13 @@ int matrixf_exp(Matrixf* A, float* work)
 		c *= (float)(q - k + 1) / ((2 * q - k + 1) * k);
 		for (j = 0; j < n; j++) {
 			for (i = 0; i < n; i++) {
-				work[i] = _(&X, i, j);
+				work[i] = at(&X, i, j);
 			}
 			for (i = 0; i < n; i++) {
 				for (Xij = 0, r = 0; r < n; r++) {
-					Xij += work[r] * _(A, i, r);
+					Xij += work[r] * at(A, i, r);
 				}
-				_(&X, i, j) = Xij;
+				at(&X, i, j) = Xij;
 			}
 		}
 		for (i = 0; i < n * n; i++) {
@@ -1893,11 +1893,11 @@ int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 			}
 			for (j = 0; j < n; j++) {
 				for (i = 0; i < m; i++) {
-					c = _(C, i, j);
+					c = at(C, i, j);
 					for (k = 0; k < p; k++) {
-						c += alpha * _(A, k, i) * _(B, j, k);
+						c += alpha * at(A, k, i) * at(B, j, k);
 					}
-					_(C, i, j) = c;
+					at(C, i, j) = c;
 				}
 			}
 		}
@@ -1907,11 +1907,11 @@ int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 			}
 			for (j = 0; j < n; j++) {
 				for (i = 0; i < m; i++) {
-					c = _(C, i, j);
+					c = at(C, i, j);
 					for (k = 0; k < p; k++) {
-						c += alpha * _(A, k, i) * _(B, k, j);
+						c += alpha * at(A, k, i) * at(B, k, j);
 					}
-					_(C, i, j) = c;
+					at(C, i, j) = c;
 				}
 			}
 		}
@@ -1923,9 +1923,9 @@ int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 			}
 			for (k = 0; k < p; k++) {
 				for (j = 0; j < n; j++) {
-					b = _(B, j, k);
+					b = at(B, j, k);
 					for (i = 0; i < m; i++) {
-						_(C, i, j) += alpha * _(A, i, k) * b;
+						at(C, i, j) += alpha * at(A, i, k) * b;
 					}
 				}
 			}
@@ -1936,9 +1936,9 @@ int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 			}
 			for (j = 0; j < n; j++) {
 				for (k = 0; k < p; k++) {
-					b = _(B, k, j);
+					b = at(B, k, j);
 					for (i = 0; i < m; i++) {
-						_(C, i, j) += alpha * _(A, i, k) * b;
+						at(C, i, j) += alpha * at(A, i, k) * b;
 					}
 				}
 			}

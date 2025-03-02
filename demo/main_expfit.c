@@ -21,8 +21,8 @@ int main()
 
 	for (i = 0; i < M; i++)
 	{
-		_(&E, i, 0) = 1;
-		_(&E, i, 1) = expf(-t[i]);
+		at(&E, i, 0) = 1;
+		at(&E, i, 1) = expf(-t[i]);
 	}
 		
 	matrixf_solve_lsq(&E, &Y);

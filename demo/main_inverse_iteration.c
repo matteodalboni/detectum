@@ -13,13 +13,13 @@ static int inverse_iteration(Matrixf* A, Matrixf* v,
 
 	for (j = 0; j < n; j++) {
 		for (i = 0; i < n; i++) {
-			_(&C, i, j) = _(&C, i + n, j + n) = _(A, i, j);
-			_(&C, i + n, j) = _(&C, i, j + n) = 0;
+			at(&C, i, j) = at(&C, i + n, j + n) = at(A, i, j);
+			at(&C, i + n, j) = at(&C, i, j + n) = 0;
 		}
-		_(&C, j, j) -= eigval_re;
-		_(&C, j + n, j + n) -= eigval_re;
-		_(&C, j + n, j) = -eigval_im;
-		_(&C, j, j + n) = +eigval_im;
+		at(&C, j, j) -= eigval_re;
+		at(&C, j + n, j + n) -= eigval_re;
+		at(&C, j + n, j) = -eigval_im;
+		at(&C, j, j + n) = +eigval_im;
 		p.data[j] = (float)j;
 		p.data[j + n] = (float)(j + n);
 	}
@@ -68,12 +68,12 @@ int main()
 	for (k = 0; k < n; k++) {
 		x.size[0] = 2 * n; x.size[1] = 1;
 		for (i = 0; i < 2 * n; i++) x.data[i] = (float)(i < n);
-		eigval_re = _(&T, k, k);
+		eigval_re = at(&T, k, k);
 		eigval_im = 0;
-		if (k > 0 && _(&T, k, k - 1) != 0)
-			eigval_im = -sqrtf(-_(&T, k - 1, k) * _(&T, k, k - 1));
-		if (k < n - 1 && _(&T, k + 1, k) != 0)
-			eigval_im = +sqrtf(-_(&T, k + 1, k) * _(&T, k, k + 1));
+		if (k > 0 && at(&T, k, k - 1) != 0)
+			eigval_im = -sqrtf(-at(&T, k - 1, k) * at(&T, k, k - 1));
+		if (k < n - 1 && at(&T, k + 1, k) != 0)
+			eigval_im = +sqrtf(-at(&T, k + 1, k) * at(&T, k, k + 1));
 		inverse_iteration(&H, &x, eigval_re, eigval_im, work, 2);
 		x.size[0] = n; x.size[1] = 2;
 		matrixf_multiply(&P, &x, &v, 1, 0, 0, 0);

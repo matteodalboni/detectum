@@ -107,9 +107,9 @@ int main()
 	copy_matrix(&W, &U);
 	matrixf_multiply(&W, &P, &U, 1, 0, 0, 0);
 	for (j = 0; j < (m < n ? m : n); j++) {
-		s = _(&A, j, j) < 0 ? -1.0f : 1.0f;
-		for (i = 0; i < n; i++) _(&V, i, j) *= s;
-		for (i = 0; i < m; i++) _(&A, i, j) *= s;
+		s = at(&A, j, j) < 0 ? -1.0f : 1.0f;
+		for (i = 0; i < n; i++) at(&V, i, j) *= s;
+		for (i = 0; i < m; i++) at(&A, i, j) *= s;
 	}
 #elif (ALGO == 1)
 	matrixf_init(&Q, n, n, Q_data, 0);
@@ -120,13 +120,13 @@ int main()
 	matrixf_decomp_qr(&W, &U, &P, 0);
 	matrixf_permute(&V, &P, 0);
 	for (j = 0; j < (m < n ? m : n); j++) {
-		if (_(&W, j, j) < 0) {
-			_(&W, j, j) *= -1.0f;
+		if (at(&W, j, j) < 0) {
+			at(&W, j, j) *= -1.0f;
 			for (i = 0; i < m; i++)
-				_(&U, i, j) *= -1.0f;
+				at(&U, i, j) *= -1.0f;
 		}
 		for (i = 0; i < j; i++) 
-			_(&W, i, j) = 0;
+			at(&W, i, j) = 0;
 	}
 	copy_matrix(&A, &W);
 #elif (ALGO == 2)

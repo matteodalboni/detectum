@@ -36,14 +36,14 @@ int main()
 		matrixf_init(&L, n, n, L_data, 0);
 		for (j = 0; j < n; j++)
 			for (i = 0; i < n; i++) {
-				_(&P, i, j) = (float)(i == j);
-				_(&L, i, j) = (float)(i == j);
+				at(&P, i, j) = (float)(i == j);
+				at(&L, i, j) = (float)(i == j);
 			}
 		if (matrixf_decomp_lu(&A, &P)) return 1;
 		for (j = 0; j < n; j++)
 			for (i = j + 1; i < n; i++) {
-				_(&L, i, j) = _(&A, i, j);
-				_(&A, i, j) = 0;
+				at(&L, i, j) = at(&A, i, j);
+				at(&A, i, j) = 0;
 			}
 		printf("U = \n"); PRINT("%9.4f ", &A);
 		DISP("%9.4f ", L);

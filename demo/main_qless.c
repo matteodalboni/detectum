@@ -32,7 +32,7 @@ int main()
 	fread(A.data, sizeof(float), (size_t)(A.size[0] * A.size[1]), A_file);
 	fclose(A_file);
 	DISP("%9.4f ", A);
-	for (i = 0; i < b.size[0]; i++) _(&b, i, 0) = 1;
+	for (i = 0; i < b.size[0]; i++) at(&b, i, 0) = 1;
 	DISP("%9.4f ", b);
 	matrixf_multiply(&A, &b, &x, 1, 0, 1, 0);
 	matrixf_decomp_qr(&A, 0, 0, 0);

@@ -29,16 +29,16 @@ int main()
 	matrixf_decomp_ltl(&A);
 	P.data[0] = 1;
 	for (i = 1; i < n; i++) {
-		_(&P, i, (int)_(&A, i, 0)) = 1;
-		_(&A, i, 0) = 0;
+		at(&P, i, (int)at(&A, i, 0)) = 1;
+		at(&A, i, 0) = 0;
 	}
 	for (i = 0; i < n; i++) {
-		_(&T, i, i) = _(&A, i, i);
-		_(&A, i, i) = 1;
+		at(&T, i, i) = at(&A, i, i);
+		at(&A, i, i) = 1;
 		if (i < n - 1) {
-			_(&T, i + 1, i) = _(&A, i, i + 1);
-			_(&T, i, i + 1) = _(&A, i, i + 1);
-			_(&A, i, i + 1) = 0;
+			at(&T, i + 1, i) = at(&A, i, i + 1);
+			at(&T, i, i + 1) = at(&A, i, i + 1);
+			at(&A, i, i + 1) = 0;
 		}
 	}
 	printf("L = \n"); PRINT("%9.4f ", &A);

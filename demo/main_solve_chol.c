@@ -28,7 +28,7 @@ int main()
 		return 1;
 	}
 	for (j = 0; j < n; j++)
-		for (i = j + 1; i < n; i++) _(&A, i, j) = 0;
+		for (i = j + 1; i < n; i++) at(&A, i, j) = 0;
 	printf("R = \n"); PRINT("%9.4f ", &A);
 	DISP("%9.4f ", B);
 	matrixf_multiply(&A, &A, &C, 1, 0, 1, 0);

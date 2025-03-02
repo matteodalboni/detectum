@@ -41,10 +41,10 @@ typedef struct {
 
 // This macro returns the positive distance from abs(x) to the next 
 // larger floating-point number.
-#define EPS(x) powf(2.0f, floorf(log2f(fabsf(x))) - 23.0f)
+#define eps(x) powf(2.0f, floorf(log2f(fabsf(x))) - 23.0f)
 
 // This macro allows accessing the element A(i, j).
-#define _(A, i, j) ((A)->data[(i) + (j) * (A)->size[0]])
+#define at(A, i, j) ((A)->data[(i) + (j) * (A)->size[0]])
 
 // This function returns the 2-norm of the vector vec. The length of the
 // vector is len, and stride is its increment.
