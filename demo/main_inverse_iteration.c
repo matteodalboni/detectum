@@ -1,5 +1,5 @@
-#define DETEGO_USE_PRINT
-#define DETEGO_USE_ALLOC
+#include <stdio.h>
+#include <stdlib.h>
 #include "detego.h"
 
 static int inverse_iteration(Matrixf* A, Matrixf* v,
@@ -61,9 +61,9 @@ int main()
 	matrixf_transpose(&H);
 	matrixf_decomp_hess(&H, &P);
 	for (i = 0; i < n * n; i++) T.data[i] = H.data[i];
-	printf("H = \n"); matrixf_print(&H, "%9.4f ");
+	printf("H = \n"); matrixf_print(&H, "%9.4f "); printf("\n");
 	matrixf_decomp_schur(&T, 0);
-	printf("T = \n"); matrixf_print(&T, "%9.4f ");
+	printf("T = \n"); matrixf_print(&T, "%9.4f "); printf("\n");
 
 	for (k = 0; k < n; k++) {
 		x.size[0] = 2 * n; x.size[1] = 1;

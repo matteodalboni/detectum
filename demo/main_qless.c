@@ -16,8 +16,8 @@
 * fclose(fileID);
 */
 
-#define DETEGO_USE_PRINT
-#define DETEGO_USE_ALLOC
+#include <stdio.h>
+#include <stdlib.h>
 #include "detego.h"
 
 int main()
@@ -31,14 +31,14 @@ int main()
 	if (!A.data) return -1;
 	fread(A.data, sizeof(float), (size_t)(A.size[0] * A.size[1]), A_file);
 	fclose(A_file);
-	printf("A = \n"); matrixf_print(&A, "%9.4f ");
+	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
 	for (i = 0; i < b.size[0]; i++) at(&b, i, 0) = 1;
-	printf("b = \n"); matrixf_print(&b, "%9.4f ");
+	printf("b = \n"); matrixf_print(&b, "%9.4f "); printf("\n");
 	matrixf_multiply(&A, &b, &x, 1, 0, 1, 0);
 	matrixf_decomp_qr(&A, 0, 0, 0);
 	matrixf_transpose(&A); matrixf_solve_tril(&A, &x, &b, 0);
 	matrixf_transpose(&A); matrixf_solve_triu(&A, &b, &x, 0);
-	printf("x = \n"); matrixf_print(&x, "%9.4f ");
+	printf("x = \n"); matrixf_print(&x, "%9.4f "); printf("\n");
 
 	free(A.data);
 	free(b.data);

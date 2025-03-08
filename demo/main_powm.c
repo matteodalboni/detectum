@@ -1,4 +1,4 @@
-#define DETEGO_USE_PRINT
+#include <stdio.h>
 #include "detego.h"
 
 int main()
@@ -13,9 +13,9 @@ int main()
 	unsigned int p = 15;
 
 	matrixf_init(&A, 3, 3, A_data, 1);
-	printf("A = \n"); matrixf_print(&A, "%9.4f ");
+	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
 	matrixf_pow(&A, p, work);
-	printf("A^%d = \n", p); matrixf_print(&A, "%9.4f ");
+	printf("A^%d = \n", p); matrixf_print(&A, "%9.4f "); printf("\n");
 
 	return 0;
 }

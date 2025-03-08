@@ -1,4 +1,4 @@
-#define DETEGO_USE_PRINT
+#include <stdio.h>
 #include "detego.h"
 
 #define ALGO 2
@@ -84,7 +84,7 @@ int main()
 
 	matrixf_init(&A, m, n, A_data, 1);
 	for (i = 0; i < m * n; i++) A_copy[i] = A_data[i];
-	printf("A = \n"); matrixf_print(&A, "%9.4f ");
+	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
 #if (ALGO == 0)
 	for (i = 0; i < p * p; i++) {
 		if (i < m * m) P.data[i] = !(i % (m + 1));
@@ -134,29 +134,29 @@ int main()
 #else
 	if (matrixf_decomp_svd(&A, &U, &V) < 0) return -1;
 #endif
-	printf("U = \n"); matrixf_print(&U, "%9.4f ");
-	printf("S = \n"); matrixf_print(&A, "%9.4f ");
-	printf("V = \n"); matrixf_print(&V, "%9.4f ");
+	printf("U = \n"); matrixf_print(&U, "%9.4f "); printf("\n");
+	printf("S = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
+	printf("V = \n"); matrixf_print(&V, "%9.4f "); printf("\n");
 
 	copy_matrix(&W, &A);
 	matrixf_multiply(&U, &A, &W, 1, 0, 0, 0);
 
 	matrixf_multiply(&W, &V, &A, 1, 0, 0, 1);
-	printf("U*S*V' = \n"); matrixf_print(&A, "%9.4f ");
+	printf("U*S*V' = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
 	for (i = 0; i < m * n; i++) A_copy[i] -= A.data[i];
 	printf("||A - U*S*V'||_F = %g\n\n", normf(A_copy, m * n, 1));
 
 	matrixf_init(&P, m, m, P_data, 0);
 	matrixf_multiply(&U, &U, &P, 1, 0, 0, 1); 
-	printf("U*U' = \n"); matrixf_print(&P, "%9.4f ");
+	printf("U*U' = \n"); matrixf_print(&P, "%9.4f "); printf("\n");
 	matrixf_multiply(&U, &U, &P, 1, 0, 1, 0);
-	printf("U'*U = \n"); matrixf_print(&P, "%9.4f ");
+	printf("U'*U = \n"); matrixf_print(&P, "%9.4f "); printf("\n");
 
 	matrixf_init(&Q, n, n, Q_data, 0);
 	matrixf_multiply(&V, &V, &Q, 1, 0, 0, 1);
-	printf("V*V' = \n"); matrixf_print(&Q, "%9.4f ");
+	printf("V*V' = \n"); matrixf_print(&Q, "%9.4f "); printf("\n");
 	matrixf_multiply(&V, &V, &Q, 1, 0, 1, 0);
-	printf("V'*V = \n"); matrixf_print(&Q, "%9.4f ");
+	printf("V'*V = \n"); matrixf_print(&Q, "%9.4f "); printf("\n");
 
 	return 0;
 }

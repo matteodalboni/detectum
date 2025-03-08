@@ -1,4 +1,4 @@
-#define DETEGO_USE_PRINT
+#include <stdio.h>
 #include "detego.h"
 
 #define n 4
@@ -25,12 +25,12 @@ int main()
 	int i, j;
 
 	matrixf_init(&A, n, n, A_data, 1);
-	printf("A = \n"); matrixf_print(&A, "%9.4f ");
+	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
 	if (1) {
 		matrixf_init(&B, n, p, B_data, 1);
-		printf("B = \n"); matrixf_print(&B, "%9.4f ");
+		printf("B = \n"); matrixf_print(&B, "%9.4f "); printf("\n");
 		if (matrixf_solve_lu(&A, &B)) return 1; 
-		printf("X = \n"); matrixf_print(&B, "%9.4f ");
+		printf("X = \n"); matrixf_print(&B, "%9.4f "); printf("\n");
 	}
 	else
 	{
@@ -47,9 +47,9 @@ int main()
 				at(&L, i, j) = at(&A, i, j);
 				at(&A, i, j) = 0;
 			}
-		printf("U = \n"); matrixf_print(&A, "%9.4f ");
-		printf("L = \n"); matrixf_print(&L, "%9.4f ");
-		printf("P = \n"); matrixf_print(&P, "%9.4f ");
+		printf("U = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
+		printf("L = \n"); matrixf_print(&L, "%9.4f "); printf("\n");
+		printf("P = \n"); matrixf_print(&P, "%9.4f "); printf("\n");
 	}
 
 	return 0;

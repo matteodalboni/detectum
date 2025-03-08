@@ -1,4 +1,4 @@
-#define DETEGO_USE_PRINT
+#include <stdio.h>
 #include "detego.h"
 
 #define M 5
@@ -25,11 +25,11 @@ int main()
 
 	matrixf_init(&A, M, N, A_data, 1);
 	matrixf_init(&B, M, P, B_data, 1);
-	printf("A = \n"); matrixf_print(&A, "%9.4f ");
-	printf("B = \n"); matrixf_print(&B, "%9.4f ");
+	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
+	printf("B = \n"); matrixf_print(&B, "%9.4f "); printf("\n");
 	matrixf_solve_lsq(&A, &B);
 	printf("The (least-squares) solution of the linear system A*X = B is:\n\n");
-	printf("X = \n"); matrixf_print(&B, "%9.4f ");
+	printf("X = \n"); matrixf_print(&B, "%9.4f "); printf("\n");
 
 	return 0;
 }

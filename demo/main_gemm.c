@@ -1,5 +1,5 @@
-#define DETEGO_USE_PRINT
-#define DETEGO_USE_ALLOC
+#include <stdio.h>
+#include <stdlib.h>
 #include "detego.h"
 
 #define M 2002
@@ -26,9 +26,9 @@ int main()
 	if (transB) matrixf_transpose(&B);
 
 #if PRINT_MATRIX
-	printf("A = \n"); matrixf_print(&A, "%7.0f ");
-	printf("B = \n"); matrixf_print(&B, "%7.0f ");
-	printf("C = \n"); matrixf_print(&C, "%7.0f ");
+	printf("A = \n"); matrixf_print(&A, "%7.0f "); printf("\n");
+	printf("B = \n"); matrixf_print(&B, "%7.0f "); printf("\n");
+	printf("C = \n"); matrixf_print(&C, "%7.0f "); printf("\n");
 #endif
 #ifdef TIME_TICK_H
 	tick(&t0);
@@ -56,7 +56,7 @@ int main()
 #if PRINT_MATRIX
 	printf("%g * A%s * B%s + %g * C = \n", alpha,
 		transA ? "'" : "", transB ? "'" : "", beta);
-	matrixf_print(&C, "%7.0f ");
+	matrixf_print(&C, "%7.0f "); printf("\n");
 #endif
 
 	free(A.data);

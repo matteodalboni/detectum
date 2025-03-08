@@ -30,10 +30,8 @@ fclose(fileID);
 figure; plot(x(:)-xc(:))
 */
 
-#define _CRT_SECURE_NO_WARNINGS
-
-#define DETEGO_USE_PRINT
-#define DETEGO_USE_ALLOC
+#include "stdio.h"
+#include "stdlib.h"
 #include "detego.h"
 //#include "time_tick.h"
 

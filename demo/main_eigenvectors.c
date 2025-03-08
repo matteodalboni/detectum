@@ -1,9 +1,9 @@
-#define DETEGO_USE_ALLOC
-#define DETEGO_USE_PRINT
+#include <stdlib.h>
+#include <stdio.h>
 #include "detego.h"
 
 #define disp(A, format) \
-do{ printf(#A" = \n"); matrixf_print(&A, format); } while (0)
+do{ printf(#A" = \n"); matrixf_print(&A, format); printf("\n");} while (0)
 
 static void print_complex_eigenvectors(Matrixf* T, Matrixf* V)
 {

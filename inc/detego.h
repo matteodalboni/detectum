@@ -94,9 +94,7 @@ static inline void givensrotf(const float a, const float b, float* c, float* s)
 	}
 }
 
-#ifdef DETEGO_USE_PRINT
-#include <stdio.h>
-
+#ifdef EOF // include stdio.h before detego.h to enable this section
 // This function prints the matrix A on the standard output according to
 // the specified format.
 static inline void matrixf_print(Matrixf* A, char* format)
@@ -109,17 +107,14 @@ static inline void matrixf_print(Matrixf* A, char* format)
 		}
 		printf("\n");
 	}
-	printf("\n");
 }
 #endif
 
-#ifdef DETEGO_USE_ALLOC
-#include <stdlib.h>
-
+#ifdef RAND_MAX // include stdlib.h before detego.h to enable this section
 // This macro initializes a matrix instance while dynamically allocating 
 // its data memory.
 #define matrixf(rows, cols) \
-{ rows, cols, calloc(sizeof(float), (rows) * (cols)) }
+{ { rows, cols }, calloc(sizeof(float), (rows) * (cols)) }
 #endif
 
 // This function initializes the rows-by-cols matrix A. The array data
