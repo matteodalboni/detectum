@@ -30,10 +30,26 @@ fclose(fileID);
 figure; plot(x(:)-xc(:))
 */
 
+#define TICKTOCK
+
+#ifdef TICKTOCK
+#include <time.h>
+static inline int tick(struct timespec* t0) {
+#ifdef _WIN32
+	if (timespec_get(t0, TIME_UTC) == TIME_UTC) return 1;
+#else
+	if (clock_gettime(CLOCK_REALTIME, t0) == 0) return 1;
+#endif
+	return 0;
+}
+static inline double tock(struct timespec* t0) {
+	struct timespec tf = { 0 }; tick(&tf);
+	return ((tf.tv_sec - t0->tv_sec) + ((tf.tv_nsec - t0->tv_nsec) * 1e-9));
+}
+#endif
 #include "stdio.h"
 #include "stdlib.h"
 #include "detego.h"
-//#include "time_tick.h"
 
 #define M 200
 #define N 180
@@ -45,7 +61,7 @@ int main()
 	FILE* b_file = fopen("../b.bin", "rb");
 	FILE* x_file = fopen("../x.bin", "wb");
 	Matrixf A = matrixf(M, N), B = matrixf(M, P);
-#ifdef TIME_TICK_H
+#ifdef TICKTOCK
 	struct timespec t0;
 #endif
 	if (!A.data || !B.data) return -1;
@@ -53,11 +69,11 @@ int main()
 	fread(B.data, sizeof(float), (size_t)(B.size[0] * B.size[1]), b_file);
 	fclose(A_file);
 	fclose(b_file);
-#ifdef TIME_TICK_H
+#ifdef TICKTOCK
 	tick(&t0);
 #endif
 	if (matrixf_solve_lsq(&A, &B)) return -1;
-#ifdef TIME_TICK_H
+#ifdef TICKTOCK
 	printf("Elapsed time: %f s\n", tock(&t0));
 #endif
 	fwrite(B.data, sizeof(float), (size_t)(B.size[0] * B.size[1]), x_file);

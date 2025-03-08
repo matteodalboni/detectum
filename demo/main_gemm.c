@@ -1,3 +1,20 @@
+#define TICKTOCK
+
+#ifdef TICKTOCK
+#include <time.h>
+static inline int tick(struct timespec* t0) {
+#ifdef _WIN32
+	if (timespec_get(t0, TIME_UTC) == TIME_UTC) return 1;
+#else
+	if (clock_gettime(CLOCK_REALTIME, t0) == 0) return 1;
+#endif
+	return 0;
+}
+static inline double tock(struct timespec* t0) {
+	struct timespec tf = { 0 }; tick(&tf);
+	return ((tf.tv_sec - t0->tv_sec) + ((tf.tv_nsec - t0->tv_nsec) * 1e-9));
+}
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include "detego.h"
@@ -14,7 +31,7 @@ int main()
 	int i, transA = 1, transB = 1;
 	float alpha = 2, beta = 3;
 	Matrixf A = matrixf(M, P), B = matrixf(P, N), C = matrixf(M, N);
-#ifdef TIME_TICK_H
+#ifdef TICKTOCK
 	struct timespec t0;
 #endif
 
@@ -30,12 +47,12 @@ int main()
 	printf("B = \n"); matrixf_print(&B, "%7.0f "); printf("\n");
 	printf("C = \n"); matrixf_print(&C, "%7.0f "); printf("\n");
 #endif
-#ifdef TIME_TICK_H
+#ifdef TICKTOCK
 	tick(&t0);
 #endif
 #if NO_TRANSPOSE
 	if (!matrixf_multiply(&A, &B, &C, alpha, beta, transA, transB)) {
-#ifdef TIME_TICK_H
+#ifdef TICKTOCK
 		printf("Elapsed time: %f s\n\n", tock(&t0));
 #endif
 	}
@@ -45,7 +62,7 @@ int main()
 	if (!matrixf_multiply(&A, &B, &C, alpha, beta, 0, 0)) {
 		if (transA) matrixf_transpose(&A);
 		if (transB) matrixf_transpose(&B);
-#ifdef TIME_TICK_H
+#ifdef TICKTOCK
 		printf("Elapsed time: %f s\n\n", tock(&t0));
 #endif
 	}
