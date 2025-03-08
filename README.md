@@ -1,7 +1,7 @@
-# detego
+# Detego
 A linear algebra library offering a wide selection of matrix decompositions and direct solvers for real-valued dense matrices.
 
-One of the distinctive traits of *detego* is that all the algorithms are built around in-place operations, ensuring a minimal memory footprint. Fully implemented in plain C, the library adopts single-precision arithmetic and avoids dynamic memory allocation. All of these features make *detego* ideal for embedded systems.
+One of the distinctive traits of *Detego* is that all the algorithms are built around in-place operations, ensuring a minimal memory footprint. Fully implemented in plain C, the library adopts single-precision arithmetic and avoids dynamic memory allocation. All of these features make *Detego* ideal for embedded systems.
 
 ## Testing on Linux
 gcc -o mydemo demo/mydemo.c src/detego.c -lm -I inc
