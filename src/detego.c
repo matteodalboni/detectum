@@ -1811,16 +1811,17 @@ int matrixf_exp(Matrixf* A, float* work)
 			D.data[i] += c * X.data[i] * ((k % 2) ? -1 : 1);
 		}
 	}
-	if (matrixf_solve_lu(&D, &N)) {
+	for (i = 0; i < n * n; i++) {
+		A->data[i] = N.data[i];
+	}
+	if (matrixf_solve_lu(&D, A)) {
 		return 1;
 	}
 	for (k = 0; k < z; k++) {
-		matrixf_multiply(&N, &N, A, 1, 0, 0, 0);
-		if (k < z - 1) {
-			for (i = 0; i < n * n; i++) {
-				N.data[i] = A->data[i];
-			}
+		for (i = 0; i < n * n; i++) {
+			N.data[i] = A->data[i];
 		}
+		matrixf_multiply(&N, &N, A, 1, 0, 0, 0);
 	}
 	return 0;
 }
