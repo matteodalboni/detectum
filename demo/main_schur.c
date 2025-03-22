@@ -124,12 +124,12 @@ float A_data[] = {
 	0, 0, -1e5f, 0,
 	0, -1e5f, 0, 0,
 	-1e5f, 0, 0, 0
-#elif (TEST == 8) // see "Variants of the QR Algorithm" By Cleve Moler
+#elif (TEST == 8) // see "Variants of the QR Algorithm" by Cleve Moler
 	0, 2, 0, -1,
 	1, 0, 0,  0,
 	0, 1, 0,  0,
 	0, 0, 1,  0
-#elif (TEST == 9) // see "Variants of the QR Algorithm" By Cleve Moler
+#elif (TEST == 9) // see "Variants of the QR Algorithm" by Cleve Moler
 	0,     1,      0, 0,
 	1,     0, -1e-4f, 0,
 	0, 1e-4f,      0, 1,

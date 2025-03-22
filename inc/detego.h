@@ -287,7 +287,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U);
 // parts of the computed eigenvectors are stored in the k-th and (k+1)-th columns of V
 // and W, respectively. If V (or W) is a null pointer, its computation is omitted.
 // The array work is the additional workspace memory: in general, if T is n-by-n, its 
-// minimum length is max(9,4*(n-2)^2). If all the eigenvalues are real, the minimum
+// minimum length is max(n^2,4*(n-2)^2). If all the eigenvalues are real, the minimum
 // length of work is n^2. The function returns -1 if the matrices of eigenvectors are
 // not n-by-n; it returns 1 if the matrix T is defective to working precision.
 int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,

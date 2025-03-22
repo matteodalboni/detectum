@@ -1061,6 +1061,11 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 			if (y >= 0) {
 				at(A, k + 1, k) = 0;
 			}
+			else {
+				Xk = 0.5f * (at(A, k, k) + at(A, k + 1, k + 1));
+				at(A, k, k) = Xk;
+				at(A, k + 1, k + 1) = Xk;
+			}
 		}
 		for (i = k + 2; i < n; i++) {
 			at(A, i, k) = 0;
