@@ -74,7 +74,7 @@ static inline float normf(const float* vec, const int len, const int stride)
 
 // This function computes the Givens rotation pair (c,s) so that 
 // [c -s; s c]*[a; b] = [r; 0].
-static inline void givensrotf(const float a, const float b, float* c, float* s)
+static inline void givensf(const float a, const float b, float* c, float* s)
 {
 	float tau = 0;
 

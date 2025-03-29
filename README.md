@@ -3,6 +3,30 @@ A linear algebra library offering a wide selection of matrix decompositions and 
 
 One of the distinctive traits of *Detego* is that all the algorithms are built around in-place operations, ensuring a minimal memory footprint. Fully implemented in plain C, the library adopts single-precision arithmetic and avoids dynamic memory allocation. All of these features make *Detego* ideal for embedded systems.
 
+The library includes:
+* Cholesky decomposition;
+* LTL' decomposition;
+* LU decomposition;
+* QR decomposition;
+* bidiagonalization;
+* singular value decomposition (SVD);
+* Hessenberg decomposition;
+* Schur decomposition;
+* eigenvector computation;
+* pseudo-eigenvector computation;
+* lower-triangular solver;
+* upper-triangular solver;
+* tridiagonal solver;
+* symmetric positive definite solver;
+* symmetric indefinite solver;
+* full-rank square solver;
+* full-rank least-squares solver;
+* solver for underdetermined and overdetermined systems;  
+* minimum-norm solver;
+* Moore-Penrose pseudoinverse computation;
+* matrix exponential computation;
+* matrix exponentiation to positive integer power.
+
 ## Testing on Linux
 gcc -o mydemo demo/mydemo.c src/detego.c -lm -I inc
 

@@ -580,7 +580,7 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 				y = at(A, q, q) * at(A, q, q) - mu;
 				z = at(A, q, q + 1) * at(A, q, q);
 				for (j = q; j < r; j++) {
-					givensrotf(y, z, &cosine, &sine);
+					givensf(y, z, &cosine, &sine);
 					for (k = (j - 1 < 0 ? 0 : j - 1); k <= j + 1; k++) {
 						Xi = at(A, k, j);
 						Xj = at(A, k, j + 1);
@@ -597,7 +597,7 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 					}
 					y = at(A, j, j);
 					z = at(A, j + 1, j);
-					givensrotf(y, z, &cosine, &sine);
+					givensf(y, z, &cosine, &sine);
 					for (k = j; k <= (j + 2 < r ? j + 2 : r); k++) {
 						Xi = at(A, j, k);
 						Xj = at(A, j + 1, k);
@@ -621,7 +621,7 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 			}
 			else if (i < r) {
 				for (j = i + 1; j <= r; j++) {
-					givensrotf(-at(A, j, j), at(A, i, j), &cosine, &sine);
+					givensf(-at(A, j, j), at(A, i, j), &cosine, &sine);
 					for (k = j; k <= (j + 1 < r ? j + 1 : r); k++) {
 						Xi = at(A, i, k);
 						Xj = at(A, j, k);
@@ -640,7 +640,7 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 			}
 			else {
 				for (j = r - 1; j >= q; j--) {
-					givensrotf(at(A, j, j), at(A, j, r), &cosine, &sine);
+					givensf(at(A, j, j), at(A, j, r), &cosine, &sine);
 					for (k = (j - 1 > q ? j - 1 : q); k <= j; k++) {
 						Xi = at(A, k, j);
 						Xj = at(A, k, r);
@@ -877,7 +877,7 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 			x = at(A, q, q) - at(A, m, m) + g / (d + f * sqrtf(d * d + g));
 			y = at(A, q + 1, q);
 			for (k = q; k < m; k++) {
-				givensrotf(x, y, &cosine, &sine);
+				givensf(x, y, &cosine, &sine);
 				imin = k - 1 < 0 ? 0 : k - 1;
 				imax = k + 2 > n - 1 ? n - 1 : k + 2;
 				for (i = imin; i <= imax; i++) {
