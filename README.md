@@ -1,7 +1,7 @@
-# DeTeGO - Decomposition Techniques Getting Optimal in terms of memory consumption
+# DeTeGo --- *De*composition *Te*chniques designed for on-the-*Go* use
 A linear algebra library offering a wide selection of matrix decompositions and direct solvers for real-valued dense matrices.
 
-One of the distinctive traits of *DeTeGO* is that all the algorithms are built around in-place operations, ensuring a minimal memory footprint. Fully implemented in plain C, the library adopts single-precision arithmetic and avoids dynamic memory allocation. All of these features make *DeTeGO* ideal for embedded systems, too.
+One of the distinctive traits of *DeTeGo* is that all the algorithms are built around in-place operations, ensuring a minimal memory footprint. Fully implemented in plain C, the library adopts single-precision arithmetic and avoids dynamic memory allocation. All of these features make *DeTeGo* ideal for embedded systems, too.
 
 The library includes:
 * Cholesky decomposition;
@@ -14,13 +14,13 @@ The library includes:
 * Schur decomposition;
 * eigenvector computation;
 * pseudo-eigenvector computation;
-* lower-triangular solver;
-* upper-triangular solver;
-* tridiagonal solver;
-* symmetric positive definite solver;
-* symmetric indefinite solver;
-* full-rank square solver;
-* full-rank least-squares solver;
+* solver for lower-triangular systems;
+* solver for upper-triangular systems;
+* solver for tridiagonal systems;
+* solver for symmetric positive definite systems;
+* solver for symmetric indefinite systems;
+* solver for full-rank square systems;
+* least-squares solver for full-rank systems;
 * solver for underdetermined and overdetermined systems;  
 * minimum-norm solver;
 * Moore-Penrose pseudoinverse computation;
