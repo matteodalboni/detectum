@@ -1,5 +1,5 @@
 # DeTeGo — Decomposition Techniques designed for on-the-Go use
-A linear algebra library offering a wide selection of matrix decompositions and direct solvers for real-valued dense matrices.
+A lightweight linear algebra library offering a wide selection of matrix decompositions and direct solvers for real-valued dense matrices.
 
 One of the distinctive traits of DeTeGo is that all the algorithms are built around in-place operations, ensuring a minimal memory footprint. Fully implemented in plain C, the library adopts single-precision arithmetic and avoids dynamic memory allocation. All of these features make DeTeGo ideal for embedded systems, too.
 
