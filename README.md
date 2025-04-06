@@ -19,9 +19,9 @@ The library includes:
 * solver for tridiagonal systems;
 * solver for symmetric positive definite systems;
 * solver for symmetric indefinite systems;
-* solver for full-rank square systems;
-* least-squares solver for full-rank systems;
-* solver for underdetermined and overdetermined systems;  
+* solver for square full-rank systems;
+* solver for general full-rank systems;
+* solver for general rank-deficient systems;  
 * minimum-norm solver;
 * Moore-Penrose pseudoinverse computation;
 * matrix exponential computation;

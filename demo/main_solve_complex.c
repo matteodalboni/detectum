@@ -47,6 +47,7 @@ int main()
 	Matrixf A_real, A_imag, b_real, b_imag;
 	Matrixf A = { { 2 * m, 2 * n }, A_data };
 	Matrixf b = { { 2 * m, 1 }, b_data };
+	Matrixf x = { { 2 * n, 1 }, b_data };
 	int i, j;
 
 	printf("\nA = \n"); print_complex(A_real_data, A_imag_data, m, n, "%5.0f%+.0fi\t"); 
@@ -72,10 +73,10 @@ int main()
 
 	//printf("\nA = \n"); matrixf_print(&A, "%5.0f ");
 	//printf("\nb = \n"); matrixf_print(&b, "%5.0f ");
-	matrixf_solve_lsq(&A, &b);
-	//printf("\nx = \n"); matrixf_print(&b, "%9.4f ");
+	matrixf_solve_qr(&A, &b, &x);
+	//printf("\nx = \n"); matrixf_print(&x, "%9.4f ");
 	printf("\nThe least-squares solution to the complex system A*x=b is \n");
-	printf("\nx = \n"); print_complex(b.data, b.data + n, n, 1, "%9.4f%+.4fi\t"); 
+	printf("\nx = \n"); print_complex(x.data, x.data + n, n, 1, "%9.4f%+.4fi\t"); 
 
 	return 0;
 }

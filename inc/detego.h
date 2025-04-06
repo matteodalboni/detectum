@@ -157,10 +157,10 @@ int matrixf_decomp_chol(Matrixf* A);
 // The function returns -1 if A is not square.
 int matrixf_decomp_ltl(Matrixf* A);
 
-// This function performs the LU decomposition of the square matrix A.
-// The matrix A is transformed in such a way that its upper triangular
-// part stores the matrix U, whereas its strictly lower triangular part 
-// contains the matrix L, assuming that all the entries of the main
+// This function performs the LU decomposition with partial pivoting of the 
+// square matrix A. The matrix A is transformed in such a way that its upper 
+// triangular part stores the matrix U, whereas its strictly lower triangular 
+// part contains the matrix L, assuming that all the entries of the main
 // diagonal of L are ones (unit lower triangular matrix). P is a matrix 
 // with as many rows as A has, and it encodes a permutation matrix. If P
 // is initialized as an identity matrix, its rows are permuted so that
@@ -323,31 +323,28 @@ int matrixf_solve_tridiag(Matrixf* T, Matrixf* B);
 // while B is replaced by the matrix X. If A is not positive definite, the 
 // function returns 1. In case of size mismatch or non-square system, the
 // function returns -1.
-int matrixf_solve_spd(Matrixf* A, Matrixf* B);
+int matrixf_solve_chol(Matrixf* A, Matrixf* B);
 
 // This function solves in place the linear system A*X = B for X by LTL'
 // decomposition with pivoting of the square symmetric indefinite matrix A. 
 // The matrix A is destroyed while B is replaced by the matrix X. If A is 
 // singular, the function returns 1. In case of size mismatch or non-square 
 // system, the function returns -1.
-int matrixf_solve_symm(Matrixf* A, Matrixf* B);
+int matrixf_solve_ltl(Matrixf* A, Matrixf* B);
 
 // This function solves in place the linear system A*X = B for X by LU
-// decomposition of the square matrix A. The matrix A is transformed according
-// to LU decomposition while B is replaced by the matrix X. If A is singular,
-// the function returns 1. In case of size mismatch or non-square system, the
-// function returns -1.
+// decomposition with partial pivoting of the square matrix A. The matrix A
+// is transformed according to LU decomposition while B is replaced by the 
+// matrix X. If A is singular, the function returns 1. In case of size mismatch
+// or non-square system, the function returns -1.
 int matrixf_solve_lu(Matrixf* A, Matrixf* B);
 
-// This function solves in place the linear system A*X = B by QR decomposition
-// of the full-rank matrix A, where the matrix X is in general a least-squares 
-// solution. The number of rows of A must be greater or equal than its number of
-// columns. The matrix A is transformed in such a way that its upper triangular 
-// part is the matrix R, and its strictly lower triangular part contains the 
-// meaningful parts of Householder vectors. The matrix B is replaced by the matrix
-// X. If A is rank deficient, the function returns 1. In case of size mismatch
-// or underdetermined system, the function returns -1.
-int matrixf_solve_lsq(Matrixf* A, Matrixf* B);
+// This function solves the linear system A*X = B by QR decomposition
+// of the full-rank matrix A. The matrices A and B are destroyed. The matrix B 
+// can share the data array with X if and only if the number of rows of A is 
+// greater than or equal to its number of columns. If A is rank deficient, the 
+// function returns 1. In case of size mismatch, the function returns -1.
+int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X);
 
 // This function solves the linear system A*X = B for X by QR decomposition 
 // with column pivoting. The matrices A and B are destroyed. tol is the 
@@ -356,7 +353,7 @@ int matrixf_solve_lsq(Matrixf* A, Matrixf* B);
 // where R(0,0) is the on-diagonal element of R with the largest magnitude, 
 // being R the upper triangular matrix obtained by the QR decomposition with
 // column pivoting of A. In case of size mismatch, the function returns -1.
-int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X, float tol);
+int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol);
 
 // This function solves the linear system A*X = B for X by complete orthogonal
 // decomposition of the m-by-n matrix A: this ensures that X be the minimum-norm

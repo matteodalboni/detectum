@@ -12,19 +12,20 @@
 // polynomial coefficients, which are in descending powers. The array
 // work is the  additional workspace memory: its minimum length is 
 // pts*(deg+1).
-int polyfit(float* x, float* y, int pts, int deg, float* work)
+static int polyfit(float* x, float* y, int pts, int deg, float* work)
 {
 	int i, j;
 	const int m = pts;
 	const int n = deg + 1;
 	Matrixf A = { { m, n }, work };
 	Matrixf b = { { m, 1 }, y };
+	Matrixf p = { { n, 1 }, y };
 
 	for (j = 0; j < n; j++)
 		for (i = 0; i < m; i++)
 			at(&A, i, j) = powf(x[i], (float)(n - 1 - j));
 
-	return matrixf_solve_lsq(&A, &b);
+	return matrixf_solve_qr(&A, &b, &p);
 }
 
 int main()

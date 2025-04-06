@@ -23,7 +23,7 @@ int main()
 	matrixf_init(&A, n, n, A_data, 1);
 	matrixf_init(&B, n, 1, B_data, 1);
 	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
-	if (matrixf_solve_spd(&A, &B)) {
+	if (matrixf_solve_chol(&A, &B)) {
 		printf("The matrix is not positive definite!\n");
 		return 1;
 	}
