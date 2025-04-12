@@ -296,16 +296,18 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 // This function performs the forward substitution on the lower-triangular
 // matrix L to solve the the system L*X = B for X. The flag unitri indicates
 // whether L is unitriangular: if the flag is enabled, the elements on the main
-// diagonal are ignored. If the sizes are compatible, B and X can be the same 
-// instance, so that B is overwritten by X. It returns 1 if L is rank deficient,
+// diagonal are ignored. The matrix B is destroyed. Also, the matrix B can
+// share the data array with X, provided that the array is large enough to 
+// accommodate the larger of B or X. It returns 1 if L is rank deficient,
 // -1 in case of size mismatch.
 int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri);
 
 // This function performs the backward substitution on the upper-triangular
 // matrix U to solve the the system U*X = B for X. The flag unitri indicates
 // whether U is unitriangular: if the flag is enabled, the elements on the main
-// diagonal are ignored. If the sizes are compatible, B and X can be the same 
-// instance, so that B is overwritten by X. It returns 1 if U is rank deficient,
+// diagonal are ignored. The matrix B is destroyed. Also, the matrix B can
+// share the data array with X, provided that the array is large enough to 
+// accommodate the larger of B or X. It returns 1 if U is rank deficient,
 // -1 in case of size mismatch.
 int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri);
 
@@ -340,30 +342,34 @@ int matrixf_solve_ltl(Matrixf* A, Matrixf* B);
 int matrixf_solve_lu(Matrixf* A, Matrixf* B);
 
 // This function solves the linear system A*X = B by QR decomposition
-// of the full-rank matrix A. The matrices A and B are destroyed. The matrix B 
-// can share the data array with X if and only if the number of rows of A is 
-// greater than or equal to its number of columns. If A is rank deficient, the 
-// function returns 1. In case of size mismatch, the function returns -1.
+// of the full-rank matrix A. The matrices A and B are destroyed. The matrix B
+// can share the data array with X, provided that the array is large enough to 
+// accommodate the larger of B or X. If A is rank deficient, the function
+// returns 1. In case of size mismatch, the function returns -1.
 int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X);
 
 // This function solves the linear system A*X = B for X by QR decomposition 
-// with column pivoting. The matrices A and B are destroyed. tol is the 
-// tolerance to determine the rank of the A m-by-n matrix A: if the input 
-// tolerance is negative, the default value max(m,n)*eps(R(0,0)) is used instead, 
-// where R(0,0) is the on-diagonal element of R with the largest magnitude, 
-// being R the upper triangular matrix obtained by the QR decomposition with
-// column pivoting of A. In case of size mismatch, the function returns -1.
-int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol);
+// with column pivoting. The matrices A and B are destroyed. The matrix B
+// can share the data array with X, provided that the array is large enough to 
+// accommodate the larger of B or X. tol is the tolerance to determine the rank 
+// of the A m-by-n matrix A: if the input tolerance is negative, the default 
+// value max(m,n)*eps(R(0,0)) is used instead, where R(0,0) is the on-diagonal 
+// element of R with the largest magnitude, being R the upper triangular matrix 
+// obtained by the QR decomposition with column pivoting of A. The array work is
+// the additional workspace memory: its minimum length is n. In case of size 
+// mismatch, the function returns -1.
+int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work);
 
 // This function solves the linear system A*X = B for X by complete orthogonal
 // decomposition of the m-by-n matrix A: this ensures that X be the minimum-norm
-// solution. The matrices A and B are destroyed. tol is the tolerance to determine
-// the rank of A: if the input tolerance is negative, the default value 
-// max(m,n)*eps(R(0,0)) is used instead, where R(0,0) is the on-diagonal element 
-// of R with the largest magnitude, being R the upper triangular matrix obtained by
-// QR decomposition with column pivoting of A. The array work is the additional 
-// workspace memory: its minimum length is n. In case of size mismatch, the 
-// function returns -1.
+// solution. The matrices A and B are destroyed. The matrix B can share the data
+// array with X, provided that the array is large enough to accommodate the larger
+// of B or X. tol is the tolerance to determine the rank of A: if the input 
+// tolerance is negative, the default value max(m,n)*eps(R(0,0)) is used instead, 
+// where R(0,0) is the on-diagonal element of R with the largest magnitude, being
+// R the upper triangular matrix obtained by QR decomposition with column pivoting
+// of A. The array work is the additional workspace memory: its minimum length is n.
+// In case of size mismatch, the function returns -1.
 int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work);
 
 // This function substitutes the m-by-n input matrix A with its Moore-Penrose

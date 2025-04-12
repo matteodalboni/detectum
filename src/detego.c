@@ -1324,16 +1324,29 @@ int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri)
 		for (i = 0; i < q; i++) {
 			Bik = at(B, i, k);
 			for (j = 0; j < i; j++) {
-				Bik -= at(L, i, j) * at(X, j, k);
+				Bik -= at(L, i, j) * at(B, j, k);
 			}
 			if (!unitri) {
 				Lii = at(L, i, i);
 				if (Lii == 0) {
 					return 1;
 				}
-				Bik /= Lii;
+				at(B, i, k) = Bik / Lii;
 			}
-			at(X, i, k) = Bik;
+		}
+	}
+	if (m < n) {
+		for (k = h - 1; k >= 0; k--) {
+			for (i = n - 1; i >= 0; i--) {
+				at(X, i, k) = (i < q) ? at(B, i, k) : 0;
+			}
+		}
+	}
+	else {
+		for (k = 0; k < h; k++) {
+			for (i = 0; i < n; i++) {
+				at(X, i, k) = (i < q) ? at(B, i, k) : 0;
+			}
 		}
 	}
 	return 0;
@@ -1357,16 +1370,29 @@ int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri)
 		for (i = q - 1; i >= 0; i--) {
 			Bik = at(B, i, k);
 			for (j = i + 1; j < q; j++) {
-				Bik -= at(U, i, j) * at(X, j, k);
+				Bik -= at(U, i, j) * at(B, j, k);
 			}
 			if (!unitri) {
 				Uii = at(U, i, i);
 				if (Uii == 0) {
 					return 1;
 				}
-				Bik /= Uii;
+				at(B, i, k) = Bik / Uii;
 			}
-			at(X, i, k) = Bik;
+		}
+	}
+	if (m < n) {
+		for (k = h - 1; k >= 0; k--) {
+			for (i = n - 1; i >= 0; i--) {
+				at(X, i, k) = (i < q) ? at(B, i, k) : 0;
+			}
+		}
+	}
+	else {
+		for (k = 0; k < h; k++) {
+			for (i = 0; i < n; i++) {
+				at(X, i, k) = (i < q) ? at(B, i, k) : 0;
+			}
 		}
 	}
 	return 0;
@@ -1585,11 +1611,9 @@ int matrixf_solve_lu(Matrixf* A, Matrixf* B)
 
 int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X)
 {
-	int i, j, k;
 	const int m = A->size[0];
 	const int n = A->size[1];
 	const int p = B->size[1];
-	float Aii, Bik;
 
 	if (B->size[0] != m ||
 		X->size[0] != n ||
@@ -1608,35 +1632,22 @@ int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X)
 	}
 	else {
 		matrixf_decomp_qr(A, 0, 0, B);
-		for (k = 0; k < p; k++) {
-			for (i = n - 1; i >= 0; i--) {
-				Bik = at(B, i, k);
-				for (j = i + 1; j < n; j++) {
-					Bik -= at(A, i, j) * at(B, j, k);
-				}
-				Aii = at(A, i, i);
-				if (Aii == 0) {
-					return 1;
-				}
-				at(B, i, k) = Bik / Aii;
-			}
-			for (i = 0; i < n; i++) {
-				at(X, i, k) = at(B, i, k);
-			}
+		if (matrixf_solve_triu(A, B, X, 0)) {
+			return 1;
 		}
 	}
 	return 0;
 }
 
-int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol)
+int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work)
 {
 	int i, j, k, rank;
 	const int m = A->size[0];
 	const int n = A->size[1];
 	const int h = B->size[1];
 	const int p = m < n ? m : n;
-	float t, s, Bik;
-	Matrixf perm = { { 1, n }, X->data };
+	float Bik;
+	Matrixf perm = { { 1, n }, work };
 
 	if (B->size[0] != m ||
 		X->size[0] != n ||
@@ -1644,12 +1655,6 @@ int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol)
 		return -1;
 	}
 	matrixf_decomp_qr(A, 0, &perm, B);
-	t = X->data[p - 1];
-	s = at(A, p - 1, p - 1);
-	for (j = 0; j < n; j++) {
-		at(A, m - 1, j) = X->data[j];
-	}
-	at(A, p - 1, p - 1) = s;
 	if (tol < 0) {
 		tol = (m > n ? m : n) * epsf(at(A, 0, 0));
 	}
@@ -1659,24 +1664,28 @@ int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol)
 	}
 	rank = j;
 	for (k = 0; k < h; k++) {
-		for (i = n - 1; i >= 0; i--) {
-			if (i < rank) {
-				Bik = at(B, i, k);
-				for (j = i + 1; j < rank; j++) {
-					Bik -= at(A, i, j) * at(X, j, k);
-				}
-				at(X, i, k) = Bik / at(A, i, i);
+		for (i = rank - 1; i >= 0; i--) {
+			Bik = at(B, i, k);
+			for (j = i + 1; j < rank; j++) {
+				Bik -= at(A, i, j) * at(B, j, k);
 			}
-			else {
-				at(X, i, k) = 0;
+			at(B, i, k) = Bik / at(A, i, i);
+		}
+	}
+	if (m < n) {
+		for (k = h - 1; k >= 0; k--) {
+			for (i = n - 1; i >= 0; i--) {
+				at(X, i, k) = (i < rank) ? at(B, i, k) : 0;
 			}
 		}
 	}
-	for (j = 0; j < n; j++) {
-		A->data[j] = at(A, m - 1, j);
+	else {
+		for (k = 0; k < h; k++) {
+			for (i = 0; i < n; i++) {
+				at(X, i, k) = (i < rank) ? at(B, i, k) : 0;
+			}
+		}
 	}
-	A->data[p - 1] = t;
-	perm.data = A->data;
 	matrixf_permute(X, &perm, 1);
 	return 0;
 }
@@ -1713,16 +1722,25 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 	A->size[1] = rank;
 	matrixf_decomp_qr(A, 0, 0, 0);
 	for (k = 0; k < h; k++) {
-		for (i = 0; i < n; i++) {
-			if (i < rank) {
-				Bik = at(B, i, k);
-				for (j = 0; j < i; j++) {
-					Bik -= at(A, j, i) * at(X, j, k);
-				}
-				at(X, i, k) = Bik / at(A, i, i);
+		for (i = 0; i < rank; i++) {
+			Bik = at(B, i, k);
+			for (j = 0; j < i; j++) {
+				Bik -= at(A, j, i) * at(B, j, k);
 			}
-			else {
-				at(X, i, k) = 0;
+			at(B, i, k) = Bik / at(A, i, i);
+		}
+	}
+	if (m < n) {
+		for (k = h - 1; k >= 0; k--) {
+			for (i = n - 1; i >= 0; i--) {
+				at(X, i, k) = (i < rank) ? at(B, i, k) : 0;
+			}
+		}
+	}
+	else {
+		for (k = 0; k < h; k++) {
+			for (i = 0; i < n; i++) {
+				at(X, i, k) = (i < rank) ? at(B, i, k) : 0;
 			}
 		}
 	}
