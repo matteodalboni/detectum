@@ -22,7 +22,11 @@ static int inverse_iteration(Matrixf* A, Matrixf* v,
 		at(&C, j, j + n) = +eigval_im;
 		p.data[j] = (float)j;
 		p.data[j + n] = (float)(j + n);
+		v->data[j] = 1;
+		v->data[j + n] = 0;
 	}
+	v->size[0] = 2 * n; 
+	v->size[1] = 1;
 	matrixf_decomp_lu(&C, &p);
 	for (i = 0; i < iter; i++) {
 		matrixf_permute(v, &p, 0);
@@ -33,6 +37,8 @@ static int inverse_iteration(Matrixf* A, Matrixf* v,
 			v->data[j] /= norm;
 		}
 	}
+	v->size[0] = n;
+	v->size[1] = 2;
 	return 0;
 }
 
@@ -49,44 +55,34 @@ int main()
 		 1, 1, 3, 1,
 		-2, 1, 1, 4
 	};
-	Matrixf H = matrixf(n, n);
+	Matrixf A;
 	Matrixf T = matrixf(n, n);
-	Matrixf P = matrixf(n, n);
-	Matrixf x = matrixf(2 * n, 1);
-	Matrixf v = { { n, 2 }, work };
+	Matrixf v = matrixf(n, 2);
 
-	if (!H.data || !T.data || !P.data || !x.data) return -1;
+	if (!T.data || !v.data) return -1;
 
-	for (i = 0; i < n * n; i++) H.data[i] = A_data[i];
-	matrixf_transpose(&H);
-	matrixf_decomp_hess(&H, &P);
-	for (i = 0; i < n * n; i++) T.data[i] = H.data[i];
-	printf("H = \n"); matrixf_print(&H, "%9.4f "); printf("\n");
+	matrixf_init(&A, n, n, A_data, 1);
+	for (i = 0; i < n * n; i++) T.data[i] = A_data[i];
 	matrixf_decomp_schur(&T, 0);
+	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
 	printf("T = \n"); matrixf_print(&T, "%9.4f "); printf("\n");
 
 	for (k = 0; k < n; k++) {
-		x.size[0] = 2 * n; x.size[1] = 1;
-		for (i = 0; i < 2 * n; i++) x.data[i] = (float)(i < n);
 		eigval_re = at(&T, k, k);
 		eigval_im = 0;
 		if (k > 0 && at(&T, k, k - 1) != 0)
 			eigval_im = -sqrtf(-at(&T, k - 1, k) * at(&T, k, k - 1));
 		if (k < n - 1 && at(&T, k + 1, k) != 0)
 			eigval_im = +sqrtf(-at(&T, k + 1, k) * at(&T, k, k + 1));
-		inverse_iteration(&H, &x, eigval_re, eigval_im, work, 2);
-		x.size[0] = n; x.size[1] = 2;
-		matrixf_multiply(&P, &x, &v, 1, 0, 0, 0);
+		inverse_iteration(&A, &v, eigval_re, eigval_im, work, 2);
 		printf("\n%d) eigval = %0.4f%+.4fi\n   eigvec = \n",
 			k + 1, eigval_re, eigval_im);
 		for (i = 0; i < n; i++)
 			printf("   %9.4f%+.4fi\n", v.data[i], v.data[i + n]);
 	}
 
-	free(H.data);
 	free(T.data);
-	free(P.data);
-	free(x.data);
+	free(v.data);
 
 	return 0;
 }
