@@ -357,7 +357,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 		matrixf_accumulate_bwd(A, Q);
 		for (k = 0; k < n; k++) {
 			for (i = 0; i < n; i++) {
-				at(&A_econ, i, k) = (i <= k) ? at(A, i, k) : 0.0f;
+				at(&A_econ, i, k) = (i <= k) ? at(A, i, k) : 0;
 			}
 		}
 		A->size[0] = n;
@@ -517,7 +517,7 @@ int matrixf_bidiagonalize(Matrixf* A, Matrixf* U, Matrixf* V)
 		matrixf_accumulate_bwd(A, U);
 		for (k = 0; k < n; k++) {
 			for (i = 0; i < n; i++) {
-				at(&A_econ, i, k) = (i <= k) ? at(A, i, k) : 0.0f;
+				at(&A_econ, i, k) = (i <= k) ? at(A, i, k) : 0;
 			}
 		}
 		A->size[0] = n;
@@ -1772,7 +1772,7 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work)
 	for (j = 0; j < p; j++) {
 		sj = normf(&at(A, 0, j), q, 1);
 		if (sj > 0) {
-			rj = sj > tol ? 1.0f / sj : 0.0f;
+			rj = sj > tol ? 1.0f / sj : 0;
 			for (i = 0; i < q; i++) {
 				at(A, i, j) /= sj;
 			}

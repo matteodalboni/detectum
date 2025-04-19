@@ -2,14 +2,22 @@
 #include <stdlib.h>
 #include "detego.h"
 
+#define IN_PLACE
+
 int main()
 {
 	int i, j;
 	float work[7] = { 0 };
-	Matrixf A = matrixf(5, 7);
-	Matrixf B = matrixf(A.size[0], 2);
-	Matrixf X = matrixf(A.size[1], B.size[1]);
 	FILE* A_file = fopen("../A.bin", "rb");
+	Matrixf A = matrixf(5, 7);
+#ifdef IN_PLACE
+	float* data = malloc(sizeof(float) * 7 * 2);
+	Matrixf B = { { A.size[0], 2 }, data };
+	Matrixf X = { { A.size[1], 2 }, data };
+#else
+	Matrixf B = matrixf(A.size[0], 2);
+	Matrixf X = matrixf(A.size[1], 2);
+#endif
 
 	if (!A.data) return -1;
 	fread(A.data, sizeof(float), (size_t)(A.size[0] * A.size[1]), A_file);
@@ -24,7 +32,9 @@ int main()
 
 	free(A.data);
 	free(B.data);
+#ifndef IN_PLACE
 	free(X.data);
+#endif
 
 	return 0;
 }

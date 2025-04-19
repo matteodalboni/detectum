@@ -342,10 +342,11 @@ int matrixf_solve_ltl(Matrixf* A, Matrixf* B);
 int matrixf_solve_lu(Matrixf* A, Matrixf* B);
 
 // This function solves the linear system A*X = B by QR decomposition
-// of the full-rank matrix A. The matrices A and B are destroyed. The matrix B
-// can share the data array with X, provided that the array is large enough to 
-// accommodate the larger of B or X. If A is rank deficient, the function
-// returns 1. In case of size mismatch, the function returns -1.
+// of the full-rank matrix A. The returned solution is minimum-norm. The 
+// matrices A and B are destroyed. The matrix B can share the data array with X,
+// provided that the array is large enough to accommodate the larger of B or X.
+// If A is rank deficient, the function returns 1. In case of size mismatch, 
+// the function returns -1.
 int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X);
 
 // This function solves the linear system A*X = B for X by QR decomposition 
