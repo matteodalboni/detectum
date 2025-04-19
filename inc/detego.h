@@ -199,9 +199,9 @@ int matrixf_accumulate_fwd(Matrixf* H, Matrixf* B);
 // of size mismatch, the function returns -1.
 int matrixf_accumulate_bwd(Matrixf* H, Matrixf* B);
 
-// This function accomplishes the upper-bidiagonalization of the m-by-n matrix A
-// so that A = U*B*V'. A is overwritten by the upper-bidiagonal matrix B. 
-// The computation of the matrices U and V is omitted if these are null pointers.
+// This function accomplishes the bidiagonalization of the m-by-n matrix A
+// so that A = U*B*V'. A is overwritten by the bidiagonal matrix B. The
+// computation of the matrices U and V is omitted if these are null pointers.
 // The function can also produce the economy-size decomposition such that:
 // - if m > n, only the first n columns of U are computed (thin U) and the last 
 //   m - n rows of B are excluded so that B becomes n-by-n; to enable the 
@@ -211,7 +211,7 @@ int matrixf_accumulate_bwd(Matrixf* H, Matrixf* B);
 //   economy-size decomposition, V must be initialized as an n-by-m matrix;
 // - if m = n, the economy-size decomposition is the same as the full one.
 // The function returns -1 in case of size mismatch.
-int matrixf_bidiagonalize(Matrixf* A, Matrixf* U, Matrixf* V);
+int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V);
 
 // This function performs the singular value decomposition of the m-by-n matrix A
 // by QR iteration. The decomposition is such that A = U*S*V'. The computation of 
