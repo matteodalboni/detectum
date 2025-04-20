@@ -28,11 +28,11 @@ int main()
 	for (i = 0; i < n * n; i++) A_copy[i] = A_data[i];
 	matrixf_decomp_ltl(&A);
 	P.data[0] = 1;
-	for (i = 1; i < n; i++) {
-		at(&P, i, (int)at(&A, i, 0)) = 1;
-		at(&A, i, 0) = 0;
-	}
 	for (i = 0; i < n; i++) {
+		if (i > 0) {
+			at(&P, i, (int)at(&A, i, 0)) = 1;
+			at(&A, i, 0) = 0;
+		}
 		at(&T, i, i) = at(&A, i, i);
 		at(&A, i, i) = 1;
 		if (i < n - 1) {

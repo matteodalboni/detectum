@@ -171,8 +171,8 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* P);
 // This function performs the QR decomposition of the m-by-n matrix A, which is
 // transformed into matrix R. If Q is a null pointer, the computation of 
 // the orthogonal matrix is omitted, and the strictly lower triangular part of A 
-// stores the meaningful part of the Householder vectors, which can be used, e.g.,
-// to recover Q afterwards. If P is a non-null pointer, the decomposition makes 
+// stores the meaningful parts of the Householder vectors, which can be used to
+// accumulate Q afterwards. If P is a non-null pointer, the decomposition makes 
 // use of column pivoting so that A*P = Q*R and so that the magnitude of the 
 // elements of the main diagonal of R is decreasing. If P is initialized as a 
 // 1-by-n vector and n > 1, the permutations are encoded so that (P(i),i) for 
@@ -188,20 +188,22 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* P);
 int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B);
 
 // This function transforms B into Q'*B by forward accumulation of Householder
-// matrices. The strictly lower triangular part of H stores the meaningful part
+// matrices. The strictly lower triangular part of H stores the meaningful parts
 // of the Householder vectors, which are obtained by QR decomposition. In case
 // of size mismatch, the function returns -1.
 int matrixf_accumulate_fwd(Matrixf* H, Matrixf* B);
 
 // This function transforms B into Q*B by backward accumulation of Householder
-// matrices. The strictly lower triangular part of H stores the meaningful part
+// matrices. The strictly lower triangular part of H stores the meaningful parts
 // of the Householder vectors, which are obtained by QR decomposition. In case
 // of size mismatch, the function returns -1.
 int matrixf_accumulate_bwd(Matrixf* H, Matrixf* B);
 
-// This function accomplishes the bidiagonalization of the m-by-n matrix A
-// so that A = U*B*V'. A is overwritten by the bidiagonal matrix B. The
-// computation of the matrices U and V is omitted if these are null pointers.
+// This function accomplishes the bidiagonalization of the m-by-n matrix A so
+// that A = U*B*V'. A is overwritten by the bidiagonal matrix B. The computation
+// of the matrices U and V is omitted if these are null pointers. If U (or V) is
+// a null pointer, the meaningful parts of the Householder vectors are stored
+// off the bidiagonal band and can be used to accumulate U (or V) afterwards.
 // The function can also produce the economy-size decomposition such that:
 // - if m > n, only the first n columns of U are computed (thin U) and the last 
 //   m - n rows of B are excluded so that B becomes n-by-n; to enable the 

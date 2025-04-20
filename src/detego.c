@@ -479,8 +479,6 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 			householder_left(A, v, beta, k, m - 1, k + 1, n - 1, 1);
 			if (U && q == m) {
 				householder_right(U, v, beta, 0, m - 1, k, m - 1, 1);
-			}
-			if (q == m) {
 				for (i = k + 1; i < m; i++) {
 					at(A, i, k) = 0;
 				}
@@ -506,9 +504,9 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 			householder_right(A, v, beta, k + 1, m - 1, k + 1, n - 1, m);
 			if (V) {
 				householder_right(V, v, beta, 0, n - 1, k + 1, n - 1, m);
-			}
-			for (i = k + 2; i < n; i++) {
-				at(A, k, i) = 0;
+				for (i = k + 2; i < n; i++) {
+					at(A, k, i) = 0;
+				}
 			}
 			at(A, k, k + 1) = v0;
 		}
@@ -545,6 +543,13 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 	}
 	if (matrixf_decomp_bidiag(A, U, V)) {
 		return -1;
+	}
+	for (j = 0; j < n; j++) {
+		for (i = 0; i < m; i++) {
+			if (i != j && (i + 1) != j) {
+				at(A, i, j) = 0;
+			}
+		}
 	}
 	for (norm1 = fabsf(at(A, 0, 0)), j = 1; j < n; j++) {
 		tmp = fabsf(at(A, j - 1, j)) + fabsf(at(A, j, j));
