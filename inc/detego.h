@@ -111,10 +111,13 @@ static inline void matrixf_print(Matrixf* A, char* format)
 #endif
 
 #ifdef RAND_MAX // include stdlib.h before detego.h to enable this section
-// This macro initializes a matrix instance while dynamically allocating 
-// its data memory.
-#define matrixf(rows, cols) \
-{ { rows, cols }, calloc(sizeof(float), (rows) * (cols)) }
+// This function initializes a rows-by-cols matrix instance while dynamically
+// allocating its data memory. On allocation failure, the data pointer is null.
+static inline Matrixf matrixf(int rows, int cols)
+{
+	Matrixf A = { { rows, cols }, calloc(sizeof(float), rows * cols) };
+	return A;
+}
 #endif
 
 // This function initializes the rows-by-cols matrix A. The array data

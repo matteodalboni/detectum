@@ -33,4 +33,5 @@ gcc -o mydemo demo/mydemo.c src/detego.c -lm -I inc
 ## References
 [1] Golub, Gene H., and Charles F. Van Loan. *Matrix computations*. JHU press, 2013.\
 [2] Nash, John C. *Compact numerical methods for computers: linear algebra and function minimisation*. Routledge, 2018.\
-[3] MATLAB documentation.
+[3] MATLAB documentation.\
+[4] M. Galassi et al. *GNU Scientific Library Reference Manual (3rd Ed.)*. ISBN 0954612078.
