@@ -165,10 +165,10 @@ int matrixf_decomp_ltl(Matrixf* A);
 // triangular part stores the matrix U, whereas its strictly lower triangular 
 // part contains the matrix L, assuming that all the entries of the main
 // diagonal of L are ones (unit lower triangular matrix). P is a matrix 
-// with as many rows as A has, and it encodes a permutation matrix. If P
-// is initialized as an identity matrix, its rows are permuted so that
-// A = P'*L*U. In case of size mismatch or non-square matrix, the function
-// returns -1.
+// with as many rows as A has. At output, the rows of the input matrix P are 
+// permuted: if P is initialized as an identity matrix, its rows are permuted
+// so that A = P'*L*U. In case of size mismatch or non-square matrix, the 
+// function returns -1.
 int matrixf_decomp_lu(Matrixf* A, Matrixf* P);
 
 // This function performs the QR decomposition of the m-by-n matrix A, which is
