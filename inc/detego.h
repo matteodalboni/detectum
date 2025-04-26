@@ -124,19 +124,23 @@ static inline Matrixf matrixf(int rows, int cols)
 // collects the matrix elements, which must be stored in column-major order.
 // If the data are initially arranged in row-major layout, the flag ordmem 
 // can be raised to enable the conversion to column-major memory order.
-void matrixf_init(Matrixf* A, int rows, int cols, float* data, int ordmem);
+void matrixf_init(Matrixf* A, int rows, int cols, float* data, const int ordmem);
 
 // This function permutes the m-by-n matrix A according to the vector of 
 // permutation indices p, which encodes the permutation matrix P: if p is m-by-1,
 // the rows of A are permuted, whereas, if p is 1-by-n, the columns of A are 
-// permuted. If the flag transP is enabled, the function transforms also the 
-// vector of permutation indices into that encoding the transpose of P. In brief:
-// - if p is m-by-1 and transP == 0, A is transformed into P*A;
-// - if p is 1-by-n and transP == 0, A is transformed into A*P;
-// - if p is 1-by-m and transP != 0, A is transformed into P'*A and p transposed;
-// - if p is n-by-1 and transP != 0, A is transformed into A*P' and p transposed.
-// In case of size mismatch, the function returns -1.
-int matrixf_permute(Matrixf* A, Matrixf* p, const int transP);
+// permuted. If the flag reverse is enabled, the function transforms also the 
+// vector of permutation indices so that, if p encodes a column permutation:
+// - if p is 1-by-n and reverse == 0, A is transformed into A*P;
+// - if p is 1-by-m and reverse != 0, A is transformed into P*A and p transformed.
+// Whereas, if if p encodes a row permutation:
+// - if p is m-by-1 and reverse == 0, A is transformed into P*A;
+// - if p is n-by-1 and reverse != 0, A is transformed into A*P and p transformed.
+// Essentially, the flag allows reversing the multiplication order, transforming a
+// column permutation into a row permutation, or vice versa. This enables switching 
+// between pre- and post-multiplication by the same permutation matrix P.
+// On size mismatch, the function returns -1.
+int matrixf_permute(Matrixf* A, Matrixf* p, const int reverse);
 
 // This function transposes in place the input matrix.
 void matrixf_transpose(Matrixf* A);
@@ -167,8 +171,8 @@ int matrixf_decomp_ltl(Matrixf* A);
 // diagonal of L are ones (unit lower triangular matrix). P is a matrix 
 // with as many rows as A has. At output, the rows of the input matrix P are 
 // permuted: if P is initialized as an identity matrix, its rows are permuted
-// so that A = P'*L*U. In case of size mismatch or non-square matrix, the 
-// function returns -1.
+// so that A = P'*L*U. On size mismatch or non-square matrix, the function 
+// returns -1.
 int matrixf_decomp_lu(Matrixf* A, Matrixf* P);
 
 // This function performs the QR decomposition of the m-by-n matrix A, which is
@@ -186,20 +190,19 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* P);
 // can also produce the economy-size decomposition such that only the first n
 // columns of Q are computed (thin Q) and the last m - n rows of R are excluded
 // so that R becomes n-by-n. To enable the economy-size decomposition, Q must be 
-// initialized as an m-by-n matrix. In case of size mismatch, the function 
-// returns -1.
+// initialized as an m-by-n matrix. On size mismatch, the function returns -1.
 int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B);
 
 // This function transforms B into Q'*B by forward accumulation of Householder
 // matrices. The strictly lower triangular part of H stores the meaningful parts
-// of the Householder vectors, which are obtained by QR decomposition. In case
-// of size mismatch, the function returns -1.
+// of the Householder vectors, which are obtained by QR decomposition. On size
+// mismatch, the function returns -1.
 int matrixf_accumulate_fwd(Matrixf* H, Matrixf* B);
 
 // This function transforms B into Q*B by backward accumulation of Householder
 // matrices. The strictly lower triangular part of H stores the meaningful parts
-// of the Householder vectors, which are obtained by QR decomposition. In case
-// of size mismatch, the function returns -1.
+// of the Householder vectors, which are obtained by QR decomposition. On size
+// mismatch, the function returns -1.
 int matrixf_accumulate_bwd(Matrixf* H, Matrixf* B);
 
 // This function accomplishes the bidiagonalization of the m-by-n matrix A so
@@ -215,7 +218,7 @@ int matrixf_accumulate_bwd(Matrixf* H, Matrixf* B);
 //   n - m columns of B are excluded so that B becomes m-by-m; to enable the 
 //   economy-size decomposition, V must be initialized as an n-by-m matrix;
 // - if m = n, the economy-size decomposition is the same as the full one.
-// The function returns -1 in case of size mismatch.
+// On size mismatch, the function returns -1.
 int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V);
 
 // This function performs the singular value decomposition of the m-by-n matrix A
@@ -233,8 +236,8 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V);
 //   n - m columns of S are excluded so that S becomes m-by-m; to enable the 
 //   economy-size decomposition, V must be initialized as an n-by-m matrix;
 // - if m = n, the economy-size decomposition is the same as the full one.
-// The function returns -1 in case of size mismatch. Otherwise,
-// it returns the number of iterations performed.
+// On size mismatch, the function returns -1. Otherwise, it returns the number
+// of iterations performed.
 int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V);
 
 // This function performs the singular value decomposition of the m-by-n matrix A
@@ -254,21 +257,21 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V);
 //   n - m columns of S are excluded so that S becomes m-by-m; to enable the 
 //   economy-size decomposition, V must be initialized as an n-by-m matrix;
 // - if m = n, the economy-size decomposition is the same as the full one.
-// The function returns -1 in case of size mismatch. Otherwise, it returns the
-// number of iterations performed.
+// The function returns -1 on size mismatch. Otherwise, it returns the number
+// of iterations performed.
 int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V);
 
 // This function performs the Hessenberg decomposition of the square matrix A, 
 // which is transformed into the Hessenberg matrix. If P is a null pointer,
 // the computation of the orthogonal matrix is omitted. The function returns
-// -1 if the matrices are not square or in case of size mismatch.
+// -1 if the matrices are not square or on size mismatch.
 int matrixf_decomp_hess(Matrixf* A, Matrixf* P);
 
 // This function performs the Schur decomposition of the symmetric matrix A so that
 // A = U*D*U'. A is transformed into the diagonal matrix D whose main diagonal holds
 // the eigenvalues of A. If U is a null pointer, the computation of the orthogonal 
-// matrix is omitted. The function returns -1 if the matrices are not square or in 
-// case of size mismatch. Otherwise, it returns the number of iterations performed.
+// matrix is omitted. The function returns -1 if the matrices are not square or on 
+// size mismatch. Otherwise, it returns the number of iterations performed.
 int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U);
 
 // This function performs the Schur decomposition of the square matrix A so that
@@ -278,8 +281,8 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U);
 // form B = [x, y; z, x], and its complex conjugate eigenvalues, i.e. x+sqrt(-y*z)*i 
 // and x-sqrt(-y*z)*i are also a complex conjugate pair of eigenvalues of A. 
 // If U is a null pointer, the computation of the orthogonal matrix is omitted. The 
-// function returns -1 if the matrices are not square or in case of size mismatch. 
-// Otherwise, it returns the number of iterations performed.
+// function returns -1 if the matrices are not square or on size mismatch. Otherwise,
+// it returns the number of iterations performed.
 int matrixf_decomp_schur(Matrixf* A, Matrixf* U);
 
 // This function computes the right (V) and left (W) eigenvectors starting from the
@@ -304,7 +307,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 // diagonal are ignored. The matrix B is destroyed. Also, the matrix B can
 // share the data array with X, provided that the array is large enough to 
 // accommodate the larger of B or X. It returns 1 if L is rank deficient,
-// -1 in case of size mismatch.
+// -1 on size mismatch.
 int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri);
 
 // This function performs the backward substitution on the upper-triangular
@@ -313,45 +316,44 @@ int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri);
 // diagonal are ignored. The matrix B is destroyed. Also, the matrix B can
 // share the data array with X, provided that the array is large enough to 
 // accommodate the larger of B or X. It returns 1 if U is rank deficient,
-// -1 in case of size mismatch.
+// -1 on size mismatch.
 int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri);
 
 // This function solves in place the linear system T*X = B for X, where T
 // is a tridiagonal matrix. The elements off the tridiagonal band are ignored.
 // The tridiagonal band of T and its second superdiagonal are destroyed, 
 // whereas B is replaced by the matrix X. If T is singular, the function 
-// returns 1. In case of size mismatch or non-square system, the function 
-// returns -1.
+// returns 1. On size mismatch or non-square system, the function returns -1.
 int matrixf_solve_tridiag(Matrixf* T, Matrixf* B);
 
 // This function solves in place the linear system A*X = B for X by Cholesky
 // decomposition of the square symmetric positive definite matrix A. The upper 
 // triangular part of A is transformed according to Cholesky decomposition
 // while B is replaced by the matrix X. If A is not positive definite, the 
-// function returns 1. In case of size mismatch or non-square system, the
-// function returns -1.
+// function returns 1. On size mismatch or non-square system, the function 
+// returns -1.
 int matrixf_solve_chol(Matrixf* A, Matrixf* B);
 
 // This function solves in place the linear system A*X = B for X by LTL'
 // decomposition with pivoting of the square symmetric indefinite matrix A. 
 // The matrix A is destroyed while B is replaced by the matrix X. If A is 
-// singular, the function returns 1. In case of size mismatch or non-square 
-// system, the function returns -1.
+// singular, the function returns 1. On size mismatch or non-square system,
+// the function returns -1.
 int matrixf_solve_ltl(Matrixf* A, Matrixf* B);
 
 // This function solves in place the linear system A*X = B for X by LU
 // decomposition with partial pivoting of the square matrix A. The matrix A
 // is transformed according to LU decomposition while B is replaced by the 
-// matrix X. If A is singular, the function returns 1. In case of size mismatch
-// or non-square system, the function returns -1.
+// matrix X. If A is singular, the function returns 1. On size mismatch or 
+// non-square system, the function returns -1.
 int matrixf_solve_lu(Matrixf* A, Matrixf* B);
 
 // This function solves the linear system A*X = B by QR decomposition
 // of the full-rank matrix A. The returned solution is minimum-norm. The 
 // matrices A and B are destroyed. The matrix B can share the data array with X,
 // provided that the array is large enough to accommodate the larger of B or X.
-// If A is rank deficient, the function returns 1. In case of size mismatch, 
-// the function returns -1.
+// If A is rank deficient, the function returns 1. On size mismatch, the 
+// function returns -1.
 int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X);
 
 // This function solves the linear system A*X = B for X by QR decomposition 
@@ -362,8 +364,8 @@ int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X);
 // value max(m,n)*eps(R(0,0)) is used instead, where R(0,0) is the on-diagonal 
 // element of R with the largest magnitude, being R the upper triangular matrix 
 // obtained by the QR decomposition with column pivoting of A. The array work is
-// the additional workspace memory: its minimum length is n. In case of size 
-// mismatch, the function returns -1.
+// the additional workspace memory: its minimum length is n. On size mismatch, 
+// the function returns -1.
 int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work);
 
 // This function solves the linear system A*X = B for X by complete orthogonal
@@ -375,7 +377,7 @@ int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 // where R(0,0) is the on-diagonal element of R with the largest magnitude, being
 // R the upper triangular matrix obtained by QR decomposition with column pivoting
 // of A. The array work is the additional workspace memory: its minimum length is n.
-// In case of size mismatch, the function returns -1.
+// On size mismatch, the function returns -1.
 int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work);
 
 // This function substitutes the m-by-n input matrix A with its Moore-Penrose
@@ -390,8 +392,8 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work);
 // This function computes the exponential of the square matrix A by scaling
 // and squaring algorithm with Padé approximation. The array work is the
 // additional workspace memory: if A is n-by-n, its minimum length is n*(3*n+1).
-// The function returns -1 if the input matrix is not square; it returns 1 in 
-// case of a singularity.
+// The function returns -1 if the input matrix is not square; it returns 1 if a
+// singularity is detected.
 int matrixf_exp(Matrixf* A, float* work);
 
 // This function raises the n-by-n matrix A to the p-th positive integer power.
@@ -406,7 +408,7 @@ int matrixf_pow(Matrixf* A, unsigned const int p, float* work);
 // matrices, alpha and beta are scalars, and op(X) is one of X or its
 // transpose. Therefore, if transX = 0, op(X) = X, else op(X) = X', being 
 // X' the transpose of X. C must be a distinct instance with respect to A and B. 
-// In case of size mismatch, the function returns -1.
+// On size mismatch, the function returns -1.
 int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 	const float alpha, const float beta, const int transA, const int transB);
 

@@ -56,7 +56,7 @@ static void householder_right(Matrixf* X, float* v, const float beta,
 	}
 }
 
-void matrixf_init(Matrixf* A, int rows, int cols, float* data, int ordmem)
+void matrixf_init(Matrixf* A, int rows, int cols, float* data, const int ordmem)
 {
 	A->data = data;
 	A->size[ordmem != 0] = rows;
@@ -66,11 +66,11 @@ void matrixf_init(Matrixf* A, int rows, int cols, float* data, int ordmem)
 	}
 }
 
-int matrixf_permute(Matrixf* A, Matrixf* p, const int transP)
+int matrixf_permute(Matrixf* A, Matrixf* p, const int reverse)
 {
 	int i, j, k, t;
-	const int m = transP ? p->size[1] : p->size[0];
-	const int n = transP ? p->size[0] : p->size[1];
+	const int m = (reverse) ? p->size[1] : p->size[0];
+	const int n = (reverse) ? p->size[0] : p->size[1];
 	const int h = m > n ? m : n;
 	float* x = p->data;
 
@@ -78,7 +78,7 @@ int matrixf_permute(Matrixf* A, Matrixf* p, const int transP)
 		(A->size[1] != n || m != 1)) {
 		return -1;
 	}
-	if (transP && h > 1) {
+	if (reverse && h > 1) {
 		p->size[0] = m;
 		p->size[1] = n;
 		for (k = 0; k < h; k++) {
