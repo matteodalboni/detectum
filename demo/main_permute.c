@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "detego.h"
 
-#define CASE 4
+#define CASE 1
 
 int main()
 {
