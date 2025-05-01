@@ -319,12 +319,11 @@ int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri);
 // -1 on size mismatch.
 int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri);
 
-// This function solves in place the linear system T*X = B for X, where T
-// is a tridiagonal matrix. The elements off the tridiagonal band are ignored.
-// The tridiagonal band of T and its second superdiagonal are destroyed, 
-// whereas B is replaced by the matrix X. If T is singular, the function 
-// returns 1. On size mismatch or non-square system, the function returns -1.
-int matrixf_solve_tridiag(Matrixf* T, Matrixf* B);
+// This function solves in place the linear system H*X = B for X, where H
+// is a Hessenberg matrix. Matrix H is destroyed, whereas B is replaced by
+// the matrix X. If H is singular, the function returns 1. On size mismatch
+// or non-square system, the function returns -1.
+int matrixf_solve_hess(Matrixf* H, Matrixf* B);
 
 // This function solves in place the linear system A*X = B for X by Cholesky
 // decomposition of the square symmetric positive definite matrix A. The upper 

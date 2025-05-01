@@ -180,14 +180,14 @@ int matrixf_decomp_ltl(Matrixf* A)
 			h[0] = (j == 1) ? at(A, 0, 1) : at(A, 0, 1) * at(A, j, 1);
 			for (k = 1; k < j; k++) {
 				Ljj = (j == k + 1) ? 1.0f : at(A, j, k + 1);
-				h[k] = at(A, k - 1, k) * at(A, j, k - 1) * (k > 1)
-					+ at(A, k, k) * at(A, j, k) + at(A, k, k + 1) * Ljj;
+				h[k] = (k > 1) ? at(A, k - 1, k) * at(A, j, k - 1) : 0;
+				h[k] += at(A, k, k) * at(A, j, k) + at(A, k, k + 1) * Ljj;
 			}
 			for (s = 0, k = 1; k < j; k++) {
 				s += at(A, j, k) * h[k];
 			}
 			h[j] = at(A, j, j) - s;
-			at(A, j, j) = h[j] - at(A, j - 1, j) * at(A, j, j - 1) * (j > 1);
+			at(A, j, j) = (j > 1) ? h[j] - at(A, j - 1, j) * at(A, j, j - 1) : h[j];
 			for (i = j + 1; i < n; i++) {
 				for (s = 0, k = 1; k <= j; k++) {
 					s += at(A, i, k) * h[k];
@@ -1403,62 +1403,38 @@ int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri)
 	return 0;
 }
 
-int matrixf_solve_tridiag(Matrixf* T, Matrixf* B)
+int matrixf_solve_hess(Matrixf* H, Matrixf* B)
 {
-	int i, j, k;
-	const int n = T->size[0];
+	int i, j;
+	const int n = H->size[0];
 	const int p = B->size[1];
 	float tau, t;
 
-	if (T->size[1] != n || B->size[0] != n) {
+	if (H->size[1] != n || B->size[0] != n) {
 		return -1;
 	}
 	matrixf_transpose(B);
 	for (j = 0; j < n - 1; j++) {
-		if (j + 2 < n) {
-			at(T, j, j + 2) = 0;
-		}
-		if (fabsf(at(T, j, j)) < fabsf(at(T, j + 1, j))) {
-			t = at(T, j, j);
-			at(T, j, j) = at(T, j + 1, j);
-			at(T, j + 1, j) = t;
-			t = at(T, j, j + 1);
-			at(T, j, j + 1) = at(T, j + 1, j + 1);
-			at(T, j + 1, j + 1) = t;
-			if (j + 2 < n) {
-				t = at(T, j, j + 2);
-				at(T, j, j + 2) = at(T, j + 1, j + 2);
-				at(T, j + 1, j + 2) = t;
+		if (fabsf(at(H, j, j)) < fabsf(at(H, j + 1, j))) {
+			for (i = j; i < n; i++) {
+				t = at(H, j, i);
+				at(H, j, i) = at(H, j + 1, i);
+				at(H, j + 1, i) = t;
 			}
 			swap_columns(B, j, j + 1);
 		}
-		if (at(T, j, j)) {
-			tau = at(T, j + 1, j) / at(T, j, j);
-			at(T, j + 1, j + 1) -= tau * at(T, j, j + 1);
-			if (j + 2 < n) {
-				at(T, j + 1, j + 2) -= tau * at(T, j, j + 2);
+		if (at(H, j, j) != 0) {
+			tau = at(H, j + 1, j) / at(H, j, j);
+			for (i = j + 1; i < n; i++) {
+				at(H, j + 1, i) -= tau * at(H, j, i);
 			}
 			for (i = 0; i < p; i++) {
 				at(B, i, j + 1) -= tau * at(B, i, j);
 			}
 		}
 	}
-	for (i = n - 1; i >= 0; i--) {
-		for (k = 0; k < p; k++) {
-			if (i < n - 1) {
-				at(B, k, i) -= at(T, i, i + 1) * at(B, k, i + 1);
-			}
-			if (i < n - 2) {
-				at(B, k, i) -= at(T, i, i + 2) * at(B, k, i + 2);
-			}
-			if (at(T, i, i) == 0) {
-				return 1;
-			}
-			at(B, k, i) /= at(T, i, i);
-		}
-	}
 	matrixf_transpose(B);
-	return 0;
+	return matrixf_solve_triu(H, B, B, 0);
 }
 
 int matrixf_solve_chol(Matrixf* A, Matrixf* B)
@@ -1499,7 +1475,7 @@ int matrixf_solve_ltl(Matrixf* A, Matrixf* B)
 	int i, j, k, s = 0;
 	const int n = A->size[0];
 	const int p = B->size[1];
-	float beta, tau, t;
+	float beta, tau, t, Aii;
 	Matrixf perm = { { 1, n }, 0 };
 
 	if (B->size[0] != n || matrixf_decomp_ltl(A)) {
@@ -1536,7 +1512,7 @@ int matrixf_solve_ltl(Matrixf* A, Matrixf* B)
 			beta = t;
 			swap_columns(B, j, j + 1);
 		}
-		if (at(A, j, j)) {
+		if (at(A, j, j) != 0) {
 			tau = beta / at(A, j, j);
 			at(A, j + 1, j + 1) -= tau * at(A, j, j + 1);
 			if (j + 2 < n) {
@@ -1548,6 +1524,10 @@ int matrixf_solve_ltl(Matrixf* A, Matrixf* B)
 		}
 	}
 	for (i = n - 1; i >= 0; i--) {
+		Aii = at(A, i, i);
+		if (Aii == 0) {
+			return 1;
+		}
 		for (k = 0; k < p; k++) {
 			if (i < n - 1) {
 				at(B, k, i) -= at(A, i, i + 1) * at(B, k, i + 1);
@@ -1555,10 +1535,7 @@ int matrixf_solve_ltl(Matrixf* A, Matrixf* B)
 			if (i < n - 2) {
 				at(B, k, i) -= at(A, i, i + 2) * at(B, k, i + 2);
 			}
-			if (at(A, i, i) == 0) {
-				return 1;
-			}
-			at(B, k, i) /= at(A, i, i);
+			at(B, k, i) /= Aii;
 		}
 	}
 	for (i = n - 1; i > 0; i--) {
