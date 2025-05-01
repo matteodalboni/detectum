@@ -16,7 +16,7 @@ The library includes:
 * pseudo-eigenvector computation;
 * solver for lower-triangular systems;
 * solver for upper-triangular systems;
-* solver for tridiagonal systems;
+* solver for Hessenberg systems;
 * solver for symmetric positive definite systems;
 * solver for symmetric indefinite systems;
 * solver for square full-rank systems;
