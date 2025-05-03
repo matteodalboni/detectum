@@ -1,7 +1,7 @@
 #include "detego.h"
 
 // This function swaps the columns i and j of the matrix A.
-static void swap_columns(Matrixf* A, int i, int j)
+static void swap_columns(Matrixf* A, const int i, const int j)
 {
 	int k;
 	const int m = A->size[0];
@@ -266,6 +266,62 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* P)
 	}
 	matrixf_transpose(A);
 	matrixf_transpose(P);
+	return 0;
+}
+
+int matrixf_decomp_lu_banded(Matrixf* A, const int ubw)
+{
+	int i, j, p, piv;
+	const int n = A->size[0];
+	float tau, t;
+
+	if (A->size[1] != n || ubw < 0) {
+		return -1;
+	}
+	for (i = 0; i < n - 1; i++) {
+		piv = 0;
+		p = (i + ubw + 2 < n) ? i + ubw + 2 : n;
+		if (fabsf(at(A, i, i)) < fabsf(at(A, i + 1, i))) {
+			for (j = i; j < p; j++) {
+				t = at(A, i, j);
+				at(A, i, j) = at(A, i + 1, j);
+				at(A, i + 1, j) = t;
+			}
+			piv = 10;
+		}
+		if (at(A, i, i) != 0) {
+			tau = at(A, i + 1, i) / at(A, i, i);
+			for (j = i + 1; j < p; j++) {
+				at(A, i + 1, j) -= tau * at(A, i, j);
+			}
+			at(A, i + 1, i) = tau + piv;
+		}
+	}
+	return 0;
+}
+
+int matrixf_unpack_lu_banded(Matrixf* A, Matrixf* B)
+{
+	int i, j, piv;
+	const int n = A->size[0];
+	const int p = B->size[1];
+	float t, tau;
+
+	if (B->size[0] != n) {
+		return -1;
+	}
+	for (i = 0; i < n - 1; i++) {
+		piv = fabsf(at(A, i + 1, i)) > 1;
+		tau = at(A, i + 1, i) - 10 * piv;
+		for (j = 0; j < p; j++) {
+			if (piv > 0) {
+				t = at(B, i, j);
+				at(B, i, j) = at(B, i + 1, j);
+				at(B, i + 1, j) = t;
+			}
+			at(B, i + 1, j) -= tau * at(B, i, j);
+		}
+	}
 	return 0;
 }
 
@@ -1403,40 +1459,6 @@ int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri)
 	return 0;
 }
 
-int matrixf_solve_hess(Matrixf* H, Matrixf* B)
-{
-	int i, j;
-	const int n = H->size[0];
-	const int p = B->size[1];
-	float tau, t;
-
-	if (H->size[1] != n || B->size[0] != n) {
-		return -1;
-	}
-	matrixf_transpose(B);
-	for (j = 0; j < n - 1; j++) {
-		if (fabsf(at(H, j, j)) < fabsf(at(H, j + 1, j))) {
-			for (i = j; i < n; i++) {
-				t = at(H, j, i);
-				at(H, j, i) = at(H, j + 1, i);
-				at(H, j + 1, i) = t;
-			}
-			swap_columns(B, j, j + 1);
-		}
-		if (at(H, j, j) != 0) {
-			tau = at(H, j + 1, j) / at(H, j, j);
-			for (i = j + 1; i < n; i++) {
-				at(H, j + 1, i) -= tau * at(H, j, i);
-			}
-			for (i = 0; i < p; i++) {
-				at(B, i, j + 1) -= tau * at(B, i, j);
-			}
-		}
-	}
-	matrixf_transpose(B);
-	return matrixf_solve_triu(H, B, B, 0);
-}
-
 int matrixf_solve_chol(Matrixf* A, Matrixf* B)
 {
 	int i, j, k;
@@ -1589,6 +1611,17 @@ int matrixf_solve_lu(Matrixf* A, Matrixf* B)
 		}
 	}
 	return 0;
+}
+
+int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, const int ubw)
+{
+	if (matrixf_decomp_lu_banded(A, ubw)) {
+		return -1;
+	}
+	if (matrixf_unpack_lu_banded(A, B)) {
+		return -1;
+	}
+	return matrixf_solve_triu(A, B, B, 0);
 }
 
 int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X)
