@@ -165,30 +165,30 @@ int matrixf_decomp_chol(Matrixf* A);
 int matrixf_decomp_ltl(Matrixf* A);
 
 // This function performs the LU decomposition with partial pivoting of the 
-// square matrix A. The matrix A is transformed in such a way that its upper 
-// triangular part stores the matrix U, whereas its strictly lower triangular 
-// part contains the matrix L, assuming that all the entries of the main
-// diagonal of L are ones (unit lower triangular matrix). P is a matrix 
-// with as many rows as A has. At output, the rows of the input matrix P are 
-// permuted: if P is initialized as an identity matrix, its rows are permuted
-// so that A = P'*L*U. On size mismatch or non-square matrix, the function 
-// returns -1.
+// square matrix A. The matrix A is transformed so that its upper triangular
+// part stores the matrix U, whereas its strictly lower triangular part 
+// contains the matrix L, assuming that all the entries of the main diagonal
+// of L are ones (unit lower triangular matrix). P is a matrix with as many 
+// rows as A has. At output, the rows of the input matrix P are permuted: if
+// P is initialized as an identity matrix, its rows are permuted so that 
+// A = P'*L*U. On size mismatch or non-square matrix, the function returns -1.
 int matrixf_decomp_lu(Matrixf* A, Matrixf* P);
 
 // This function performs the LU decomposition with partial pivoting of the 
-// banded matrix A. In particular, A must be a Hessenberg matrix with upper 
-// bandwidth ubw >= 0. For instance, if ubw = 1, A is tridiagonal. The matrix
-// A is transformed in such a way that its upper triangular part stores the 
+// banded Hessenberg matrix A. In particular, A must be a Hessenberg matrix 
+// with upper bandwidth ubw >= 0. For instance, if ubw = 1, A is tridiagonal.
+// The matrix A is transformed so that its upper triangular part stores the 
 // matrix U, whereas its first subdiagonal encodes the transformations that 
 // are needed to assemble the inverse of the permuted lower triangular matrix
 // L. If A is not square or ubw < 0, the function returns -1.
 int matrixf_decomp_lu_banded(Matrixf* A, const int ubw);
 
-// This function unpacks the compact form of LU decomposition of the banded
-// matrix A. In particular, the function accumulates the inverse of the permuted 
-// lower triangular matrix L onto B, transforming B into inv(L)*B. For instance,
-// this function enables the solution of the linear system U*x = inv(L)*B, 
-// determining its right-hand side. On size mismatch, the function returns -1.
+// This function unpacks the compact form of LU decomposition of the banded 
+// Hessenberg matrix A. In particular, the function accumulates the inverse of
+// the permuted lower triangular matrix L onto B, transforming B into inv(L)*B.
+// For instance, this function enables the solution of the linear system 
+// U*x = inv(L)*B, determining its right-hand side. On size mismatch, the 
+// function returns -1.
 int matrixf_unpack_lu_banded(Matrixf* A, Matrixf* B);
 
 // This function performs the QR decomposition of the m-by-n matrix A, which is
@@ -358,11 +358,11 @@ int matrixf_solve_ltl(Matrixf* A, Matrixf* B);
 int matrixf_solve_lu(Matrixf* A, Matrixf* B);
 
 // This function solves in place the linear system A*X = B for X by LU
-// decomposition with partial pivoting of the banded matrix A. In particular, 
-// A must be a Hessenberg matrix with upper bandwidth ubw >= 0. For instance,
-// if ubw = 1, A is tridiagonal. Matrix A is destroyed, whereas B is overwritten
-// with the matrix X. If A is singular, the function returns 1. On size mismatch,
-// non-square system or ubw < 0, the function returns -1.
+// decomposition with partial pivoting of the banded Hessenberg matrix A. In 
+// particular, A must be a Hessenberg matrix with upper bandwidth ubw >= 0. For
+// instance, if ubw = 1, A is tridiagonal. Matrix A is destroyed, whereas B is 
+// overwritten with the matrix X. If A is singular, the function returns 1. On
+// size mismatch, non-square system or ubw < 0, the function returns -1.
 int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, const int ubw);
 
 // This function solves the linear system A*X = B by QR decomposition

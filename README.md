@@ -21,7 +21,7 @@ The library includes:
 * solver for symmetric indefinite systems;
 * solver for square full-rank systems;
 * solver for general full-rank systems;
-* solver for general rank-deficient systems;  
+* solver for general rank-deficient systems;
 * minimum-norm solver;
 * Moore-Penrose pseudoinverse computation;
 * matrix exponential computation;
