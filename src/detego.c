@@ -410,7 +410,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 		r++;
 	}
 	if (Q && q < m) {
-		matrixf_accumulate_bwd(A, Q);
+		matrixf_unpack_qr_bwd(A, Q);
 		for (k = 0; k < n; k++) {
 			for (i = 0; i < n; i++) {
 				at(&A_econ, i, k) = (i <= k) ? at(A, i, k) : 0;
@@ -431,11 +431,11 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 	return 0;
 }
 
-int matrixf_accumulate_fwd(Matrixf* H, Matrixf* B)
+int matrixf_unpack_qr_fwd(Matrixf* A, Matrixf* B)
 {
 	int i, k;
-	const int m = H->size[0];
-	const int n = H->size[1];
+	const int m = A->size[0];
+	const int n = A->size[1];
 	const int p = B->size[1];
 	const int kmax = m - 1 < n ? m - 2 : n - 1;
 	float alpha, * v, v0;
@@ -445,24 +445,24 @@ int matrixf_accumulate_fwd(Matrixf* H, Matrixf* B)
 	}
 	for (k = 0; k <= kmax; k++) {
 		for (alpha = 1, i = k + 1; i < m; i++) {
-			alpha += at(H, i, k) * at(H, i, k);
+			alpha += at(A, i, k) * at(A, i, k);
 		}
 		if (alpha > 1) {
-			v0 = at(H, k, k);
-			v = &at(H, k, k);
+			v0 = at(A, k, k);
+			v = &at(A, k, k);
 			v[0] = 1;
 			householder_left(B, v, 2.0f / alpha, k, m - 1, 0, p - 1, 1);
-			at(H, k, k) = v0;
+			at(A, k, k) = v0;
 		}
 	}
 	return 0;
 }
 
-int matrixf_accumulate_bwd(Matrixf* H, Matrixf* B)
+int matrixf_unpack_qr_bwd(Matrixf* A, Matrixf* B)
 {
 	int i, k;
-	const int m = H->size[0];
-	const int n = H->size[1];
+	const int m = A->size[0];
+	const int n = A->size[1];
 	const int p = B->size[1];
 	const int kmax = m - 1 < n ? m - 2 : n - 1;
 	float alpha, * v, v0;
@@ -472,14 +472,14 @@ int matrixf_accumulate_bwd(Matrixf* H, Matrixf* B)
 	}
 	for (k = kmax; k >= 0; k--) {
 		for (alpha = 1, i = k + 1; i < m; i++) {
-			alpha += at(H, i, k) * at(H, i, k);
+			alpha += at(A, i, k) * at(A, i, k);
 		}
 		if (alpha > 1) {
-			v0 = at(H, k, k);
-			v = &at(H, k, k);
+			v0 = at(A, k, k);
+			v = &at(A, k, k);
 			v[0] = 1;
 			householder_left(B, v, 2.0f / alpha, k, m - 1, 0, p - 1, 1);
-			at(H, k, k) = v0;
+			at(A, k, k) = v0;
 		}
 	}
 	return 0;
@@ -568,7 +568,7 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 		}
 	}
 	if (U && q < m) {
-		matrixf_accumulate_bwd(A, U);
+		matrixf_unpack_qr_bwd(A, U);
 		for (k = 0; k < n; k++) {
 			for (i = 0; i < n; i++) {
 				at(&A_econ, i, k) = (i <= k) ? at(A, i, k) : 0;
@@ -1643,7 +1643,7 @@ int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X)
 			return 1;
 		}
 		matrixf_transpose(A);
-		matrixf_accumulate_bwd(A, X);
+		matrixf_unpack_qr_bwd(A, X);
 	}
 	else {
 		matrixf_decomp_qr(A, 0, 0, B);
@@ -1759,7 +1759,7 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 			}
 		}
 	}
-	matrixf_accumulate_bwd(A, X);
+	matrixf_unpack_qr_bwd(A, X);
 	matrixf_permute(X, &perm, 1);
 	A->size[0] = m;
 	A->size[1] = n;

@@ -209,23 +209,26 @@ int matrixf_unpack_lu_banded(Matrixf* A, Matrixf* B);
 // initialized as an m-by-n matrix. On size mismatch, the function returns -1.
 int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B);
 
-// This function transforms B into Q'*B by forward accumulation of Householder
-// matrices. The strictly lower triangular part of H stores the meaningful parts
-// of the Householder vectors, which are obtained, e.g., by QR decomposition. 
-// On size mismatch, the function returns -1.
-int matrixf_accumulate_fwd(Matrixf* H, Matrixf* B);
+// This function unpacks the compact form of QR decomposition of matrix A. In 
+// particular, the function transforms B into Q'*B by forward accumulation of 
+// Householder matrices. The strictly lower triangular part of A stores the 
+// meaningful parts of the Householder vectors. On size mismatch, the function
+// returns -1.
+int matrixf_unpack_qr_fwd(Matrixf* A, Matrixf* B);
 
-// This function transforms B into Q*B by backward accumulation of Householder
-// matrices. The strictly lower triangular part of H stores the meaningful parts
-// of the Householder vectors, which are obtained, e.g., by QR decomposition. 
-// On size mismatch, the function returns -1.
-int matrixf_accumulate_bwd(Matrixf* H, Matrixf* B);
+// This function unpacks the compact form of QR decomposition of matrix A. In 
+// particular, the function transforms B into Q*B by backward accumulation of 
+// Householder matrices. The strictly lower triangular part of A stores the 
+// meaningful parts of the Householder vectors. On size mismatch, the function
+// returns -1.
+int matrixf_unpack_qr_bwd(Matrixf* A, Matrixf* B);
 
 // This function accomplishes the bidiagonalization of the m-by-n matrix A so
 // that A = U*B*V'. A is overwritten by the bidiagonal matrix B. The computation
 // of the matrices U and V is omitted if these are null pointers. If U (or V) is
 // a null pointer, the meaningful parts of the Householder vectors are stored
-// off the bidiagonal band and can be used to accumulate U (or V) afterwards.
+// off the bidiagonal band and can be used to accumulate U (or V) afterwards by
+// "matrixf_unpack_qr_fwd" or "matrixf_unpack_qr_bwd".
 // The function can also produce the economy-size decomposition such that:
 // - if m > n, only the first n columns of U are computed (thin U) and the last 
 //   m - n rows of B are excluded so that B becomes n-by-n; to enable the 
