@@ -1629,13 +1629,35 @@ int matrixf_solve_lu(Matrixf* A, Matrixf* B)
 
 int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, const int ubw)
 {
+	int i, j, k, p;
+	const int n = A->size[0];
+	const int h = B->size[1];
+	float Bik, Aii;
+
 	if (matrixf_decomp_lu_banded(A, ubw)) {
 		return -1;
 	}
 	if (matrixf_unpack_lu_banded(A, B)) {
 		return -1;
 	}
-	return matrixf_solve_triu(A, B, B, 0);
+	for (k = 0; k < h; k++) {
+		for (i = n - 1; i >= 0; i--) {
+			p = ubw + i + 2;
+			if (p > n) {
+				p = n;
+			}
+			Bik = at(B, i, k);
+			for (j = i + 1; j < p; j++) {
+				Bik -= at(A, i, j) * at(B, j, k);
+			}
+			Aii = at(A, i, i);
+			if (Aii == 0) {
+				return 1;
+			}
+			at(B, i, k) = Bik / Aii;
+		}
+	}
+	return 0;
 }
 
 int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X)
