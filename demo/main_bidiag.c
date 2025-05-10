@@ -18,19 +18,10 @@ static void unpack_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 	for (i = 0; i < V->size[1]; i++) {
 		at(V, i, i) = 1;
 	}
-	matrixf_unpack_qr_bwd(A, U);
+	matrixf_unpack_householder_bwd(A, U, 0);
 	matrixf_transpose(A);
-	A->size[1] = A->size[0];
+	matrixf_unpack_householder_bwd(A, V, 1);
 	matrixf_transpose(A);
-	for (i = 1; i < A->size[0]; i++) {
-		at(A, i, 0) = 0;
-	}
-	for (j = 0; j < A->size[0] - 2; j++) {
-		for (i = j + 2; i < A->size[0]; i++) {
-			at(A, i, j + 1) = at(A, j, i);
-		}
-	}
-	matrixf_unpack_qr_bwd(A, V);
 	if (U->size[0] == U->size[1]) {
 		matrixf_transpose(A);
 		A->size[1] = U->size[0];
