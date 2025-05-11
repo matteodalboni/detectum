@@ -579,6 +579,56 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 	return 0;
 }
 
+int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, float tol, float* work)
+{
+	int i, j, rank = 0;
+	const int m = A->size[0];
+	const int n = A->size[1];
+	const int p = m < n ? m : n;
+	const int q = m > n ? m : n;
+	Matrixf perm = { { 1, n }, work };
+
+	if (matrixf_decomp_qr(A, U, &perm, 0)) {
+		return -1;
+	}
+	if (!U) {
+		for (j = 0; j < n; j++) {
+			for (i = j + 1; i < m; i++) {
+				at(A, i, j) = 0;
+			}
+		}
+	}
+	if (tol < 0) {
+		tol = q * epsf(at(A, 0, 0));
+	}
+	while (rank < p && fabsf(at(A, rank, rank)) > tol) {
+		rank++;
+	}
+	matrixf_transpose(A);
+	A->size[1] = rank;
+	if (matrixf_decomp_qr(A, V, 0, 0)) {
+		return -1;
+	}
+	if (V) {
+		matrixf_permute(V, &perm, 1);
+	}
+	else {
+		for (j = 0; j < rank; j++) {
+			for (i = j + 1; i < n; i++) {
+				at(A, i, j) = 0;
+			}
+		}
+	}
+	if (U) {
+		A->size[1] = U->size[1];
+	}
+	else {
+		A->size[1] = m;
+	}
+	matrixf_transpose(A);
+	return rank;
+}
+
 int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 {
 	const int m = A->size[0];

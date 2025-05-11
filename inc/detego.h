@@ -246,6 +246,21 @@ int matrixf_unpack_householder_bwd(Matrixf* A, Matrixf* B, const int s);
 // On size mismatch, the function returns -1.
 int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V);
 
+// This function performs the complete orthogonal decomposition of the m-by-n matrix
+// A so that A = U*T*V'; T = [L, 0; 0; 0], L being a lower triangular square block
+// whose size is r-by-r, where r is the rank of A. The computation of the matrices 
+// U and V is omitted if these are null pointers. If m > n, the function can also
+// produce the economy-size decomposition such that only the first n columns of U
+// are computed (thin U) and the last m - n rows of T are excluded so that T becomes
+// n-by-n. To enable the economy-size decomposition, U must be initialized as an 
+// m-by-n matrix. tol is the tolerance to determine the rank of A: if the input 
+// tolerance is negative, the default value max(m,n)*eps(R(0,0)) is used instead, 
+// where R(0,0) is the on-diagonal element of R with the largest magnitude, being R
+// the upper triangular matrix obtained by QR decomposition with column pivoting of 
+// A. The array work is the additional workspace memory: its minimum length is n. 
+// On size mismatch, the function returns -1. Otherwise, it returns the rank of A.
+int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, float tol, float* work);
+
 // This function performs the singular value decomposition of the m-by-n matrix A
 // by QR iteration. The decomposition is such that A = U*S*V'. The computation of 
 // the matrix of the left singular vectors (i.e. matrix U) is performed only if U 

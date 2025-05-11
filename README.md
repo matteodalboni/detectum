@@ -8,7 +8,8 @@ The library includes:
 * LTL' decomposition;
 * LU decomposition;
 * QR decomposition;
-* bidiagonalization;
+* bidiagonal decomposition;
+* complete orthogonal decomposition (COD);
 * singular value decomposition (SVD);
 * Hessenberg decomposition;
 * Schur decomposition;

@@ -19,40 +19,28 @@ int main()
 		10, 0, 0, 0, 78,
 		11, 0, 0, 0, 84
 	};
+	float work[n] = { 0 };
+	int rank;
 	Matrixf A;
-	Matrixf p = matrixf(1, n);
 	Matrixf U = matrixf(m, m);
 	Matrixf V = matrixf(n, n);
 	Matrixf UT = matrixf(m, n);
-	const int q = m < n ? m : n;
-	int rank = 0;
-	float tol = 0;
 
 	// Initialization
 	matrixf_init(&A, m, n, A_data, 1);
 	printf("A = [\n"); matrixf_print(&A, "%10.5g "); printf("];\n\n");
 	// Complete orthogonal decomposition (COD)
-	matrixf_decomp_qr(&A, &U, &p, 0);
-	tol = (m > n ? m : n) * epsf(at(&A, 0, 0));
-	while (rank < q && fabsf(at(&A, rank, rank)) > tol) {
-		rank++;
-	}
+	rank = matrixf_decomp_cod(&A, &U, &V, -1, work);
 	printf("The rank of A is %d\n\n", rank);
-	matrixf_transpose(&A);
-	A.size[1] = rank;
-	matrixf_decomp_qr(&A, &V, 0, 0);
-	A.size[1] = m;
-	matrixf_transpose(&A);
-	matrixf_permute(&V, &p, 1);
 	printf("U = [\n"); matrixf_print(&U, "%10.5g "); printf("];\n\n");
 	printf("T = [\n"); matrixf_print(&A, "%10.5g "); printf("];\n\n");
 	printf("V = [\n"); matrixf_print(&V, "%10.5g "); printf("];\n\n");
 	// Matrix reconstruction
 	matrixf_multiply(&U, &A, &UT, 1, 0, 0, 0);
+	A.size[0] = m; A.size[1] = n;
 	matrixf_multiply(&UT, &V, &A, 1, 0, 0, 1);
 	printf("U*T*V' = [\n"); matrixf_print(&A, "%10.5g "); printf("];\n\n");
 	// Memory release
-	free(p.data);
 	free(U.data);
 	free(V.data);
 	free(UT.data);
