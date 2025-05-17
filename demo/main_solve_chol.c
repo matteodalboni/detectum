@@ -23,6 +23,7 @@ int main()
 	matrixf_init(&A, n, n, A_data, 1);
 	matrixf_init(&B, n, 1, B_data, 1);
 	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
+	printf("B = \n"); matrixf_print(&B, "%9.4f "); printf("\n");
 	if (matrixf_solve_chol(&A, &B)) {
 		printf("The matrix is not positive definite!\n");
 		return 1;
@@ -30,7 +31,7 @@ int main()
 	for (j = 0; j < n; j++)
 		for (i = j + 1; i < n; i++) at(&A, i, j) = 0;
 	printf("R = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
-	printf("B = \n"); matrixf_print(&B, "%9.4f "); printf("\n");
+	printf("X = \n"); matrixf_print(&B, "%9.4f "); printf("\n");
 	matrixf_multiply(&A, &A, &C, 1, 0, 1, 0);
 	printf("C = \n"); matrixf_print(&C, "%9.4f "); printf("\n");
 

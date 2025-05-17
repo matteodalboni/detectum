@@ -1,21 +1,5 @@
 #include "detego.h"
 
-// This function swaps the columns i and j of the matrix A.
-static void swap_columns(Matrixf* A, const int i, const int j)
-{
-	int k;
-	const int m = A->size[0];
-	float* x = &at(A, 0, i);
-	float* y = &at(A, 0, j);
-	float xk;
-
-	for (k = 0; k < m; k++) {
-		xk = x[k];
-		x[k] = y[k];
-		y[k] = xk;
-	}
-}
-
 // Householder transformation X(i0:iend,j0:jend) = H*X(i0:iend,j0:jend),
 // where H = I - beta*v*v'; stride is the increment of v.
 static void householder_hx(Matrixf* X, float* v, const float beta,
@@ -68,11 +52,11 @@ void matrixf_init(Matrixf* A, int rows, int cols, float* data, const int ordmem)
 
 int matrixf_permute(Matrixf* A, Matrixf* p, const int reverse)
 {
-	int i, j, k, t;
+	int i, j, k, q;
 	const int m = (reverse) ? p->size[1] : p->size[0];
 	const int n = (reverse) ? p->size[0] : p->size[1];
 	const int h = m > n ? m : n;
-	float* x = p->data;
+	float t, * x = p->data, * col1, * col2;
 
 	if ((A->size[0] != m || n != 1) &&
 		(A->size[1] != n || m != 1)) {
@@ -86,10 +70,10 @@ int matrixf_permute(Matrixf* A, Matrixf* p, const int reverse)
 			if (i >= 0) {
 				j = k;
 				do {
-					t = (int)x[i];
+					q = (int)x[i];
 					x[i] = -(float)(j + 1);
 					j = i;
-					i = t;
+					i = q;
 				} while (j != k);
 			}
 		}
@@ -100,13 +84,20 @@ int matrixf_permute(Matrixf* A, Matrixf* p, const int reverse)
 	if (n == 1) {
 		matrixf_transpose(A);
 	}
+	q = A->size[0];
 	for (i = 0; i < h - 1; i++) {
 		j = (int)x[i];
 		while (j < i) {
 			j = (int)x[j];
 		}
 		if (i != j) {
-			swap_columns(A, i, j);
+			col1 = &at(A, 0, i);
+			col2 = &at(A, 0, j);
+			for (k = 0; k < q; k++) {
+				t = col1[k];
+				col1[k] = col2[k];
+				col2[k] = t;
+			}
 		}
 	}
 	if (n == 1) {
@@ -168,6 +159,7 @@ int matrixf_decomp_ltl(Matrixf* A)
 	int i, j, k, m;
 	const int n = A->size[0];
 	float s, Ljj, P1, A0 = A->data[0], * h = A->data;
+	float* col1, * col2;
 
 	if (A->size[1] != n) {
 		return -1;
@@ -206,7 +198,13 @@ int matrixf_decomp_ltl(Matrixf* A)
 				at(A, m, k) = at(A, j + 1, k);
 				at(A, j + 1, k) = s;
 			}
-			swap_columns(A, m, j + 1);
+			col1 = &at(A, 0, m);
+			col2 = &at(A, 0, j + 1);
+			for (k = 0; k < n; k++) {
+				s = col1[k];
+				col1[k] = col2[k];
+				col2[k] = s;
+			}
 			if (!j) {
 				P1 = at(A, 0, 1);
 			}
@@ -235,7 +233,9 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* B)
 {
 	int i, j, k;
 	const int n = A->size[0];
-	float a, b;
+	const int p = B->size[1];
+	float a, b, t;
+	float* col1, * col2;
 
 	if (A->size[1] != n || B->size[0] != n) {
 		return -1;
@@ -252,8 +252,20 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* B)
 				a = b;
 			}
 		}
-		swap_columns(A, k, i);
-		swap_columns(B, k, i);
+		col1 = &at(A, 0, k);
+		col2 = &at(A, 0, i);
+		for (j = 0; j < n; j++) {
+			t = col1[j];
+			col1[j] = col2[j];
+			col2[j] = t;
+		}
+		col1 = &at(B, 0, k);
+		col2 = &at(B, 0, i);
+		for (j = 0; j < p; j++) {
+			t = col1[j];
+			col1[j] = col2[j];
+			col2[j] = t;
+		}
 		for (k = i + 1; k < n; k++) {
 			a = at(A, i, i);
 			if (a != 0) {
@@ -332,6 +344,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 	const int n = A->size[1];
 	const int rmax = m < n ? m - 1 : n - 1;
 	float alpha, beta, s, t, c, cm = 1, * v, v0;
+	float* col1, * col2;
 	Matrixf A_econ = { { n, n }, A->data };
 
 	if (Q) {
@@ -363,7 +376,13 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 	}
 	while (cm > 0 && r <= rmax) {
 		if (P) {
-			swap_columns(A, r, km);
+			col1 = &at(A, 0, r);
+			col2 = &at(A, 0, km);
+			for (k = 0; k < m; k++) {
+				t = col1[k];
+				col1[k] = col2[k];
+				col2[k] = t;
+			}
 			t = P->data[r];
 			P->data[r] = P->data[km];
 			P->data[km] = t;
@@ -1558,6 +1577,7 @@ int matrixf_solve_ltl(Matrixf* A, Matrixf* B)
 	const int n = A->size[0];
 	const int p = B->size[1];
 	float beta, tau, t, Aii;
+	float* col1, * col2;
 	Matrixf perm = { { 1, n }, 0 };
 
 	if (B->size[0] != n || matrixf_decomp_ltl(A)) {
@@ -1592,7 +1612,13 @@ int matrixf_solve_ltl(Matrixf* A, Matrixf* B)
 			t = at(A, j, j);
 			at(A, j, j) = beta;
 			beta = t;
-			swap_columns(B, j, j + 1);
+			col1 = &at(B, 0, j);
+			col2 = &at(B, 0, j + 1);
+			for (k = 0; k < p; k++) {
+				t = col1[k];
+				col1[k] = col2[k];
+				col2[k] = t;
+			}
 		}
 		if (at(A, j, j) != 0) {
 			tau = beta / at(A, j, j);
