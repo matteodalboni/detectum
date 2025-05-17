@@ -1118,15 +1118,17 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 				for (k = q - 1; k <= m - 3; k++) {
 					t = hypotf(x, y);
 					alpha = hypotf(t, z);
-					s = x >= 0 ? 1.0f : -1.0f;
-					t = x + s * alpha;
-					v[1] = y / t;
-					v[2] = z / t;
-					beta = t * s / alpha;
-					householder_hx(A, v, beta, k + 1, k + 3, q > k ? q : k, n - 1, 1);
-					householder_xh(A, v, beta, 0, (k + 4) < m ? (k + 4) : m, k + 1, k + 3, 1);
-					if (U) {
-						householder_xh(U, v, beta, 0, n - 1, k + 1, k + 3, 1);
+					if (alpha > 0) {
+						s = x >= 0 ? 1.0f : -1.0f;
+						t = x + s * alpha;
+						v[1] = y / t;
+						v[2] = z / t;
+						beta = t * s / alpha;
+						householder_hx(A, v, beta, k + 1, k + 3, q > k ? q : k, n - 1, 1);
+						householder_xh(A, v, beta, 0, (k + 4) < m ? (k + 4) : m, k + 1, k + 3, 1);
+						if (U) {
+							householder_xh(U, v, beta, 0, n - 1, k + 1, k + 3, 1);
+						}
 					}
 					x = at(A, k + 2, k + 1);
 					y = at(A, k + 3, k + 1);
@@ -1135,14 +1137,16 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 					}
 				}
 				alpha = hypotf(x, y);
-				s = x >= 0 ? 1.0f : -1.0f;
-				t = x + s * alpha;
-				v[1] = y / t;
-				beta = t * s / alpha;
-				householder_hx(A, v, beta, m - 1, m, m - 2, n - 1, 1);
-				householder_xh(A, v, beta, 0, m, m - 1, m, 1);
-				if (U) {
-					householder_xh(U, v, beta, 0, n - 1, m - 1, m, 1);
+				if (alpha > 0) {
+					s = x >= 0 ? 1.0f : -1.0f;
+					t = x + s * alpha;
+					v[1] = y / t;
+					beta = t * s / alpha;
+					householder_hx(A, v, beta, m - 1, m, m - 2, n - 1, 1);
+					householder_xh(A, v, beta, 0, m, m - 1, m, 1);
+					if (U) {
+						householder_xh(U, v, beta, 0, n - 1, m - 1, m, 1);
+					}
 				}
 			}
 			for (k = q; k < m; k++) {
