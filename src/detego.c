@@ -1455,9 +1455,7 @@ int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri)
 	const int q = m < n ? m : n;
 	float Bik, Lii;
 
-	if (B->size[0] != m ||
-		X->size[0] != n ||
-		X->size[1] != h) {
+	if (B->size[0] != m || X->size[0] != n || X->size[1] != h) {
 		return -1;
 	}
 	for (k = 0; k < h; k++) {
@@ -1501,9 +1499,7 @@ int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri)
 	const int q = m < n ? m : n;
 	float Bik, Uii;
 
-	if (B->size[0] != m ||
-		X->size[0] != n ||
-		X->size[1] != h) {
+	if (B->size[0] != m || X->size[0] != n || X->size[1] != h) {
 		return -1;
 	}
 	for (k = 0; k < h; k++) {
@@ -1772,9 +1768,7 @@ int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 	float Bik;
 	Matrixf perm = { { 1, n }, work };
 
-	if (B->size[0] != m ||
-		X->size[0] != n ||
-		X->size[1] != h) {
+	if (B->size[0] != m || X->size[0] != n || X->size[1] != h) {
 		return -1;
 	}
 	matrixf_decomp_qr(A, 0, &perm, B);
@@ -1824,9 +1818,7 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 	float Bik;
 	Matrixf perm = { { 1, n }, work };
 
-	if (B->size[0] != m ||
-		X->size[0] != n ||
-		X->size[1] != h) {
+	if (B->size[0] != m || X->size[0] != n || X->size[1] != h) {
 		return -1;
 	}
 	matrixf_decomp_qr(A, 0, &perm, B);
