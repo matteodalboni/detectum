@@ -165,14 +165,15 @@ int matrixf_decomp_chol(Matrixf* A);
 int matrixf_decomp_ltl(Matrixf* A);
 
 // This function performs the LU decomposition with partial pivoting of the 
-// square matrix A. The matrix A is transformed so that its upper triangular
-// part stores the matrix U, whereas its strictly lower triangular part 
-// contains the matrix L, assuming that all the entries of the main diagonal
-// of L are ones (unit lower triangular matrix). P is a matrix with as many 
-// rows as A has. At output, the rows of the input matrix P are permuted: if
-// P is initialized as an identity matrix, its rows are permuted so that 
-// A = P'*L*U. On size mismatch or non-square matrix, the function returns -1.
-int matrixf_decomp_lu(Matrixf* A, Matrixf* P);
+// n-by-n matrix A so that A = P'*L*U. The matrix A is transformed so that 
+// its upper triangular part stores the matrix U, whereas its strictly lower
+// triangular part contains the matrix L, assuming that all the entries of 
+// the main diagonal of L are ones (unit lower triangular matrix). B must 
+// have n rows. At output, the rows of B are permuted so that B is 
+// transformed into P*B: if B is initialized as an n-by-n identity matrix, 
+// it is transformed into P. On size mismatch or non-square matrix, the 
+// function returns -1.
+int matrixf_decomp_lu(Matrixf* A, Matrixf* B);
 
 // This function performs the LU decomposition with partial pivoting of the 
 // banded Hessenberg matrix A. In particular, A must be a Hessenberg matrix 
@@ -247,19 +248,23 @@ int matrixf_unpack_householder_bwd(Matrixf* A, Matrixf* B, const int s);
 int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V);
 
 // This function performs the complete orthogonal decomposition of the m-by-n matrix
-// A so that A = U*T*V'; T = [L, 0; 0; 0], L being a lower triangular square block
-// whose size is r-by-r, where r is the rank of A. The computation of the matrices 
-// U and V is omitted if these are null pointers. If m > n, the function can also
-// produce the economy-size decomposition such that only the first n columns of U
-// are computed (thin U) and the last m - n rows of T are excluded so that T becomes
-// n-by-n. To enable the economy-size decomposition, U must be initialized as an 
-// m-by-n matrix. tol is the tolerance to determine the rank of A: if the input 
-// tolerance is negative, the default value max(m,n)*eps(R(0,0)) is used instead, 
-// where R(0,0) is the on-diagonal element of R with the largest magnitude, being R
-// the upper triangular matrix obtained by QR decomposition with column pivoting of 
-// A. The array work is the additional workspace memory: its minimum length is n. 
-// On size mismatch, the function returns -1. Otherwise, it returns the rank of A.
-int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, float tol, float* work);
+// A so that A*P = U*T*V'; T = [L, 0; 0; 0], L being a lower triangular square block
+// whose size is r-by-r, where r is the rank of A. The permutation matrix P must be
+// always provided, as the function makes use of QR decomposition with column 
+// pivoting. If P is initialized as a 1-by-n vector and n > 1, the permutations are
+// encoded so that (P(i),i) for 0 <= i < n are the unit elements of the permutation 
+// matrix. Else, if P is initialized as an n-by-n matrix, the full permutation 
+// matrix is returned. The computation of the matrices U and V is omitted if these
+// are null pointers. If m > n, the function can also produce the economy-size 
+// decomposition such that only the first n columns of U are computed (thin U) and
+// the last m - n rows of T are excluded so that T becomes n-by-n. To enable the 
+// economy-size decomposition, U must be initialized as an m-by-n matrix. tol is the
+// tolerance to determine the rank of A: if the input tolerance is negative, the 
+// default value max(m,n)*eps(R(0,0)) is used instead, where R(0,0) is the 
+// on-diagonal element of R with the largest magnitude, R being the upper triangular
+// matrix obtained by QR decomposition with column pivoting of A. On size mismatch,
+// the function returns -1. Otherwise, it returns the rank of A.
+int matrixf_decomp_cod(Matrixf* A, Matrixf* P, Matrixf* U, Matrixf* V, float tol);
 
 // This function performs the singular value decomposition of the m-by-n matrix A
 // by QR iteration. The decomposition is such that A = U*S*V'. The computation of 
@@ -405,7 +410,7 @@ int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X);
 // accommodate the larger of B or X. tol is the tolerance to determine the rank 
 // of the A m-by-n matrix A: if the input tolerance is negative, the default 
 // value max(m,n)*eps(R(0,0)) is used instead, where R(0,0) is the on-diagonal 
-// element of R with the largest magnitude, being R the upper triangular matrix 
+// element of R with the largest magnitude, R being the upper triangular matrix 
 // obtained by the QR decomposition with column pivoting of A. The array work is
 // the additional workspace memory: its minimum length is n. On size mismatch, 
 // the function returns -1.
@@ -417,8 +422,8 @@ int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 // array with X, provided that the array is large enough to accommodate the larger
 // of B or X. tol is the tolerance to determine the rank of A: if the input 
 // tolerance is negative, the default value max(m,n)*eps(R(0,0)) is used instead, 
-// where R(0,0) is the on-diagonal element of R with the largest magnitude, being
-// R the upper triangular matrix obtained by QR decomposition with column pivoting
+// where R(0,0) is the on-diagonal element of R with the largest magnitude, R being
+// the upper triangular matrix obtained by QR decomposition with column pivoting
 // of A. The array work is the additional workspace memory: its minimum length is n.
 // On size mismatch, the function returns -1.
 int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work);
@@ -449,8 +454,8 @@ int matrixf_pow(Matrixf* A, unsigned const int p, float* work);
 // This function performs the general matrix multiplication (GEMM), which has
 // the form C = alpha*op(A)*op(B) + beta*C, where A, B and C are general 
 // matrices, alpha and beta are scalars, and op(X) is one of X or its
-// transpose. Therefore, if transX = 0, op(X) = X, else op(X) = X', being 
-// X' the transpose of X. C must be a distinct instance with respect to A and B. 
+// transpose. Therefore, if transX = 0, op(X) = X, else op(X) = X', X' being 
+// the transpose of X. C must be a distinct instance with respect to A and B. 
 // On size mismatch, the function returns -1.
 int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 	const float alpha, const float beta, const int transA, const int transB);

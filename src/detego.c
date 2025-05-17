@@ -231,17 +231,17 @@ int matrixf_decomp_ltl(Matrixf* A)
 	return 0;
 }
 
-int matrixf_decomp_lu(Matrixf* A, Matrixf* P)
+int matrixf_decomp_lu(Matrixf* A, Matrixf* B)
 {
 	int i, j, k;
 	const int n = A->size[0];
 	float a, b;
 
-	if (A->size[1] != n || P->size[0] != n) {
+	if (A->size[1] != n || B->size[0] != n) {
 		return -1;
 	}
 	matrixf_transpose(A);
-	matrixf_transpose(P);
+	matrixf_transpose(B);
 	for (i = 0; i < n - 1; i++) {
 		k = j = i;
 		a = fabsf(at(A, i, j));
@@ -253,7 +253,7 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* P)
 			}
 		}
 		swap_columns(A, k, i);
-		swap_columns(P, k, i);
+		swap_columns(B, k, i);
 		for (k = i + 1; k < n; k++) {
 			a = at(A, i, i);
 			if (a != 0) {
@@ -265,7 +265,7 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* P)
 		}
 	}
 	matrixf_transpose(A);
-	matrixf_transpose(P);
+	matrixf_transpose(B);
 	return 0;
 }
 
@@ -579,16 +579,15 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 	return 0;
 }
 
-int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, float tol, float* work)
+int matrixf_decomp_cod(Matrixf* A, Matrixf* P, Matrixf* U, Matrixf* V, float tol)
 {
 	int i, j, rank = 0;
 	const int m = A->size[0];
 	const int n = A->size[1];
 	const int p = m < n ? m : n;
 	const int q = m > n ? m : n;
-	Matrixf perm = { { 1, n }, work };
 
-	if (matrixf_decomp_qr(A, U, &perm, 0)) {
+	if (matrixf_decomp_qr(A, U, P, 0)) {
 		return -1;
 	}
 	if (!U) {
@@ -608,9 +607,6 @@ int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, float tol, float* wor
 	A->size[1] = rank;
 	if (matrixf_decomp_qr(A, V, 0, 0)) {
 		return -1;
-	}
-	if (V) {
-		matrixf_permute(V, &perm, 1);
 	}
 	else {
 		for (j = 0; j < rank; j++) {
