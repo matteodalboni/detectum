@@ -137,7 +137,8 @@ int matrixf_decomp_chol(Matrixf* A)
 	}
 	for (j = 0; j < n; j++) {
 		for (i = j; i < n; i++) {
-			for (v = at(A, j, i), k = 0; k < j; k++) {
+			v = at(A, j, i);
+			for (k = 0; k < j; k++) {
 				v -= at(A, k, i) * at(A, k, j);
 			}
 			if (i == j) {
@@ -266,13 +267,14 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* B)
 			col1[j] = col2[j];
 			col2[j] = t;
 		}
+		a = at(A, i, i);
 		for (k = i + 1; k < n; k++) {
-			a = at(A, i, i);
 			if (a != 0) {
 				at(A, i, k) /= a;
 			}
+			b = at(A, i, k);
 			for (j = i + 1; j < n; j++) {
-				at(A, j, k) -= at(A, j, i) * at(A, i, k);
+				at(A, j, k) -= at(A, j, i) * b;
 			}
 		}
 	}
@@ -457,20 +459,20 @@ int matrixf_unpack_householder_fwd(Matrixf* A, Matrixf* B, const int s)
 	const int n = A->size[1];
 	const int p = B->size[1];
 	const int kmax = m - 1 < n ? m - 2 : n - 1;
-	float alpha, * v, v0;
+	float gamma, * v, v0;
 
 	if (B->size[0] != m || s < 0) {
 		return -1;
 	}
 	for (k = 0; k <= kmax - s; k++) {
-		for (alpha = 1, i = k + 1 + s; i < m; i++) {
-			alpha += at(A, i, k) * at(A, i, k);
+		for (gamma = 1, i = k + 1 + s; i < m; i++) {
+			gamma += at(A, i, k) * at(A, i, k);
 		}
-		if (alpha > 1) {
+		if (gamma > 1) {
 			v0 = at(A, k + s, k);
 			v = &at(A, k + s, k);
 			v[0] = 1;
-			householder_hx(B, v, 2.0f / alpha, k + s, m - 1, 0, p - 1, 1);
+			householder_hx(B, v, 2.0f / gamma, k + s, m - 1, 0, p - 1, 1);
 			at(A, k + s, k) = v0;
 		}
 	}
@@ -484,20 +486,20 @@ int matrixf_unpack_householder_bwd(Matrixf* A, Matrixf* B, const int s)
 	const int n = A->size[1];
 	const int p = B->size[1];
 	const int kmax = m - 1 < n ? m - 2 : n - 1;
-	float alpha, * v, v0;
+	float gamma, * v, v0;
 
 	if (B->size[0] != m || s < 0) {
 		return -1;
 	}
 	for (k = kmax - s; k >= 0; k--) {
-		for (alpha = 1, i = k + 1 + s; i < m; i++) {
-			alpha += at(A, i, k) * at(A, i, k);
+		for (gamma = 1, i = k + 1 + s; i < m; i++) {
+			gamma += at(A, i, k) * at(A, i, k);
 		}
-		if (alpha > 1) {
+		if (gamma > 1) {
 			v0 = at(A, k + s, k);
 			v = &at(A, k + s, k);
 			v[0] = 1;
-			householder_hx(B, v, 2.0f / alpha, k + s, m - 1, 0, p - 1, 1);
+			householder_hx(B, v, 2.0f / gamma, k + s, m - 1, 0, p - 1, 1);
 			at(A, k + s, k) = v0;
 		}
 	}
@@ -874,9 +876,11 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 			for (k = j + 1; k < n; k++) {
 				a = b = p = 0;
 				for (i = 0; i < m; i++) {
-					a += at(A, i, j) * at(A, i, j);
-					b += at(A, i, k) * at(A, i, k);
-					p += at(A, i, j) * at(A, i, k);
+					Xij = at(A, i, j);
+					Xik = at(A, i, k);
+					a += Xij * Xij;
+					b += Xik * Xik;
+					p += Xij * Xik;
 				}
 				p *= 2.0f;
 				q = a - b;
@@ -1576,7 +1580,7 @@ int matrixf_solve_ltl(Matrixf* A, Matrixf* B)
 	int i, j, k, s = 0;
 	const int n = A->size[0];
 	const int p = B->size[1];
-	float beta, tau, t, Aii;
+	float beta, tau, t, Aii, Aij, Aji;
 	float* col1, * col2;
 	Matrixf perm = { { 1, n }, 0 };
 
@@ -1591,8 +1595,9 @@ int matrixf_solve_ltl(Matrixf* A, Matrixf* B)
 	A->data[0] = t;
 	for (i = 1; i < n; i++) {
 		for (j = 1; j < i; j++) {
+			Aij = at(A, i, j);
 			for (k = 0; k < p; k++) {
-				at(B, k, i) -= at(A, i, j) * at(B, k, j);
+				at(B, k, i) -= Aij * at(B, k, j);
 			}
 		}
 	}
@@ -1648,8 +1653,9 @@ int matrixf_solve_ltl(Matrixf* A, Matrixf* B)
 	}
 	for (i = n - 1; i > 0; i--) {
 		for (j = i + 1; j < n; j++) {
+			Aji = at(A, j, i);
 			for (k = 0; k < p; k++) {
-				at(B, k, i) -= at(A, j, i) * at(B, k, j);
+				at(B, k, i) -= Aji * at(B, k, j);
 			}
 		}
 	}
