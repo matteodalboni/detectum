@@ -994,9 +994,7 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 	}
 	if (!U) {
 		for (k = 0; k < n - 2; k++) {
-			for (i = k + 2; i < n; i++) {
-				at(A, i, k) = 0;
-			}
+			at(A, k + 2, k) = 0;
 		}
 	}
 	while (m > 0 && sweep < sweepmax) {
