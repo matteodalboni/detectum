@@ -74,24 +74,20 @@ static inline float normf(const float* vec, const int len, const int stride)
 
 // This function computes the Givens rotation pair (c,s) so that 
 // [c -s; s c]*[a; b] = [r; 0].
-static inline void givensf(const float a, const float b, float* c, float* s)
+static inline float givensf(const float a, const float b, float* c, float* s)
 {
-	float tau = 0;
+	float r = a;
 
 	if (b == 0) {
 		*c = 1;
 		*s = 0;
 	}
-	else if (fabsf(b) > fabsf(a)) {
-		tau = -a / b;
-		*s = 1.0f / sqrtf(1 + tau * tau);
-		*c = *s * tau;
-	}
 	else {
-		tau = -b / a;
-		*c = 1.0f / sqrtf(1 + tau * tau);
-		*s = *c * tau;
+		r = hypotf(a, b);
+		*c = +a / r;
+		*s = -b / r;
 	}
+	return r;
 }
 
 #ifdef EOF // include stdio.h before detego.h to enable this section

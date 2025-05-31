@@ -893,12 +893,12 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 				else {
 					if (q < 0) {
 						s = (p < 0) ? -1.0f : 1.0f;
-						sine = sqrtf((v - q) / (2.0f * v)) * s;
-						cosine = p / (2.0f * v * sine);
+						sine = sqrtf(0.5f * (1 - q / v)) * s;
+						cosine = 0.5f * p / (v * sine);
 					}
 					else {
-						cosine = sqrtf((v + q) / (2.0f * v));
-						sine = p / (2.0f * v * cosine);
+						cosine = sqrtf(0.5f * (1 + q / v));
+						sine = 0.5f * p / (v * cosine);
 					}
 					for (i = 0; i < m; i++) {
 						Xij = at(A, i, j);
