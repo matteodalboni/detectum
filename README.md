@@ -1,7 +1,7 @@
-# DeTeGo — Decomposition Techniques designed for on-the-Go use
+# DeTecTUM — Decomposition Techniques with Tiny Usage of Memory
 A lightweight linear algebra library offering a wide selection of matrix decompositions and solvers for real-valued dense matrices.
 
-One of the distinctive traits of DeTeGo is that all the algorithms are built around in-place operations, ensuring a minimal memory footprint. Fully implemented in plain C, the library adopts single-precision arithmetic and avoids dynamic memory allocation. All of these features make DeTeGo ideal for embedded systems, too.
+One of the distinctive traits of DeTecTUM is that all the algorithms are built around in-place operations, ensuring a minimal memory footprint. Fully implemented in plain C, the library adopts single-precision arithmetic and avoids dynamic memory allocation. All of these features make DeTecTUM ideal for embedded systems too.
 
 The library includes:
 * Cholesky decomposition;
@@ -29,7 +29,7 @@ The library includes:
 * matrix exponentiation to positive integer power.
 
 ## Testing on Linux
-gcc -o mydemo demo/mydemo.c src/detego.c -lm -I inc
+gcc -o mydemo demo/mydemo.c src/detectum.c -lm -I inc
 
 ## References
 [1] Golub, Gene H., and Charles F. Van Loan. *Matrix computations*. JHU press, 2013.\
