@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "detego.h"
+#include "detectum.h"
 
 // This function extracts the eigenvalues from the quasitriangular Schur 
 // matrix T. The real and imaginary parts are stored in lambda_re and lambda_im, 

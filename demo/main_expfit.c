@@ -3,7 +3,7 @@ https://it.mathworks.com/help/matlab/math/systems-of-linear-equations.html
 */
 
 #include <stdio.h>
-#include "detego.h"
+#include "detectum.h"
 
 #define M 6
 #define N 2

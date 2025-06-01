@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "detego.h"
+#include "detectum.h"
 
 #define PI 3.141592653589793f
 #define PTS 10

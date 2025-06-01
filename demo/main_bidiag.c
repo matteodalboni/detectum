@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "detego.h"
+#include "detectum.h"
 
 static void unpack_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 {

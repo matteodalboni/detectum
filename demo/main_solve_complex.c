@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "detego.h"
+#include "detectum.h"
 
 static void print_complex(float* Real, float* Imag, int rows, int cols, char* format) {
 

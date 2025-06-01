@@ -49,7 +49,7 @@ static inline double tock(struct timespec* t0) {
 #endif
 #include "stdio.h"
 #include "stdlib.h"
-#include "detego.h"
+#include "detectum.h"
 
 #define M 200
 #define N 180

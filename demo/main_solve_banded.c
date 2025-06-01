@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "detego.h"
+#include "detectum.h"
 
 #define n 7
 #define p 2

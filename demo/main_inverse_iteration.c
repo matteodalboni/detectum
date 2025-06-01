@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "detego.h"
+#include "detectum.h"
 
 static int inverse_iteration(Matrixf* A, Matrixf* v,
 	float eigval_re, float eigval_im, float* work, int iter)

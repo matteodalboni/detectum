@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "detego.h"
+#include "detectum.h"
 
 #define disp(A, format) \
 do{ printf(#A" = \n"); matrixf_print(&A, format); printf("\n");} while (0)

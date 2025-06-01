@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "detego.h"
+#include "detectum.h"
 
 #define IN_PLACE
 

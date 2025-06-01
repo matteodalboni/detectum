@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "detego.h"
+#include "detectum.h"
 
 #define m 10
 #define n 5

@@ -1,5 +1,5 @@
-#ifndef DETEGO_H
-#define DETEGO_H
+#ifndef DETECTUM_H
+#define DETECTUM_H
 
 #include <math.h>
 
@@ -8,35 +8,35 @@ typedef struct {
 	float* data;
 } Matrixf;
 
-#ifndef DETEGO_SVD_SWEEPMAX
-#define DETEGO_SVD_SWEEPMAX (10000)
+#ifndef DETECTUM_SVD_SWEEPMAX
+#define DETECTUM_SVD_SWEEPMAX (10000)
 #endif
-#ifndef DETEGO_SVD_TOL
-#define DETEGO_SVD_TOL (3e-7f)
+#ifndef DETECTUM_SVD_TOL
+#define DETECTUM_SVD_TOL (3e-7f)
 #endif
-#ifndef DETEGO_SVD_JACOBI_SWEEPMAX
-#define DETEGO_SVD_JACOBI_SWEEPMAX (1000)
+#ifndef DETECTUM_SVD_JACOBI_SWEEPMAX
+#define DETECTUM_SVD_JACOBI_SWEEPMAX (1000)
 #endif
-#ifndef DETEGO_SVD_JACOBI_TOL
-#define DETEGO_SVD_JACOBI_TOL (3e-7f)
+#ifndef DETECTUM_SVD_JACOBI_TOL
+#define DETECTUM_SVD_JACOBI_TOL (3e-7f)
 #endif
-#ifndef DETEGO_SCHUR_SYMM_SWEEPMAX
-#define DETEGO_SCHUR_SYMM_SWEEPMAX (10000)
+#ifndef DETECTUM_SCHUR_SYMM_SWEEPMAX
+#define DETECTUM_SCHUR_SYMM_SWEEPMAX (10000)
 #endif
-#ifndef DETEGO_SCHUR_SYMM_TOL
-#define DETEGO_SCHUR_SYMM_TOL (3e-7f)
+#ifndef DETECTUM_SCHUR_SYMM_TOL
+#define DETECTUM_SCHUR_SYMM_TOL (3e-7f)
 #endif
-#ifndef DETEGO_SCHUR_SWEEPMAX
-#define DETEGO_SCHUR_SWEEPMAX (10000)
+#ifndef DETECTUM_SCHUR_SWEEPMAX
+#define DETECTUM_SCHUR_SWEEPMAX (10000)
 #endif
-#ifndef DETEGO_SCHUR_TOL
-#define DETEGO_SCHUR_TOL (3e-7f)
+#ifndef DETECTUM_SCHUR_TOL
+#define DETECTUM_SCHUR_TOL (3e-7f)
 #endif
-#ifndef DETEGO_SCHUR_AD_HOC_SHIFT_COUNT
-#define DETEGO_SCHUR_AD_HOC_SHIFT_COUNT (5)
+#ifndef DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT
+#define DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT (5)
 #endif
-#ifndef DETEGO_EXPM_PADE_ORDER
-#define DETEGO_EXPM_PADE_ORDER (4)
+#ifndef DETECTUM_EXPM_PADE_ORDER
+#define DETECTUM_EXPM_PADE_ORDER (4)
 #endif
 
 // This macro allows accessing the element A(i, j).
@@ -90,7 +90,7 @@ static inline float givensf(const float a, const float b, float* c, float* s)
 	return r;
 }
 
-#ifdef EOF // include stdio.h before detego.h to enable this section
+#ifdef EOF // include stdio.h before detectum.h to enable this section
 // This function prints the matrix A on the standard output according to
 // the specified format.
 static inline void matrixf_print(Matrixf* A, char* format)
@@ -106,7 +106,7 @@ static inline void matrixf_print(Matrixf* A, char* format)
 }
 #endif
 
-#ifdef RAND_MAX // include stdlib.h before detego.h to enable this section
+#ifdef RAND_MAX // include stdlib.h before detectum.h to enable this section
 // This function initializes a rows-by-cols matrix instance while dynamically
 // allocating its data memory. On allocation failure, the data pointer is null.
 static inline Matrixf matrixf(int rows, int cols)

@@ -1,4 +1,4 @@
-#include "detego.h"
+#include "detectum.h"
 
 // Householder transformation X(i0:iend,j0:jend) = H*X(i0:iend,j0:jend),
 // where H = I - beta*v*v'; stride is the increment of v.
@@ -651,8 +651,8 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 	const int m = A->size[0];
 	const int n = A->size[1];
 	int i, j, k, q, r = n - 1, sweep = 0;
-	const int sweepmax = DETEGO_SVD_SWEEPMAX;
-	const float tol = DETEGO_SVD_TOL;
+	const int sweepmax = DETECTUM_SVD_SWEEPMAX;
+	const float tol = DETECTUM_SVD_TOL;
 	float small, norm1, tmp, cosine, sine, Xi, Xj;
 	float c00, c01, c11, y, z, mu;
 	float* s = A->data, * p = 0;
@@ -848,8 +848,8 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 	float a, b, p, q, v, Xij, Xik, s, sine, cosine;
 	const int m = A->size[0];
 	const int n = A->size[1];
-	const int sweepmax = DETEGO_SVD_JACOBI_SWEEPMAX;
-	const float tol = DETEGO_SVD_JACOBI_TOL;
+	const int sweepmax = DETECTUM_SVD_JACOBI_SWEEPMAX;
+	const float tol = DETECTUM_SVD_JACOBI_TOL;
 
 	if (m < n) {
 		matrixf_transpose(A);
@@ -985,8 +985,8 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 {
 	const int n = A->size[0];
 	int k, i, imin, imax, q, m = n - 1, sweep = 0;
-	const int sweepmax = DETEGO_SCHUR_SYMM_SWEEPMAX;
-	const float tol = DETEGO_SCHUR_SYMM_TOL;
+	const int sweepmax = DETECTUM_SCHUR_SYMM_SWEEPMAX;
+	const float tol = DETECTUM_SCHUR_SYMM_TOL;
 	float d, f, g, x, y, cosine, sine, Xk, Xk1;
 
 	if (matrixf_decomp_hess(A, U)) {
@@ -1061,9 +1061,9 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 {
 	const int n = A->size[0];
 	int i, j, k, q, m = n - 1, sweep = 0, ad_hoc_shift;
-	const int sweepmax = DETEGO_SCHUR_SWEEPMAX;
-	const int ahsc = DETEGO_SCHUR_AD_HOC_SHIFT_COUNT;
-	const float tol = DETEGO_SCHUR_TOL;
+	const int sweepmax = DETECTUM_SCHUR_SWEEPMAX;
+	const int ahsc = DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT;
+	const float tol = DETECTUM_SCHUR_TOL;
 	const float eps = epsf(1);
 	float r, s, t, x, y, z, alpha, beta, v[3] = { 1, 0, 0 };
 	float sine, cosine, Xk, Xk1;
@@ -1926,7 +1926,7 @@ int matrixf_exp(Matrixf* A, float* work)
 {
 	int i, j, k, r, z, s;
 	const int n = A->size[0];
-	const int q = DETEGO_EXPM_PADE_ORDER;
+	const int q = DETECTUM_EXPM_PADE_ORDER;
 	float c, p, t, Xij;
 	Matrixf X = { { n, n }, work + n };
 	Matrixf N = { { n, n }, work + n + n * n };
