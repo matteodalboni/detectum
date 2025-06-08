@@ -1949,7 +1949,10 @@ int matrixf_exp(Matrixf* A, float* work)
 	}
 	s = 1 << z;
 	for (i = 0; i < n * n; i++) {
-		X.data[i] = N.data[i] = D.data[i] = !(i % (n + 1));
+		t = !(i % (n + 1));
+		X.data[i] = t;
+		N.data[i] = t;
+		D.data[i] = t;
 		A->data[i] /= s;
 	}
 	for (c = 1, k = 1; k <= q; k++) {
@@ -1965,9 +1968,10 @@ int matrixf_exp(Matrixf* A, float* work)
 				at(&X, i, j) = Xij;
 			}
 		}
+		t = (k % 2) ? -1.0f : 1.0f;
 		for (i = 0; i < n * n; i++) {
 			N.data[i] += c * X.data[i];
-			D.data[i] += c * X.data[i] * ((k % 2) ? -1 : 1);
+			D.data[i] += c * X.data[i] * t;
 		}
 	}
 	for (i = 0; i < n * n; i++) {
