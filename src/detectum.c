@@ -1989,52 +1989,6 @@ int matrixf_exp(Matrixf* A, float* work)
 	return 0;
 }
 
-int matrixf_pow(Matrixf* A, unsigned const int p, float* work)
-{
-	int j, k = 0;
-	const int n = A->size[0];
-	unsigned int s = 1, i = 0;
-	Matrixf Z = { { n, n }, work };
-	Matrixf F = { { n, n }, work + n * n };
-
-	if (A->size[1] != n) {
-		return -1;
-	}
-	if (p == 0) {
-		for (k = 0; k < n * n; k++) {
-			A->data[k] = !(k % (n + 1));
-		}
-	}
-	else if (p > 1) {
-		for (j = 0; j < n * n; j++) {
-			Z.data[j] = A->data[j];
-		}
-		while (!((p & (s << i)) >> i)) {
-			matrixf_multiply(&Z, &Z, A, 1, 0, 0, 0);
-			for (j = 0; j < n * n; j++) {
-				Z.data[j] = A->data[j];
-			}
-			i++;
-		}
-		for (j = 0; j < n * n; j++) {
-			F.data[j] = Z.data[j];
-		}
-		while ((s << ++i) <= p) {
-			matrixf_multiply(&Z, &Z, A, 1, 0, 0, 0);
-			for (j = 0; j < n * n; j++) {
-				Z.data[j] = A->data[j];
-			}
-			if ((p & (s << i)) >> i) {
-				matrixf_multiply(&F, &Z, A, 1, 0, 0, 0);
-				for (j = 0; j < n * n; j++) {
-					F.data[j] = A->data[j];
-				}
-			}
-		}
-	}
-	return 0;
-}
-
 int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 	const float alpha, const float beta, const int transA, const int transB)
 {

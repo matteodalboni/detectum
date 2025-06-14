@@ -440,13 +440,6 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work);
 // singularity is detected.
 int matrixf_exp(Matrixf* A, float* work);
 
-// This function raises the n-by-n matrix A to the p-th positive integer power.
-// The algorithm is based on the binary expansion of p to minimize the number of
-// matrix multiplications. The array work is the additional workspace memory:
-// its minimum length is 2*n*n. The function returns -1 if the input matrix is 
-// not square.
-int matrixf_pow(Matrixf* A, unsigned const int p, float* work);
-
 // This function performs the general matrix multiplication (GEMM), which has
 // the form C = alpha*op(A)*op(B) + beta*C, where A, B and C are general 
 // matrices, alpha and beta are scalars, and op(X) is one of X or its

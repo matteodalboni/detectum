@@ -25,8 +25,7 @@ The library includes:
 * solver for general rank-deficient systems;
 * minimum-norm solver;
 * Moore-Penrose pseudoinverse computation;
-* matrix exponential computation;
-* matrix exponentiation to positive integer power.
+* matrix exponential computation.
 
 ## Testing on Linux
 gcc -o mydemo demo/mydemo.c src/detectum.c -lm -I inc
