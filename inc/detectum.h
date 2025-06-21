@@ -340,7 +340,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U);
 // The array work is the additional workspace memory: in general, if T is n-by-n, its 
 // minimum length is max(n^2,4*(n-2)^2). If all the eigenvalues are real, the minimum
 // length of work is n^2. The function returns -1 if the matrices of eigenvectors are
-// not n-by-n; it returns 1 if the matrix T is defective to working precision.
+// not n-by-n; it returns 1 if a singularity is detected.
 int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 	Matrixf* V, Matrixf* W, int pseudo, float* work);
 
