@@ -440,6 +440,15 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work);
 // singularity is detected.
 int matrixf_exp(Matrixf* A, float* work);
 
+// This function computes the principal real square root of a real matrix by real
+// Schur method. The n-by-n matrix A is transformed into X so that A = X*X. The 
+// array work is the additional workspace memory: its minimum length is n*(n+1).
+// If A is singular, the function returns 1: in this case, the function attempts 
+// to compute a square root, although A might not have one. If A has negative
+// real eigenvalues, the function returns 2. On size mismatch, the function 
+// returns -1.
+int matrixf_sqrt(Matrixf* A, float* work);
+
 // This function performs the general matrix multiplication (GEMM), which has
 // the form C = alpha*op(A)*op(B) + beta*C, where A, B and C are general 
 // matrices, alpha and beta are scalars, and op(X) is one of X or its

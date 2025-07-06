@@ -1989,6 +1989,140 @@ int matrixf_exp(Matrixf* A, float* work)
 	return 0;
 }
 
+int matrixf_sqrt(Matrixf* A, float* work)
+{
+	int i, j = 0, r = 0, kj = 0, kr = 0, sj = 0, sr = 0, singular = 0;
+	const int n = A->size[0];
+	float T00, T10, T01, t;
+	float* k = work, A_data[16] = { 0 }, B_data[4] = { 0 };
+	Matrixf U = { { n, n }, work + n };
+	Matrixf C = { { 0, 0 }, A_data };
+	Matrixf D = { { 0, 1 }, B_data };
+
+	if (n != A->size[1]) {
+		return -1;
+	}
+	matrixf_decomp_schur(A, &U);
+	while (kj < n) {
+		k[j] = (float)kj;
+		sj = kj < n - 1 ? 1 + (at(A, kj + 1, kj) != 0) : 1;
+		if (sj == 1) {
+			T00 = at(A, kj, kj);
+			if (T00 > 0) {
+				at(A, kj, kj) = sqrtf(T00);
+			}
+			else if (T00 == 0) {
+				at(A, kj, kj) = 0;
+				singular = 1;
+			}
+			else {
+				return 2;
+			}
+		}
+		else {
+			T00 = at(A, kj, kj);
+			T10 = at(A, kj + 1, kj);
+			T01 = at(A, kj, kj + 1);
+			t = sqrtf(0.5f * (T00 + sqrtf(T00 * T00 - T10 * T01)));
+			at(A, kj, kj) = at(A, kj + 1, kj + 1) = t;
+			at(A, kj + 1, kj) = 0.5f * T10 / t;
+			at(A, kj, kj + 1) = 0.5f * T01 / t;
+		}
+		for (r = j - 1; r >= 0; r--) {
+			kr = (int)k[r];
+			sr = 1 + (at(A, kr + 1, kr) != 0);
+			D.data[0] = at(A, kr, kj);
+			if (sj + sr == 2) {
+				C.data[0] = at(A, kr, kr) + at(A, kj, kj);
+				for (i = (int)k[r + 1]; i < kj; i++) {
+					D.data[0] -= at(A, kr, i) * at(A, i, kj);
+				}
+				at(A, kr, kj) = D.data[0] / C.data[0];
+			}
+			else if (sj + sr == 3) {
+				C.size[0] = C.size[1] = D.size[0] = 2;
+				if (sr > sj) {
+					D.data[1] = at(A, kr + 1, kj);
+					for (i = (int)k[r + 1]; i < kj; i++) {
+						D.data[0] -= at(A, kr, i) * at(A, i, kj);
+						D.data[1] -= at(A, kr + 1, i) * at(A, i, kj);
+					}
+					C.data[0] = at(A, kr, kr) + at(A, kj, kj);
+					C.data[1] = at(A, kr + 1, kr);
+					C.data[2] = at(A, kr, kr + 1);
+					C.data[3] = at(A, kr + 1, kr + 1) + at(A, kj, kj);
+					matrixf_solve_lu(&C, &D);
+					at(A, kr, kj) = D.data[0];
+					at(A, kr + 1, kj) = D.data[1];
+				}
+				else {
+					D.data[1] = at(A, kr, kj + 1);
+					for (i = (int)k[r + 1]; i < kj; i++) {
+						D.data[0] -= at(A, kr, i) * at(A, i, kj);
+						D.data[1] -= at(A, kr, i) * at(A, i, kj + 1);
+					}
+					C.data[0] = at(A, kr, kr) + at(A, kj, kj);
+					C.data[1] = at(A, kj, kj + 1);
+					C.data[2] = at(A, kj + 1, kj);
+					C.data[3] = at(A, kr, kr) + at(A, kj + 1, kj + 1);
+					matrixf_solve_lu(&C, &D);
+					at(A, kr, kj) = D.data[0];
+					at(A, kr, kj + 1) = D.data[1];
+				}
+			}
+			else if (sj + sr == 4) {
+				C.size[0] = C.size[1] = D.size[0] = 4;
+				D.data[1] = at(A, kr + 1, kj);
+				D.data[2] = at(A, kr, kj + 1);
+				D.data[3] = at(A, kr + 1, kj + 1);
+				for (i = (int)k[r + 1]; i < kj; i++) {
+					D.data[0] -= at(A, kr, i) * at(A, i, kj);
+					D.data[1] -= at(A, kr + 1, i) * at(A, i, kj);
+					D.data[2] -= at(A, kr, i) * at(A, i, kj + 1);
+					D.data[3] -= at(A, kr + 1, i) * at(A, i, kj + 1);
+				}
+				C.data[0] = C.data[10] = at(A, kr, kr) + at(A, kj, kj);
+				C.data[1] = C.data[11] = at(A, kr + 1, kr);
+				C.data[4] = C.data[14] = at(A, kr, kr + 1);
+				C.data[5] = C.data[15] = at(A, kr + 1, kr + 1) + at(A, kj, kj);
+				C.data[3] = C.data[6] = C.data[9] = C.data[12] = 0;
+				C.data[2] = C.data[7] = at(A, kj, kj + 1);
+				C.data[8] = C.data[13] = at(A, kj + 1, kj);
+				matrixf_solve_lu(&C, &D);
+				at(A, kr, kj) = D.data[0];
+				at(A, kr + 1, kj) = D.data[1];
+				at(A, kr, kj + 1) = D.data[2];
+				at(A, kr + 1, kj + 1) = D.data[3];
+			}
+		}
+		kj += sj;
+		j++;
+	}
+	for (j = 0; j < n; j++) {
+		for (i = 0; i < n; i++) {
+			work[i] = at(A, i, j);
+		}
+		for (i = 0; i < n; i++) {
+			for (t = 0, r = 0; r < n; r++) {
+				t += work[r] * at(&U, i, r);
+			}
+			at(A, i, j) = t;
+		}
+	}
+	for (i = 0; i < n; i++) {
+		for (j = 0; j < n; j++) {
+			work[j] = at(A, i, j);
+		}
+		for (j = 0; j < n; j++) {
+			for (t = 0, r = 0; r < n; r++) {
+				t += work[r] * at(&U, j, r);
+			}
+			at(A, i, j) = t;
+		}
+	}
+	return singular;
+}
+
 int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 	const float alpha, const float beta, const int transA, const int transB)
 {
