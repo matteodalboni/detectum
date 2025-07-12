@@ -319,7 +319,8 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P);
 // A = U*D*U'. A is transformed into the diagonal matrix D whose main diagonal holds
 // the eigenvalues of A. If U is a null pointer, the computation of the orthogonal 
 // matrix is omitted. The function returns -1 if the matrices are not square or on 
-// size mismatch. On success, it returns the number of sweeps performed.
+// size mismatch. If the solution fails to converge, the function returns -2. On 
+// success, it returns the number of sweeps performed.
 int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U);
 
 // This function performs the Schur decomposition of the square matrix A so that
@@ -329,8 +330,9 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U);
 // form B = [x, y; z, x], and its complex conjugate eigenvalues, i.e. x+sqrt(-y*z)*i 
 // and x-sqrt(-y*z)*i are also a complex conjugate pair of eigenvalues of A. 
 // If U is a null pointer, the computation of the orthogonal matrix is omitted. The 
-// function returns -1 if the matrices are not square or on size mismatch. On success,
-// it returns the number of sweeps performed.
+// function returns -1 if the matrices are not square or on size mismatch. If the 
+// solution fails to converge, the function returns -2. On success, it returns the 
+// number of sweeps performed.
 int matrixf_decomp_schur(Matrixf* A, Matrixf* U);
 
 // This function computes the matrices of right (V) and left (W) eigenvectors starting
@@ -450,11 +452,12 @@ int matrixf_exp(Matrixf* A, float* work);
 // This function computes the principal real square root of a real matrix by real
 // Schur method. The n-by-n matrix A is transformed into X so that A = X*X. The 
 // array work is the additional workspace memory: its minimum length is n*(n+1).
-// If A is singular, the function returns -2: in this case, the function attempts 
-// to compute a square root, although A might not have one. If A has negative
-// real eigenvalues, the function returns -3. On size mismatch, the function 
-// returns -1. Otherwise, it returns the number of sweeps performed by Schur
-// decomposition.
+// If Schur decomposition fails to converge, the function returns -4. If A has 
+// negative real eigenvalues, a real square root does not exist, and the function
+// returns -3. If A is singular and its square root cannot be computed, the 
+// function returns -2: in fact, a singular matrix may not have a square root. On
+// size mismatch, the function returns -1. On success, it returns the number of 
+// sweeps performed by Schur decomposition.
 int matrixf_sqrt(Matrixf* A, float* work);
 
 // This function performs the general matrix multiplication (GEMM), which has

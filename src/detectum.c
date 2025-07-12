@@ -1049,6 +1049,9 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 			sweep++;
 		}
 	}
+	if (sweep == sweepmax) {
+		return -2;
+	}
 	for (k = 1; k < n * n - 1; k++) {
 		if (k % (n + 1)) {
 			A->data[k] = 0;
@@ -1159,6 +1162,9 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 			}
 			sweep++;
 		}
+	}
+	if (sweep == sweepmax) {
+		return -2;
 	}
 	// Trangularize all 2-by-2 diagonal blocks in A that have real eigenvalues,
 	// and transform the blocks with complex eigenvalues so that the real part
@@ -1990,8 +1996,7 @@ int matrixf_exp(Matrixf* A, float* work)
 
 int matrixf_sqrt(Matrixf* A, float* work)
 {
-	int i, j = 0, r = 0, kj = 0, kr = 0, sj = 0, sr = 0;
-	int sweep, singular = 0;
+	int i, j = 0, r = 0, kj = 0, kr = 0, sj = 0, sr = 0, sweep;
 	const int n = A->size[0];
 	float T00, T10, T01, t;
 	float* k = work, A_data[16] = { 0 }, B_data[4] = { 0 };
@@ -2003,17 +2008,16 @@ int matrixf_sqrt(Matrixf* A, float* work)
 		return -1;
 	}
 	sweep = matrixf_decomp_schur(A, &U);
+	if (sweep == -2) {
+		return -4;
+	}
 	while (kj < n) {
 		k[j] = (float)kj;
 		sj = kj < n - 1 ? 1 + (at(A, kj + 1, kj) != 0) : 1;
 		if (sj == 1) {
 			T00 = at(A, kj, kj);
-			if (T00 > 0) {
+			if (T00 >= 0) {
 				at(A, kj, kj) = sqrtf(T00);
-			}
-			else if (T00 == 0) {
-				at(A, kj, kj) = 0;
-				singular = 1;
 			}
 			else {
 				return -3;
@@ -2037,6 +2041,9 @@ int matrixf_sqrt(Matrixf* A, float* work)
 				for (i = (int)k[r + 1]; i < kj; i++) {
 					D.data[0] -= at(A, kr, i) * at(A, i, kj);
 				}
+				if (C.data[0] == 0) {
+					return -2;
+				}
 				at(A, kr, kj) = D.data[0] / C.data[0];
 			}
 			else if (sj + sr == 3) {
@@ -2051,7 +2058,9 @@ int matrixf_sqrt(Matrixf* A, float* work)
 					C.data[1] = at(A, kr + 1, kr);
 					C.data[2] = at(A, kr, kr + 1);
 					C.data[3] = at(A, kr + 1, kr + 1) + at(A, kj, kj);
-					matrixf_solve_lu(&C, &D);
+					if (matrixf_solve_lu(&C, &D)) {
+						return -2;
+					}
 					at(A, kr, kj) = D.data[0];
 					at(A, kr + 1, kj) = D.data[1];
 				}
@@ -2065,7 +2074,9 @@ int matrixf_sqrt(Matrixf* A, float* work)
 					C.data[1] = at(A, kj, kj + 1);
 					C.data[2] = at(A, kj + 1, kj);
 					C.data[3] = at(A, kr, kr) + at(A, kj + 1, kj + 1);
-					matrixf_solve_lu(&C, &D);
+					if (matrixf_solve_lu(&C, &D)) {
+						return -2;
+					}
 					at(A, kr, kj) = D.data[0];
 					at(A, kr, kj + 1) = D.data[1];
 				}
@@ -2088,7 +2099,9 @@ int matrixf_sqrt(Matrixf* A, float* work)
 				C.data[3] = C.data[6] = C.data[9] = C.data[12] = 0;
 				C.data[2] = C.data[7] = at(A, kj, kj + 1);
 				C.data[8] = C.data[13] = at(A, kj + 1, kj);
-				matrixf_solve_lu(&C, &D);
+				if (matrixf_solve_lu(&C, &D)) {
+					return -2;
+				}
 				at(A, kr, kj) = D.data[0];
 				at(A, kr + 1, kj) = D.data[1];
 				at(A, kr, kj + 1) = D.data[2];
@@ -2120,7 +2133,7 @@ int matrixf_sqrt(Matrixf* A, float* work)
 			at(A, i, j) = t;
 		}
 	}
-	return singular ? -2 : sweep;
+	return sweep;
 }
 
 int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
