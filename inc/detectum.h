@@ -319,8 +319,7 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P);
 // A = U*D*U'. A is transformed into the diagonal matrix D whose main diagonal holds
 // the eigenvalues of A. If U is a null pointer, the computation of the orthogonal 
 // matrix is omitted. The function returns -1 if the matrices are not square or on 
-// size mismatch. If the solution fails to converge, the function returns -2. On 
-// success, it returns the number of sweeps performed.
+// size mismatch. On success, it returns the number of sweeps performed.
 int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U);
 
 // This function performs the Schur decomposition of the square matrix A so that
@@ -330,9 +329,8 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U);
 // form B = [x, y; z, x], and its complex conjugate eigenvalues, i.e. x+sqrt(-y*z)*i 
 // and x-sqrt(-y*z)*i are also a complex conjugate pair of eigenvalues of A. 
 // If U is a null pointer, the computation of the orthogonal matrix is omitted. The 
-// function returns -1 if the matrices are not square or on size mismatch. If the 
-// solution fails to converge, the function returns -2. On success, it returns the 
-// number of sweeps performed.
+// function returns -1 if the matrices are not square or on size mismatch. On 
+// success, it returns the number of sweeps performed.
 int matrixf_decomp_schur(Matrixf* A, Matrixf* U);
 
 // This function computes the matrices of right (V) and left (W) eigenvectors starting

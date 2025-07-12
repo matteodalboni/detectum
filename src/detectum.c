@@ -1049,9 +1049,6 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 			sweep++;
 		}
 	}
-	if (sweep == sweepmax) {
-		return -2;
-	}
 	for (k = 1; k < n * n - 1; k++) {
 		if (k % (n + 1)) {
 			A->data[k] = 0;
@@ -1162,9 +1159,6 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 			}
 			sweep++;
 		}
-	}
-	if (sweep == sweepmax) {
-		return -2;
 	}
 	// Trangularize all 2-by-2 diagonal blocks in A that have real eigenvalues,
 	// and transform the blocks with complex eigenvalues so that the real part
@@ -2008,7 +2002,7 @@ int matrixf_sqrt(Matrixf* A, float* work)
 		return -1;
 	}
 	sweep = matrixf_decomp_schur(A, &U);
-	if (sweep == -2) {
+	if (sweep == DETECTUM_SCHUR_SWEEPMAX) {
 		return -4;
 	}
 	while (kj < n) {
