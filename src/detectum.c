@@ -146,7 +146,7 @@ int matrixf_decomp_chol(Matrixf* A)
 					r = sqrtf(v);
 				}
 				else {
-					return 1;
+					return -2;
 				}
 			}
 			at(A, j, i) = v / r;
@@ -1259,7 +1259,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 					at(&d, j, 0) = -at(T, j, k);
 				}
 				if (matrixf_solve_lu(&C, &d)) {
-					return 1;
+					return -2;
 				}
 				norm = normf(&at(V, 0, k), n, 1);
 				for (j = 0; j < n; j++) {
@@ -1278,7 +1278,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 					at(&d, j, 0) = -at(T, k, k + 1 + j);
 				}
 				if (matrixf_solve_lu(&C, &d)) {
-					return 1;
+					return -2;
 				}
 				norm = normf(&at(W, 0, k), n, 1);
 				for (j = 0; j < n; j++) {
@@ -1311,7 +1311,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 							at(&d, k + j, 0) = -lamim * at(T, j, k) + g * at(T, j, k + 1);
 						}
 						if (matrixf_solve_lu(&C, &d)) {
-							return 1;
+							return -2;
 						}
 						for (j = k - 1; j >= 0; j--) {
 							at(V, j, k + 1) = d.data[k + j];
@@ -1347,7 +1347,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 							at(&d, h + j, 0) = -at(T, k + 1, k) * at(T, k, k + 2 + j) - at(T, k + 1, k + 2 + j);
 						}
 						if (matrixf_solve_lu(&C, &d)) {
-							return 1;
+							return -2;
 						}
 						for (j = h - 1; j >= 0; j--) {
 							at(W, k + 2 + j, k + 1) = at(W, j, k + 1);
@@ -1383,7 +1383,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 							at(&d, k + j, 0) = -at(T, j, k) * lamim;
 						}
 						if (matrixf_solve_lu(&C, &d)) {
-							return 1;
+							return -2;
 						}
 						for (j = k - 1; j >= 0; j--) {
 							at(V, j, k + 1) = d.data[k + j];
@@ -1417,7 +1417,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 							at(&d, h + j, 0) = at(T, k, k + 2 + j) * lamim;
 						}
 						if (matrixf_solve_lu(&C, &d)) {
-							return 1;
+							return -2;
 						}
 						for (j = h - 1; j >= 0; j--) {
 							at(W, k + 2 + j, k + 1) = at(W, j, k + 1);
@@ -1473,7 +1473,7 @@ int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri)
 			if (!unitri) {
 				Lii = at(L, i, i);
 				if (Lii == 0) {
-					return 1;
+					return -2;
 				}
 				at(B, i, k) = Bik / Lii;
 			}
@@ -1517,7 +1517,7 @@ int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri)
 			if (!unitri) {
 				Uii = at(U, i, i);
 				if (Uii == 0) {
-					return 1;
+					return -2;
 				}
 				at(B, i, k) = Bik / Uii;
 			}
@@ -1637,7 +1637,7 @@ int matrixf_solve_ltl(Matrixf* A, Matrixf* B)
 	for (i = n - 1; i >= 0; i--) {
 		Aii = at(A, i, i);
 		if (Aii == 0) {
-			return 1;
+			return -2;
 		}
 		for (k = 0; k < p; k++) {
 			if (i < n - 1) {
@@ -1676,9 +1676,8 @@ int matrixf_solve_lu(Matrixf* A, Matrixf* B)
 	const int p = B->size[1];
 	float Aii, Bik;
 
-	k = matrixf_decomp_lu(A, B);
-	if (k) {
-		return k;
+	if (matrixf_decomp_lu(A, B)) {
+		return -1;
 	}
 	for (k = 0; k < p; k++) {
 		for (i = 1; i < n; i++) {
@@ -1695,7 +1694,7 @@ int matrixf_solve_lu(Matrixf* A, Matrixf* B)
 			}
 			Aii = at(A, i, i);
 			if (Aii == 0) {
-				return 1;
+				return -2;
 			}
 			at(B, i, k) = Bik / Aii;
 		}
@@ -1728,7 +1727,7 @@ int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, const int ubw)
 			}
 			Aii = at(A, i, i);
 			if (Aii == 0) {
-				return 1;
+				return -2;
 			}
 			at(B, i, k) = Bik / Aii;
 		}
@@ -1752,7 +1751,7 @@ int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X)
 		matrixf_decomp_qr(A, 0, 0, 0);
 		matrixf_transpose(A);
 		if (matrixf_solve_tril(A, B, X, 0)) {
-			return 1;
+			return -2;
 		}
 		matrixf_transpose(A);
 		matrixf_unpack_householder_bwd(A, X, 0);
@@ -1760,7 +1759,7 @@ int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X)
 	else {
 		matrixf_decomp_qr(A, 0, 0, B);
 		if (matrixf_solve_triu(A, B, X, 0)) {
-			return 1;
+			return -2;
 		}
 	}
 	return 0;
@@ -1978,7 +1977,7 @@ int matrixf_exp(Matrixf* A, float* work)
 		A->data[i] = N.data[i];
 	}
 	if (matrixf_solve_lu(&D, A)) {
-		return 1;
+		return -2;
 	}
 	for (k = 0; k < z; k++) {
 		for (i = 0; i < n * n; i++) {
@@ -1991,7 +1990,8 @@ int matrixf_exp(Matrixf* A, float* work)
 
 int matrixf_sqrt(Matrixf* A, float* work)
 {
-	int i, j = 0, r = 0, kj = 0, kr = 0, sj = 0, sr = 0, singular = 0;
+	int i, j = 0, r = 0, kj = 0, kr = 0, sj = 0, sr = 0;
+	int sweep, singular = 0;
 	const int n = A->size[0];
 	float T00, T10, T01, t;
 	float* k = work, A_data[16] = { 0 }, B_data[4] = { 0 };
@@ -2002,7 +2002,7 @@ int matrixf_sqrt(Matrixf* A, float* work)
 	if (n != A->size[1]) {
 		return -1;
 	}
-	matrixf_decomp_schur(A, &U);
+	sweep = matrixf_decomp_schur(A, &U);
 	while (kj < n) {
 		k[j] = (float)kj;
 		sj = kj < n - 1 ? 1 + (at(A, kj + 1, kj) != 0) : 1;
@@ -2016,7 +2016,7 @@ int matrixf_sqrt(Matrixf* A, float* work)
 				singular = 1;
 			}
 			else {
-				return 2;
+				return -3;
 			}
 		}
 		else {
@@ -2120,7 +2120,7 @@ int matrixf_sqrt(Matrixf* A, float* work)
 			at(A, i, j) = t;
 		}
 	}
-	return singular;
+	return singular ? -2 : sweep;
 }
 
 int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
