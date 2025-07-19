@@ -8,37 +8,6 @@ typedef struct {
 	float* data;
 } Matrixf;
 
-#ifndef DETECTUM_SVD_SWEEPMAX
-#define DETECTUM_SVD_SWEEPMAX (10000)
-#endif
-#ifndef DETECTUM_SVD_TOL
-#define DETECTUM_SVD_TOL (3e-7f)
-#endif
-#ifndef DETECTUM_SVD_JACOBI_SWEEPMAX
-#define DETECTUM_SVD_JACOBI_SWEEPMAX (1000)
-#endif
-#ifndef DETECTUM_SVD_JACOBI_TOL
-#define DETECTUM_SVD_JACOBI_TOL (3e-7f)
-#endif
-#ifndef DETECTUM_SCHUR_SYMM_SWEEPMAX
-#define DETECTUM_SCHUR_SYMM_SWEEPMAX (10000)
-#endif
-#ifndef DETECTUM_SCHUR_SYMM_TOL
-#define DETECTUM_SCHUR_SYMM_TOL (3e-7f)
-#endif
-#ifndef DETECTUM_SCHUR_SWEEPMAX
-#define DETECTUM_SCHUR_SWEEPMAX (10000)
-#endif
-#ifndef DETECTUM_SCHUR_TOL
-#define DETECTUM_SCHUR_TOL (3e-7f)
-#endif
-#ifndef DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT
-#define DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT (5)
-#endif
-#ifndef DETECTUM_EXPM_PADE_ORDER
-#define DETECTUM_EXPM_PADE_ORDER (4)
-#endif
-
 // This macro allows accessing the element A(i, j).
 #define at(A, i, j) ((A)->data[(i) + (j) * (A)->size[0]])
 
@@ -282,8 +251,8 @@ int matrixf_decomp_cod(Matrixf* A, Matrixf* P, Matrixf* U, Matrixf* V, float tol
 //   n - m columns of S are excluded so that S becomes m-by-m; to enable the 
 //   economy-size decomposition, V must be initialized as an n-by-m matrix;
 // - if m = n, the economy-size decomposition is the same as the full one.
-// On size mismatch, the function returns -1. On success, it returns the number
-// of sweeps performed.
+// On size mismatch, the function returns -1. It returns -2 if the maximum number
+// of sweeps is reached. On success, it returns the number of sweeps performed.
 int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V);
 
 // This function performs the singular value decomposition of the m-by-n matrix A
@@ -303,8 +272,8 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V);
 //   n - m columns of S are excluded so that S becomes m-by-m; to enable the 
 //   economy-size decomposition, V must be initialized as an n-by-m matrix;
 // - if m = n, the economy-size decomposition is the same as the full one.
-// The function returns -1 on size mismatch. On success, it returns the number
-// of sweeps performed.
+// The function returns -1 on size mismatch. It returns -2 if the maximum number
+// of sweeps is reached. On success, it returns the number of sweeps performed.
 int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V);
 
 // This function performs the Hessenberg decomposition of the square matrix A, 
@@ -320,7 +289,8 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P);
 // A = U*D*U'. A is transformed into the diagonal matrix D whose main diagonal holds
 // the eigenvalues of A. If U is a null pointer, the computation of the orthogonal 
 // matrix is omitted. The function returns -1 if the matrices are not square or on 
-// size mismatch. On success, it returns the number of sweeps performed.
+// size mismatch. It returns -2 if the maximum number of sweeps is reached. On 
+// success, it returns the number of sweeps performed.
 int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U);
 
 // This function performs the Schur decomposition of the square matrix A so that
@@ -330,8 +300,9 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U);
 // form B = [x, y; z, x], and its complex conjugate eigenvalues, i.e. x+sqrt(-y*z)*i 
 // and x-sqrt(-y*z)*i are also a complex conjugate pair of eigenvalues of A. 
 // If U is a null pointer, the computation of the orthogonal matrix is omitted. The 
-// function returns -1 if the matrices are not square or on size mismatch. On 
-// success, it returns the number of sweeps performed.
+// function returns -1 if the matrices are not square or on size mismatch. It returns
+// -2 if the maximum number of sweeps is reached. On success, it returns the number 
+// of sweeps performed.
 int matrixf_decomp_schur(Matrixf* A, Matrixf* U);
 
 // This function computes the matrices of right (V) and left (W) eigenvectors
@@ -452,11 +423,11 @@ int matrixf_exp(Matrixf* A, float* work);
 // This function computes the principal real square root of a real matrix by real
 // Schur method. The n-by-n matrix A is transformed into X so that A = X*X. The 
 // array work is the additional workspace memory: its minimum length is n*(n+1).
-// If Schur decomposition fails to converge, the function returns -4. If A has 
+// If Schur decomposition fails to converge, the function returns -2. If A has 
 // negative real eigenvalues, a real square root does not exist, and the function
 // returns -3. If A is singular and its square root cannot be computed, the 
-// function returns -2: in fact, a singular matrix may not have a square root. On
-// size mismatch, the function returns -1. On success, it returns the number of 
+// function returns -4: in fact, a singular matrix may not have a square root. If
+// A is not square, the function returns -1. On success, it returns the number of 
 // sweeps performed by Schur decomposition.
 int matrixf_sqrt(Matrixf* A, float* work);
 

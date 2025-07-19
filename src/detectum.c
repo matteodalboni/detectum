@@ -1,5 +1,51 @@
 #include "detectum.h"
 
+#ifndef DETECTUM_SVD_SWEEPMAX
+// Maximum number of SVD sweeps. n is the smaller between the 
+// number of rows and the number of columns of the input matrix.
+#define DETECTUM_SVD_SWEEPMAX (100 * n)
+#endif
+#ifndef DETECTUM_SVD_TOL
+// SVD tolerance.
+#define DETECTUM_SVD_TOL (3e-7f)
+#endif
+#ifndef DETECTUM_SVD_JACOBI_SWEEPMAX
+// Maximum number of Jacobi SVD sweeps. n is the smaller between the 
+// number of rows and the number of columns of the input matrix.
+#define DETECTUM_SVD_JACOBI_SWEEPMAX (10 * n)
+#endif
+#ifndef DETECTUM_SVD_JACOBI_TOL
+// Jacobi SVD tolerance.
+#define DETECTUM_SVD_JACOBI_TOL (3e-7f)
+#endif
+#ifndef DETECTUM_SCHUR_SYMM_SWEEPMAX
+// Maximum number of symmetric Schur decomposition sweeps. n is the 
+// number of rows of the square input matrix.
+#define DETECTUM_SCHUR_SYMM_SWEEPMAX (100 * n)
+#endif
+#ifndef DETECTUM_SCHUR_SYMM_TOL
+// Symmetric Schur decomposition tolerance.
+#define DETECTUM_SCHUR_SYMM_TOL (3e-7f)
+#endif
+#ifndef DETECTUM_SCHUR_SWEEPMAX
+// Maximum number of Schur decomposition sweeps. n is the number of
+// rows of the square input matrix.
+#define DETECTUM_SCHUR_SWEEPMAX (100 * n)
+#endif
+#ifndef DETECTUM_SCHUR_TOL
+// Schur decomposition tolerance.
+#define DETECTUM_SCHUR_TOL (3e-7f)
+#endif
+#ifndef DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT
+// Sweep count defining the period for the application of ad hoc
+// shifts in Schur decomposition.
+#define DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT (5)
+#endif
+#ifndef DETECTUM_EXPM_PADE_ORDER
+// Order of diagonal Padé approximation of matrix exponential
+#define DETECTUM_EXPM_PADE_ORDER (4)
+#endif
+
 // Householder transformation X(i0:iend,j0:jend) = H*X(i0:iend,j0:jend),
 // where H = I - beta*v*v'; stride is the increment of v.
 static void householder_hx(Matrixf* X, const float* v, float beta,
@@ -839,7 +885,7 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 			s[j] = 0;
 		}
 	}
-	return sweep;
+	return sweep == sweepmax ? -2 : sweep;
 }
 
 int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
@@ -933,7 +979,7 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 			}
 		}
 	}
-	return sweep;
+	return sweep == sweepmax ? -2 : sweep;
 }
 
 int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
@@ -1054,7 +1100,7 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 			A->data[k] = 0;
 		}
 	}
-	return sweep;
+	return sweep == sweepmax ? -2 : sweep;
 }
 
 int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
@@ -1217,7 +1263,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 			at(A, i, k) = 0;
 		}
 	}
-	return sweep;
+	return sweep == sweepmax ? -2 : sweep;
 }
 
 int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
@@ -1998,12 +2044,9 @@ int matrixf_sqrt(Matrixf* A, float* work)
 	Matrixf C = { { 0, 0 }, A_data };
 	Matrixf D = { { 0, 1 }, B_data };
 
-	if (n != A->size[1]) {
-		return -1;
-	}
 	sweep = matrixf_decomp_schur(A, &U);
-	if (sweep == DETECTUM_SCHUR_SWEEPMAX) {
-		return -4;
+	if (sweep < 0) {
+		return sweep;
 	}
 	while (kj < n) {
 		k[j] = (float)kj;
@@ -2036,7 +2079,7 @@ int matrixf_sqrt(Matrixf* A, float* work)
 					D.data[0] -= at(A, kr, i) * at(A, i, kj);
 				}
 				if (C.data[0] == 0) {
-					return -2;
+					return -4;
 				}
 				at(A, kr, kj) = D.data[0] / C.data[0];
 			}
@@ -2053,7 +2096,7 @@ int matrixf_sqrt(Matrixf* A, float* work)
 					C.data[2] = at(A, kr, kr + 1);
 					C.data[3] = at(A, kr + 1, kr + 1) + at(A, kj, kj);
 					if (matrixf_solve_lu(&C, &D)) {
-						return -2;
+						return -4;
 					}
 					at(A, kr, kj) = D.data[0];
 					at(A, kr + 1, kj) = D.data[1];
@@ -2069,7 +2112,7 @@ int matrixf_sqrt(Matrixf* A, float* work)
 					C.data[2] = at(A, kj + 1, kj);
 					C.data[3] = at(A, kr, kr) + at(A, kj + 1, kj + 1);
 					if (matrixf_solve_lu(&C, &D)) {
-						return -2;
+						return -4;
 					}
 					at(A, kr, kj) = D.data[0];
 					at(A, kr, kj + 1) = D.data[1];
@@ -2094,7 +2137,7 @@ int matrixf_sqrt(Matrixf* A, float* work)
 				C.data[2] = C.data[7] = at(A, kj, kj + 1);
 				C.data[8] = C.data[13] = at(A, kj + 1, kj);
 				if (matrixf_solve_lu(&C, &D)) {
-					return -2;
+					return -4;
 				}
 				at(A, kr, kj) = D.data[0];
 				at(A, kr + 1, kj) = D.data[1];
