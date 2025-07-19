@@ -2,8 +2,8 @@
 
 // Householder transformation X(i0:iend,j0:jend) = H*X(i0:iend,j0:jend),
 // where H = I - beta*v*v'; stride is the increment of v.
-static void householder_hx(Matrixf* X, float* v, const float beta,
-	const int i0, const int iend, const int j0, const int jend, const int stride)
+static void householder_hx(Matrixf* X, const float* v, float beta,
+	int i0, int iend, int j0, int jend, int stride)
 {
 	int i, j;
 	float h;
@@ -22,8 +22,8 @@ static void householder_hx(Matrixf* X, float* v, const float beta,
 
 // Householder transformation X(i0:iend,j0:jend) = X(i0:iend,j0:jend)*H,
 // where H = I - beta*v*v'; stride is the increment of v.
-static void householder_xh(Matrixf* X, float* v, const float beta,
-	const int i0, const int iend, const int j0, const int jend, const int stride)
+static void householder_xh(Matrixf* X, const float* v, float beta,
+	int i0, int iend, int j0, int jend, int stride)
 {
 	int i, j;
 	float h;
@@ -40,7 +40,7 @@ static void householder_xh(Matrixf* X, float* v, const float beta,
 	}
 }
 
-void matrixf_init(Matrixf* A, int rows, int cols, float* data, const int ordmem)
+void matrixf_init(Matrixf* A, int rows, int cols, float* data, int ordmem)
 {
 	A->data = data;
 	A->size[ordmem != 0] = rows;
@@ -50,7 +50,7 @@ void matrixf_init(Matrixf* A, int rows, int cols, float* data, const int ordmem)
 	}
 }
 
-int matrixf_permute(Matrixf* A, Matrixf* p, const int reverse)
+int matrixf_permute(Matrixf* A, Matrixf* p, int reverse)
 {
 	int i, j, k, q;
 	const int m = (reverse) ? p->size[1] : p->size[0];
@@ -283,7 +283,7 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* B)
 	return 0;
 }
 
-int matrixf_decomp_lu_banded(Matrixf* A, const int ubw)
+int matrixf_decomp_lu_banded(Matrixf* A, int ubw)
 {
 	int i, j, p, piv;
 	const int n = A->size[0];
@@ -452,7 +452,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 	return 0;
 }
 
-int matrixf_unpack_householder_fwd(Matrixf* A, Matrixf* B, const int s)
+int matrixf_unpack_householder_fwd(Matrixf* A, Matrixf* B, int s)
 {
 	int i, k;
 	const int m = A->size[0];
@@ -479,7 +479,7 @@ int matrixf_unpack_householder_fwd(Matrixf* A, Matrixf* B, const int s)
 	return 0;
 }
 
-int matrixf_unpack_householder_bwd(Matrixf* A, Matrixf* B, const int s)
+int matrixf_unpack_householder_bwd(Matrixf* A, Matrixf* B, int s)
 {
 	int i, k;
 	const int m = A->size[0];
@@ -1702,7 +1702,7 @@ int matrixf_solve_lu(Matrixf* A, Matrixf* B)
 	return 0;
 }
 
-int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, const int ubw)
+int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, int ubw)
 {
 	int i, j, k, p;
 	const int n = A->size[0];
@@ -2131,7 +2131,7 @@ int matrixf_sqrt(Matrixf* A, float* work)
 }
 
 int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
-	const float alpha, const float beta, const int transA, const int transB)
+	float alpha, float beta, int transA, int transB)
 {
 	int i, j, k;
 	const int m = C->size[0];

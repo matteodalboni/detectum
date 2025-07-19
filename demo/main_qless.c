@@ -1,4 +1,4 @@
-/* Computing the solution of the linear system "A*x = b" without
+/* Computing the solution to the linear system "A*x = b" without
 * explicitly forming the matrix Q (Q-less QR decomposition). In
 * particular: A'*A*x = A'*b --> R'*Q'*Q*R*x = A'*b --> R'*R*x = A'*b.
 * 

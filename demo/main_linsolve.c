@@ -29,7 +29,7 @@ int main()
 	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
 	printf("B = \n"); matrixf_print(&B, "%9.4f "); printf("\n");
 	matrixf_solve_qr(&A, &B, &X);
-	printf("The (least-squares) solution of the linear system A*X = B is:\n\n");
+	printf("The (least-squares) solution to the linear system A*X = B is:\n\n");
 	printf("X = \n"); matrixf_print(&X, "%9.4f "); printf("\n");
 
 	return 0;

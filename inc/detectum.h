@@ -44,14 +44,14 @@ typedef struct {
 
 // This function returns the positive distance from abs(x) to the next 
 // larger floating-point number.
-static inline float epsf(const float x)
+static inline float epsf(float x)
 {
 	return powf(2.0f, floorf(log2f(fabsf(x))) - 23.0f);
 }
 
 // This function returns the 2-norm of the vector vec. The length of the
 // vector is len, and stride is its increment.
-static inline float normf(const float* vec, const int len, const int stride)
+static inline float normf(const float* vec, int len, int stride)
 {
 	int i;
 	float x = 0, s = 0, t;
@@ -74,7 +74,7 @@ static inline float normf(const float* vec, const int len, const int stride)
 
 // This function computes the Givens rotation pair (c,s) so that 
 // [c -s; s c]*[a; b] = [r; 0].
-static inline float givensf(const float a, const float b, float* c, float* s)
+static inline float givensf(float a, float b, float* c, float* s)
 {
 	float r = a;
 
@@ -93,7 +93,7 @@ static inline float givensf(const float a, const float b, float* c, float* s)
 #ifdef EOF // include stdio.h before detectum.h to enable this section
 // This function prints the matrix A on the standard output according to
 // the specified format.
-static inline void matrixf_print(Matrixf* A, char* format)
+static inline void matrixf_print(Matrixf* A, const char* format)
 {
 	int i, j;
 
@@ -120,7 +120,7 @@ static inline Matrixf matrixf(int rows, int cols)
 // collects the matrix elements, which must be stored in column-major order.
 // If the data are initially arranged in row-major layout, the flag ordmem 
 // can be raised to enable the conversion to column-major memory order.
-void matrixf_init(Matrixf* A, int rows, int cols, float* data, const int ordmem);
+void matrixf_init(Matrixf* A, int rows, int cols, float* data, int ordmem);
 
 // This function permutes the m-by-n matrix A according to the vector of 
 // permutation indices p, which encodes the permutation matrix P: if p is m-by-1,
@@ -136,7 +136,7 @@ void matrixf_init(Matrixf* A, int rows, int cols, float* data, const int ordmem)
 // column permutation into a row permutation, or vice versa. This enables switching 
 // between pre- and post-multiplication by the same permutation matrix P.
 // On size mismatch, the function returns -1. On success, it returns 0.
-int matrixf_permute(Matrixf* A, Matrixf* p, const int reverse);
+int matrixf_permute(Matrixf* A, Matrixf* p, int reverse);
 
 // This function transposes in place the input matrix.
 void matrixf_transpose(Matrixf* A);
@@ -179,54 +179,55 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* B);
 // are needed to assemble the inverse of the permuted lower triangular matrix
 // L. If A is not square or ubw < 0, the function returns -1. On success, it 
 // returns 0.
-int matrixf_decomp_lu_banded(Matrixf* A, const int ubw);
+int matrixf_decomp_lu_banded(Matrixf* A, int ubw);
 
 // This function unpacks the compact form of LU decomposition of the banded 
 // Hessenberg matrix A. In particular, the function accumulates the inverse of
 // the permuted lower triangular matrix L onto B, transforming B into inv(L)*B.
-// For instance, this function enables the solution of the linear system 
-// U*x = inv(L)*B, determining its right-hand side. On size mismatch, the 
-// function returns -1. On success, it returns 0.
+// Matrix A remains the same. For instance, this function enables the solution
+// to the linear system U*x = inv(L)*B, determining its right-hand side. On 
+// size mismatch, the function returns -1. On success, it returns 0.
 int matrixf_unpack_lu_banded(Matrixf* A, Matrixf* B);
 
 // This function performs the QR decomposition of the m-by-n matrix A, which is
 // transformed into matrix R. If Q is a null pointer, the computation of 
 // the orthogonal matrix is omitted, and the strictly lower triangular part of A 
 // stores the relevant parts of the Householder vectors, which can be used to
-// accumulate Q afterwards. If P is a non-null pointer, the decomposition makes 
-// use of column pivoting so that A*P = Q*R and so that the magnitude of the 
-// elements of the main diagonal of R is decreasing. If P is initialized as a 
-// 1-by-n vector and n > 1, the permutations are encoded so that (P(i),i) for 
-// 0 <= i < n are the unit elements of the permutation matrix. Else, if P is 
-// initialized as an n-by-n matrix, the full permutation matrix is returned. 
-// Additionally, one can provide the matrix B, which is transformed into Q'*B; 
-// this computation is skipped if B is a null pointer. If m > n, the function 
-// can also produce the economy-size decomposition such that only the first n
-// columns of Q are computed (thin Q) and the last m - n rows of R are excluded
-// so that R becomes n-by-n. To enable the economy-size decomposition, Q must be 
-// initialized as an m-by-n matrix. On size mismatch, the function returns -1.
-// On success, it returns 0.
+// accumulate Q afterwards. For the sake of clarity, the relevant part of a 
+// Householder vector comprises all elements but the first, which is always 1. 
+// If P is a non-null pointer, the decomposition makes use of column pivoting 
+// so that A*P = Q*R and so that the magnitude of the elements of the main 
+// diagonal of R is decreasing. If P is initialized as a 1-by-n vector and n > 1,
+// the permutations are encoded so that (P(i),i) for 0 <= i < n are the unit 
+// elements of the permutation matrix. Else, if P is initialized as an n-by-n 
+// matrix, the full permutation matrix is returned. Additionally, one can provide
+// the matrix B, which is transformed into Q'*B; this computation is skipped if B
+// is a null pointer. If m > n, the function can also produce the economy-size 
+// decomposition such that only the first n columns of Q are computed (thin Q) 
+// and the last m - n rows of R are excluded so that R becomes n-by-n. To enable
+// the economy-size decomposition, Q must be initialized as an m-by-n matrix. On
+// size mismatch, the function returns -1. On success, it returns 0.
 int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B);
 
 // This function unpacks an orthogonal matrix from its factored representation. 
 // In particular, the function transforms B into Q'*B by forward accumulation 
-// of Householder matrices. The lower triangular part of A below the s-th 
-// subdiagonal stores the relevant parts of the Householder vectors. For
-// instance, if s = 0, the Householder vectors are below the main diagonal of 
-// A; whereas, if s = 1, the Householder vectors are below the first subdiagonal
-// of A. On size mismatch or if s < 0, the function returns -1. On success, it 
-// returns 0.
-int matrixf_unpack_householder_fwd(Matrixf* A, Matrixf* B, const int s);
+// of Householder matrices. Matrix A remains the same. The lower triangular part
+// of A below the s-th subdiagonal must store the relevant parts of the Householder
+// vectors. For instance, if s = 0, the Householder vectors are below the main 
+// diagonal of A; whereas, if s = 1, the Householder vectors are below the first 
+// subdiagonal of A. On size mismatch or if s < 0, the function returns -1. On 
+// success, it returns 0.
+int matrixf_unpack_householder_fwd(Matrixf* A, Matrixf* B, int s);
 
 // This function unpacks an orthogonal matrix from its factored representation. 
 // In particular, the function transforms B into Q*B by backward accumulation 
-// of Householder matrices. The lower triangular part of A below the s-th 
-// subdiagonal stores the relevant parts of the Householder vectors. For
-// instance, if s = 0, the Householder vectors are below the main diagonal of 
-// A; whereas, if s = 1, the Householder vectors are below the first subdiagonal
-// of A. On size mismatch or if s < 0, the function returns -1. On success, it 
-// returns 0.
-int matrixf_unpack_householder_bwd(Matrixf* A, Matrixf* B, const int s);
+// of Householder matrices. Matrix A remains the same. The lower triangular part
+// of A below the s-th subdiagonal must store the relevant parts of the Householder
+// vectors. For instance, if s = 0, the Householder vectors are below the main 
+// diagonal of A; whereas, if s = 1, the Householder vectors are below the first 
+// subdiagonal of A. On size mismatch or if s < 0, the function returns -1. On 
+// success, it returns 0.
+int matrixf_unpack_householder_bwd(Matrixf* A, Matrixf* B, int s);
 
 // This function accomplishes the bidiagonalization of the m-by-n matrix A so
 // that A = U*B*V'. A is overwritten by the bidiagonal matrix B. Specifically, B
@@ -333,39 +334,40 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U);
 // success, it returns the number of sweeps performed.
 int matrixf_decomp_schur(Matrixf* A, Matrixf* U);
 
-// This function computes the matrices of right (V) and left (W) eigenvectors starting
+// This function computes the matrices of right (V) and left (W) eigenvectors
 // from the quasitriangular matrix T and orthogonal matrix U obtained by Schur 
-// decomposition. If the flag pseudo is enabled, the function calculates the 
-// pseudo-eigenvectors; else, it calculates the eigenvectors. If the k-th and (k+1)-th
-// eigenvalues are a complex conjugate pair, since a complex conjugate pair of 
-// eigenvalues has complex conjugate eigenvectors, the function computes only the right
-// and left eigenvectors corresponding to the eigenvalue with positive imaginary part: 
-// the real and imaginary parts of the computed eigenvectors are stored in the k-th and
-// (k+1)-th columns of V and W, respectively. If V (or W) is a null pointer, its 
-// computation is omitted. The array work is the additional workspace memory: in 
-// general, if T is n-by-n, its minimum length is max(n^2,4*(n-2)^2). If all the 
-// eigenvalues are real, the minimum length of work is n^2. The function returns -1 if
-// the matrices of eigenvectors are not n-by-n; it returns -2 if a singularity is 
-// detected. On success, it returns 0.
+// decomposition. Matrices T and U remain the same. If the flag pseudo is enabled,
+// the function calculates the pseudo-eigenvectors; else, it calculates the 
+// eigenvectors. If the k-th and (k+1)-th eigenvalues are a complex conjugate pair,
+// since a complex conjugate pair of eigenvalues has complex conjugate eigenvectors, 
+// the function computes only the right and left eigenvectors corresponding to the 
+// eigenvalue with positive imaginary part: the real and imaginary parts of the 
+// computed eigenvectors are stored in the k-th and (k+1)-th columns of V and W, 
+// respectively. If V (or W) is a null pointer, its computation is omitted. The 
+// array work is the additional workspace memory: in general, if T is n-by-n, its 
+// minimum length is max(n^2,4*(n-2)^2). If all the eigenvalues are real, the 
+// minimum length of work is n^2. The function returns -1 if the matrices of 
+// eigenvectors are not n-by-n; it returns -2 if a singularity is detected. On 
+// success, it returns 0.
 int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 	Matrixf* V, Matrixf* W, int pseudo, float* work);
 
 // This function performs the forward substitution on the lower-triangular
 // matrix L to solve the the system L*X = B for X. The flag unitri indicates
 // whether L is unitriangular: if the flag is enabled, the elements on the main
-// diagonal are ignored. The matrix B is destroyed. Also, the matrix B can
-// share the data array with X, provided that the array is large enough to 
-// accommodate the larger of B or X. It returns -2 if L is rank deficient,
-// -1 on size mismatch. On success, it returns 0.
+// diagonal are ignored. Matrix L remains the same while B is destroyed. Also, 
+// the matrix B can share the data array with X, provided that the array is 
+// large enough to accommodate the larger of B or X. It returns -2 if L is rank
+// deficient, -1 on size mismatch. On success, it returns 0.
 int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri);
 
 // This function performs the backward substitution on the upper-triangular
 // matrix U to solve the the system U*X = B for X. The flag unitri indicates
 // whether U is unitriangular: if the flag is enabled, the elements on the main
-// diagonal are ignored. The matrix B is destroyed. Also, the matrix B can
-// share the data array with X, provided that the array is large enough to 
-// accommodate the larger of B or X. It returns -2 if U is rank deficient,
-// -1 on size mismatch. On success, it returns 0.
+// diagonal are ignored. Matrix U remains the same while B is destroyed. Also,
+// the matrix B can share the data array with X, provided that the array is 
+// large enough to accommodate the larger of B or X. It returns -2 if U is rank
+// deficient, -1 on size mismatch. On success, it returns 0.
 int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri);
 
 // This function solves in place the linear system A*X = B for X by Cholesky
@@ -397,7 +399,7 @@ int matrixf_solve_lu(Matrixf* A, Matrixf* B);
 // overwritten with the matrix X. If A is singular, the function returns -2. On
 // size mismatch, non-square system or ubw < 0, the function returns -1. On 
 // success, it returns 0.
-int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, const int ubw);
+int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, int ubw);
 
 // This function solves the linear system A*X = B by QR decomposition
 // of the full-rank matrix A. The returned solution is minimum-norm. The 
@@ -462,9 +464,10 @@ int matrixf_sqrt(Matrixf* A, float* work);
 // the form C = alpha*op(A)*op(B) + beta*C, where A, B and C are general 
 // matrices, alpha and beta are scalars, and op(X) is one of X or its
 // transpose. Therefore, if transX = 0, op(X) = X, else op(X) = X', X' being 
-// the transpose of X. C must be a distinct instance with respect to A and B. 
-// On size mismatch, the function returns -1. On success, it returns 0.
+// the transpose of X. C must be a distinct instance with respect to A and B.
+// Matrices A and B remain the same. On size mismatch, the function returns -1.
+// On success, it returns 0.
 int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
-	const float alpha, const float beta, const int transA, const int transB);
+	float alpha, float beta, int transA, int transB);
 
 #endif
