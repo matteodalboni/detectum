@@ -1,7 +1,7 @@
 # DeTecTUM — Decomposition Techniques with Thin Usage of Memory
 A lightweight linear algebra library offering a wide selection of matrix decompositions and solvers for real-valued dense matrices.
 
-One of the distinctive traits of DeTecTUM is that all the algorithms are built around in-place operations, ensuring a minimal memory footprint. Fully implemented in plain C, the library adopts single-precision arithmetic and avoids dynamic memory allocation. All of these features make DeTecTUM ideal for embedded systems too.
+One of the distinctive traits of DeTecTUM is that all the algorithms are built around in-place operations, ensuring a minimal memory footprint. Fully implemented in plain C, the library adopts single-precision arithmetic and avoids dynamic memory allocation. All of these features also make DeTecTUM ideal for most embedded systems.
 
 The library includes:
 * Cholesky decomposition;

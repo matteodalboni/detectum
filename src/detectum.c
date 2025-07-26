@@ -1,43 +1,43 @@
 #include "detectum.h"
 
-#ifndef DETECTUM_SVD_SWEEPMAX
-// Maximum number of SVD sweeps. n is the smaller between the 
+#ifndef DETECTUM_SVD_ITER_MAX
+// Maximum number of SVD iterations. n is the smaller between the 
 // number of rows and the number of columns of the input matrix.
-#define DETECTUM_SVD_SWEEPMAX (100 * n)
+#define DETECTUM_SVD_ITER_MAX (100 * n)
 #endif
 #ifndef DETECTUM_SVD_TOL
 // SVD tolerance.
 #define DETECTUM_SVD_TOL (3e-7f)
 #endif
-#ifndef DETECTUM_SVD_JACOBI_SWEEPMAX
-// Maximum number of Jacobi SVD sweeps. n is the smaller between the 
+#ifndef DETECTUM_SVD_JACOBI_ITER_MAX
+// Maximum number of Jacobi SVD iterations. n is the smaller between the 
 // number of rows and the number of columns of the input matrix.
-#define DETECTUM_SVD_JACOBI_SWEEPMAX (10 * n)
+#define DETECTUM_SVD_JACOBI_ITER_MAX (10 * n)
 #endif
 #ifndef DETECTUM_SVD_JACOBI_TOL
 // Jacobi SVD tolerance.
 #define DETECTUM_SVD_JACOBI_TOL (3e-7f)
 #endif
-#ifndef DETECTUM_SCHUR_SYMM_SWEEPMAX
-// Maximum number of symmetric Schur decomposition sweeps. n is the 
+#ifndef DETECTUM_SCHUR_SYMM_ITER_MAX
+// Maximum number of symmetric Schur decomposition iterations. n is the 
 // number of rows of the square input matrix.
-#define DETECTUM_SCHUR_SYMM_SWEEPMAX (100 * n)
+#define DETECTUM_SCHUR_SYMM_ITER_MAX (100 * n)
 #endif
 #ifndef DETECTUM_SCHUR_SYMM_TOL
 // Symmetric Schur decomposition tolerance.
 #define DETECTUM_SCHUR_SYMM_TOL (3e-7f)
 #endif
-#ifndef DETECTUM_SCHUR_SWEEPMAX
-// Maximum number of Schur decomposition sweeps. n is the number of
+#ifndef DETECTUM_SCHUR_ITER_MAX
+// Maximum number of Schur decomposition iterations. n is the number of
 // rows of the square input matrix.
-#define DETECTUM_SCHUR_SWEEPMAX (100 * n)
+#define DETECTUM_SCHUR_ITER_MAX (100 * n)
 #endif
 #ifndef DETECTUM_SCHUR_TOL
 // Schur decomposition tolerance.
 #define DETECTUM_SCHUR_TOL (3e-7f)
 #endif
 #ifndef DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT
-// Sweep count defining the period for the application of ad hoc
+// Iteration count defining the period for the application of ad hoc
 // shifts in Schur decomposition.
 #define DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT (5)
 #endif
@@ -117,7 +117,7 @@ int matrixf_permute(Matrixf* A, Matrixf* p, int reverse)
 				j = k;
 				do {
 					q = (int)x[i];
-					x[i] = -(float)(j + 1);
+					x[i] = (float)(-j - 1);
 					j = i;
 					i = q;
 				} while (j != k);
@@ -696,8 +696,8 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 {
 	const int m = A->size[0];
 	const int n = A->size[1];
-	int i, j, k, q, r = n - 1, sweep = 0;
-	const int sweepmax = DETECTUM_SVD_SWEEPMAX;
+	int i, j, k, q, r = n - 1, iter = 0;
+	const int iter_max = DETECTUM_SVD_ITER_MAX;
 	const float tol = DETECTUM_SVD_TOL;
 	float small, norm1, tmp, cosine, sine, Xi, Xj;
 	float c00, c01, c11, y, z, mu;
@@ -727,7 +727,7 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 		}
 	}
 	small = tol * norm1;
-	while (r > 0 && sweep < sweepmax) {
+	while (r > 0 && iter < iter_max) {
 		while (r > 0 && fabsf(at(A, r - 1, r)) <= small) {
 			r--;
 		}
@@ -791,7 +791,7 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 						z = at(A, j, j + 2);
 					}
 				}
-				sweep++;
+				iter++;
 			}
 			else if (i < r) {
 				for (j = i + 1; j <= r; j++) {
@@ -885,16 +885,16 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 			s[j] = 0;
 		}
 	}
-	return sweep == sweepmax ? -2 : sweep;
+	return iter == iter_max ? -2 : iter;
 }
 
 int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 {
-	int i, j, k, count = 1, sweep = 0, sorted, orthog;
+	int i, j, k, count = 1, iter = 0, sorted, orthog;
 	float a, b, p, q, v, Xij, Xik, s, sine, cosine;
 	const int m = A->size[0];
 	const int n = A->size[1];
-	const int sweepmax = DETECTUM_SVD_JACOBI_SWEEPMAX;
+	const int iter_max = DETECTUM_SVD_JACOBI_ITER_MAX;
 	const float tol = DETECTUM_SVD_JACOBI_TOL;
 
 	if (m < n) {
@@ -916,7 +916,7 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 			V->data[i] = !(i % (n + 1));
 		}
 	}
-	while (count > 0 && sweep < sweepmax) {
+	while (count > 0 && iter < iter_max) {
 		count = n * (n - 1) / 2;
 		for (j = 0; j < n - 1; j++) {
 			for (k = j + 1; k < n; k++) {
@@ -963,7 +963,7 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 				}
 			}
 		}
-		sweep++;
+		iter++;
 	}
 	if (U) {
 		matrixf_decomp_qr(A, U, 0, 0);
@@ -979,7 +979,7 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 			}
 		}
 	}
-	return sweep == sweepmax ? -2 : sweep;
+	return iter == iter_max ? -2 : iter;
 }
 
 int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
@@ -1030,8 +1030,8 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
 int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 {
 	const int n = A->size[0];
-	int k, i, imin, imax, q, m = n - 1, sweep = 0;
-	const int sweepmax = DETECTUM_SCHUR_SYMM_SWEEPMAX;
+	int k, i, imin, imax, q, m = n - 1, iter = 0;
+	const int iter_max = DETECTUM_SCHUR_SYMM_ITER_MAX;
 	const float tol = DETECTUM_SCHUR_SYMM_TOL;
 	float d, f, g, x, y, cosine, sine, Xk, Xk1;
 
@@ -1043,7 +1043,7 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 			at(A, k + 2, k) = 0;
 		}
 	}
-	while (m > 0 && sweep < sweepmax) {
+	while (m > 0 && iter < iter_max) {
 		while (m > 0 && at(A, m, m - 1) == 0) {
 			m--;
 		}
@@ -1092,7 +1092,7 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 					at(A, k + 1, k) = 0;
 				}
 			}
-			sweep++;
+			iter++;
 		}
 	}
 	for (k = 1; k < n * n - 1; k++) {
@@ -1100,14 +1100,14 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 			A->data[k] = 0;
 		}
 	}
-	return sweep == sweepmax ? -2 : sweep;
+	return iter == iter_max ? -2 : iter;
 }
 
 int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 {
 	const int n = A->size[0];
-	int i, j, k, q, m = n - 1, sweep = 0, ad_hoc_shift;
-	const int sweepmax = DETECTUM_SCHUR_SWEEPMAX;
+	int i, j, k, q, m = n - 1, iter = 0, ad_hoc_shift;
+	const int iter_max = DETECTUM_SCHUR_ITER_MAX;
 	const int ahsc = DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT;
 	const float tol = DETECTUM_SCHUR_TOL;
 	const float eps = epsf(1);
@@ -1124,7 +1124,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 			}
 		}
 	}
-	while (m > 1 && sweep < sweepmax) {
+	while (m > 1 && iter < iter_max) {
 		while (m > 1 && (at(A, m, m - 1) == 0 || at(A, m - 1, m - 2) == 0)) {
 			if (at(A, m, m - 1) == 0) {
 				m--;
@@ -1138,7 +1138,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 			while (q > 0 && at(A, q, q - 1) != 0) {
 				q--;
 			}
-			ad_hoc_shift = !((sweep + 1) % ahsc);
+			ad_hoc_shift = !((iter + 1) % ahsc);
 			if (m - q > 1) {
 				if (ad_hoc_shift) {
 					x = 0.5f * (at(A, m - 1, m - 1) - at(A, m, m));
@@ -1203,7 +1203,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 					at(A, k + 1, k) = 0;
 				}
 			}
-			sweep++;
+			iter++;
 		}
 	}
 	// Trangularize all 2-by-2 diagonal blocks in A that have real eigenvalues,
@@ -1263,7 +1263,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 			at(A, i, k) = 0;
 		}
 	}
-	return sweep == sweepmax ? -2 : sweep;
+	return iter == iter_max ? -2 : iter;
 }
 
 int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
@@ -1921,7 +1921,7 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 
 int matrixf_pseudoinv(Matrixf* A, float tol, float* work)
 {
-	int i, j, k, sweep;
+	int i, j, k, iter;
 	const int m = A->size[0];
 	const int n = A->size[1];
 	const int p = m < n ? m : n;
@@ -1933,7 +1933,7 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work)
 	if (m < n) {
 		matrixf_transpose(A);
 	}
-	sweep = matrixf_decomp_svd_jacobi(A, 0, &V);
+	iter = matrixf_decomp_svd_jacobi(A, 0, &V);
 	if (tol < 0) {
 		tol = q * epsf(normf(&at(A, 0, 0), q, 1));
 	}
@@ -1964,7 +1964,7 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work)
 	if (m < n) {
 		matrixf_transpose(A);
 	}
-	return sweep;
+	return iter;
 }
 
 int matrixf_exp(Matrixf* A, float* work)
@@ -2036,7 +2036,7 @@ int matrixf_exp(Matrixf* A, float* work)
 
 int matrixf_sqrt(Matrixf* A, float* work)
 {
-	int i, j = 0, r = 0, kj = 0, kr = 0, sj = 0, sr = 0, sweep;
+	int i, j = 0, r = 0, kj = 0, kr = 0, sj = 0, sr = 0, iter;
 	const int n = A->size[0];
 	float T00, T10, T01, t;
 	float* k = work, A_data[16] = { 0 }, B_data[4] = { 0 };
@@ -2044,9 +2044,9 @@ int matrixf_sqrt(Matrixf* A, float* work)
 	Matrixf C = { { 0, 0 }, A_data };
 	Matrixf D = { { 0, 1 }, B_data };
 
-	sweep = matrixf_decomp_schur(A, &U);
-	if (sweep < 0) {
-		return sweep;
+	iter = matrixf_decomp_schur(A, &U);
+	if (iter < 0) {
+		return iter;
 	}
 	while (kj < n) {
 		k[j] = (float)kj;
@@ -2170,7 +2170,7 @@ int matrixf_sqrt(Matrixf* A, float* work)
 			at(A, i, j) = t;
 		}
 	}
-	return sweep;
+	return iter;
 }
 
 int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
