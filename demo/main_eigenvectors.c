@@ -39,7 +39,7 @@ int main()
 	Matrixf W = matrixf(n, n);
 	Matrixf D = matrixf(n, n);
 	if (!A.data || !T.data || !U.data || !V.data || !W.data || !D.data) return -1;
-	float work[4 * (n - 2) * (n - 2) + 5] = { 0 };
+	float work[4 * (n - 2) * (n - 2) + 2] = { 0 };
 #if 1
 	float A_data[] = {
 		 1, 1, 1, 3,

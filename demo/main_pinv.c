@@ -23,7 +23,7 @@ int main()
     matrixf_init(&b, 8, 1, b_data, 0);
     printf("A = \n"); matrixf_print(&A, "%9.0f"); printf("\n");
     matrixf_pseudoinv(&A, -1, work);
-    printf("A = \n"); matrixf_print(&A, "%9.4f"); printf("\n");
+    printf("pinv(A) = \n"); matrixf_print(&A, "%9.4f"); printf("\n");
     matrixf_multiply(&A, &b, &x, 1, 0, 0, 0);
     printf("x = \n"); matrixf_print(&x, "%9.4f"); printf("\n");
 

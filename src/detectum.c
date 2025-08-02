@@ -99,8 +99,8 @@ void matrixf_init(Matrixf* A, int rows, int cols, float* data, int ordmem)
 int matrixf_permute(Matrixf* A, Matrixf* p, int reverse)
 {
 	int i, j, k, q;
-	const int m = (reverse) ? p->size[1] : p->size[0];
-	const int n = (reverse) ? p->size[0] : p->size[1];
+	const int m = reverse ? p->size[1] : p->size[0];
+	const int n = reverse ? p->size[0] : p->size[1];
 	const int h = m > n ? m : n;
 	float t, * x = p->data, * col1, * col2;
 
@@ -1482,18 +1482,11 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 			k += 2;
 		}
 	}
-	C.size[0] = C.size[1] = n;
 	if (V) {
-		for (i = 0; i < n * n; i++) {
-			C.data[i] = V->data[i];
-		}
-		matrixf_multiply(U, &C, V, 1, 0, 0, 0);
+		matrixf_multiply_inplace(V, U, 0, 0, 0, work);
 	}
 	if (W) {
-		for (i = 0; i < n * n; i++) {
-			C.data[i] = W->data[i];
-		}
-		matrixf_multiply(U, &C, W, 1, 0, 0, 0);
+		matrixf_multiply_inplace(W, U, 0, 0, 0, work);
 	}
 	return 0;
 }
@@ -1921,12 +1914,12 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 
 int matrixf_pseudoinv(Matrixf* A, float tol, float* work)
 {
-	int i, j, k, iter;
+	int i, j, iter;
 	const int m = A->size[0];
 	const int n = A->size[1];
 	const int p = m < n ? m : n;
 	const int q = m > n ? m : n;
-	float sj, rj, Aij;
+	float sj, rj;
 	Matrixf V = { { p, p }, work + p };
 	Matrixf* X = (m < n) ? A : &V;
 
@@ -1950,17 +1943,7 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work)
 		}
 	}
 	matrixf_transpose(A);
-	for (j = 0; j < q; j++) {
-		for (i = 0; i < p; i++) {
-			work[i] = at(A, i, j);
-		}
-		for (i = 0; i < p; i++) {
-			for (Aij = 0, k = 0; k < p; k++) {
-				Aij += work[k] * at(&V, i, k);
-			}
-			at(A, i, j) = Aij;
-		}
-	}
+	matrixf_multiply_inplace(A, &V, 0, 0, 0, work);
 	if (m < n) {
 		matrixf_transpose(A);
 	}
@@ -1969,10 +1952,10 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work)
 
 int matrixf_exp(Matrixf* A, float* work)
 {
-	int i, j, k, r, z, s;
+	int i, j, k, z, s;
 	const int n = A->size[0];
 	const int q = DETECTUM_EXPM_PADE_ORDER;
-	float c, p, t, Xij;
+	float c, p, t;
 	Matrixf X = { { n, n }, work + n };
 	Matrixf N = { { n, n }, work + n + n * n };
 	Matrixf D = { { n, n }, work + n + n * n * 2 };
@@ -2002,17 +1985,7 @@ int matrixf_exp(Matrixf* A, float* work)
 	}
 	for (c = 1, k = 1; k <= q; k++) {
 		c *= (float)(q - k + 1) / ((2 * q - k + 1) * k);
-		for (j = 0; j < n; j++) {
-			for (i = 0; i < n; i++) {
-				work[i] = at(&X, i, j);
-			}
-			for (i = 0; i < n; i++) {
-				for (Xij = 0, r = 0; r < n; r++) {
-					Xij += work[r] * at(A, i, r);
-				}
-				at(&X, i, j) = Xij;
-			}
-		}
+		matrixf_multiply_inplace(&X, A, 0, 0, 0, work);
 		t = (k % 2) ? -1.0f : 1.0f;
 		for (i = 0; i < n * n; i++) {
 			N.data[i] += c * X.data[i];
@@ -2034,143 +2007,153 @@ int matrixf_exp(Matrixf* A, float* work)
 	return 0;
 }
 
-int matrixf_sqrt(Matrixf* A, float* work)
+int matrixf_sqrt_quasitriu(Matrixf* T)
 {
-	int i, j = 0, r = 0, kj = 0, kr = 0, sj = 0, sr = 0, iter;
-	const int n = A->size[0];
+	int i, j = 0, r, k1, kj = 0, kr, kr1, sj, sr;
+	const int n = T->size[0];
 	float T00, T10, T01, t;
-	float* k = work, A_data[16] = { 0 }, B_data[4] = { 0 };
-	Matrixf U = { { n, n }, work + n };
-	Matrixf C = { { 0, 0 }, A_data };
-	Matrixf D = { { 0, 1 }, B_data };
+	float* k = T->data, C_data[16] = { 0 }, D_data[4] = { 0 };
+	Matrixf C = { { 0, 0 }, C_data };
+	Matrixf D = { { 0, 1 }, D_data };
 
-	iter = matrixf_decomp_schur(A, &U);
-	if (iter < 0) {
-		return iter;
-	}
 	while (kj < n) {
-		k[j] = (float)kj;
-		sj = kj < n - 1 ? 1 + (at(A, kj + 1, kj) != 0) : 1;
+		sj = kj < n - 1 ? 1 + (at(T, kj + 1, kj) != 0) : 1;
 		if (sj == 1) {
-			T00 = at(A, kj, kj);
+			T00 = at(T, kj, kj);
 			if (T00 >= 0) {
-				at(A, kj, kj) = sqrtf(T00);
+				at(T, kj, kj) = sqrtf(T00);
 			}
 			else {
 				return -3;
 			}
 		}
 		else {
-			T00 = at(A, kj, kj);
-			T10 = at(A, kj + 1, kj);
-			T01 = at(A, kj, kj + 1);
+			T00 = at(T, kj, kj);
+			T10 = at(T, kj + 1, kj);
+			T01 = at(T, kj, kj + 1);
 			t = sqrtf(0.5f * (T00 + sqrtf(T00 * T00 - T10 * T01)));
-			at(A, kj, kj) = at(A, kj + 1, kj + 1) = t;
-			at(A, kj + 1, kj) = 0.5f * T10 / t;
-			at(A, kj, kj + 1) = 0.5f * T01 / t;
+			at(T, kj, kj) = at(T, kj + 1, kj + 1) = t;
+			at(T, kj + 1, kj) = 0.5f * T10 / t;
+			at(T, kj, kj + 1) = 0.5f * T01 / t;
+		}
+		if (j > 1) {
+			k[j] = (float)kj;
+		}
+		else if (j == 1) {
+			k1 = kj;
 		}
 		for (r = j - 1; r >= 0; r--) {
-			kr = (int)k[r];
-			sr = 1 + (at(A, kr + 1, kr) != 0);
-			D.data[0] = at(A, kr, kj);
+			if (r == 0) {
+				kr = 0;
+				kr1 = k1;
+			}
+			else if (r == 1) {
+				kr = k1;
+				kr1 = (int)k[2];
+			}
+			else {
+				kr = (int)k[r];
+				kr1 = (int)k[r + 1];
+			}
+			sr = 1 + (at(T, kr + 1, kr) != 0);
+			D.data[0] = at(T, kr, kj);
 			if (sj + sr == 2) {
-				C.data[0] = at(A, kr, kr) + at(A, kj, kj);
-				for (i = (int)k[r + 1]; i < kj; i++) {
-					D.data[0] -= at(A, kr, i) * at(A, i, kj);
+				C.data[0] = at(T, kr, kr) + at(T, kj, kj);
+				for (i = kr1; i < kj; i++) {
+					D.data[0] -= at(T, kr, i) * at(T, i, kj);
 				}
 				if (C.data[0] == 0) {
-					return -4;
+					return -2;
 				}
-				at(A, kr, kj) = D.data[0] / C.data[0];
+				at(T, kr, kj) = D.data[0] / C.data[0];
 			}
 			else if (sj + sr == 3) {
 				C.size[0] = C.size[1] = D.size[0] = 2;
 				if (sr > sj) {
-					D.data[1] = at(A, kr + 1, kj);
-					for (i = (int)k[r + 1]; i < kj; i++) {
-						D.data[0] -= at(A, kr, i) * at(A, i, kj);
-						D.data[1] -= at(A, kr + 1, i) * at(A, i, kj);
+					D.data[1] = at(T, kr + 1, kj);
+					for (i = kr1; i < kj; i++) {
+						D.data[0] -= at(T, kr, i) * at(T, i, kj);
+						D.data[1] -= at(T, kr + 1, i) * at(T, i, kj);
 					}
-					C.data[0] = at(A, kr, kr) + at(A, kj, kj);
-					C.data[1] = at(A, kr + 1, kr);
-					C.data[2] = at(A, kr, kr + 1);
-					C.data[3] = at(A, kr + 1, kr + 1) + at(A, kj, kj);
+					C.data[0] = at(T, kr, kr) + at(T, kj, kj);
+					C.data[1] = at(T, kr + 1, kr);
+					C.data[2] = at(T, kr, kr + 1);
+					C.data[3] = at(T, kr + 1, kr + 1) + at(T, kj, kj);
 					if (matrixf_solve_lu(&C, &D)) {
-						return -4;
+						return -2;
 					}
-					at(A, kr, kj) = D.data[0];
-					at(A, kr + 1, kj) = D.data[1];
+					at(T, kr, kj) = D.data[0];
+					at(T, kr + 1, kj) = D.data[1];
 				}
 				else {
-					D.data[1] = at(A, kr, kj + 1);
-					for (i = (int)k[r + 1]; i < kj; i++) {
-						D.data[0] -= at(A, kr, i) * at(A, i, kj);
-						D.data[1] -= at(A, kr, i) * at(A, i, kj + 1);
+					D.data[1] = at(T, kr, kj + 1);
+					for (i = kr1; i < kj; i++) {
+						D.data[0] -= at(T, kr, i) * at(T, i, kj);
+						D.data[1] -= at(T, kr, i) * at(T, i, kj + 1);
 					}
-					C.data[0] = at(A, kr, kr) + at(A, kj, kj);
-					C.data[1] = at(A, kj, kj + 1);
-					C.data[2] = at(A, kj + 1, kj);
-					C.data[3] = at(A, kr, kr) + at(A, kj + 1, kj + 1);
+					C.data[0] = at(T, kr, kr) + at(T, kj, kj);
+					C.data[1] = at(T, kj, kj + 1);
+					C.data[2] = at(T, kj + 1, kj);
+					C.data[3] = at(T, kr, kr) + at(T, kj + 1, kj + 1);
 					if (matrixf_solve_lu(&C, &D)) {
-						return -4;
+						return -2;
 					}
-					at(A, kr, kj) = D.data[0];
-					at(A, kr, kj + 1) = D.data[1];
+					at(T, kr, kj) = D.data[0];
+					at(T, kr, kj + 1) = D.data[1];
 				}
 			}
 			else if (sj + sr == 4) {
 				C.size[0] = C.size[1] = D.size[0] = 4;
-				D.data[1] = at(A, kr + 1, kj);
-				D.data[2] = at(A, kr, kj + 1);
-				D.data[3] = at(A, kr + 1, kj + 1);
-				for (i = (int)k[r + 1]; i < kj; i++) {
-					D.data[0] -= at(A, kr, i) * at(A, i, kj);
-					D.data[1] -= at(A, kr + 1, i) * at(A, i, kj);
-					D.data[2] -= at(A, kr, i) * at(A, i, kj + 1);
-					D.data[3] -= at(A, kr + 1, i) * at(A, i, kj + 1);
+				D.data[1] = at(T, kr + 1, kj);
+				D.data[2] = at(T, kr, kj + 1);
+				D.data[3] = at(T, kr + 1, kj + 1);
+				for (i = kr1; i < kj; i++) {
+					D.data[0] -= at(T, kr, i) * at(T, i, kj);
+					D.data[1] -= at(T, kr + 1, i) * at(T, i, kj);
+					D.data[2] -= at(T, kr, i) * at(T, i, kj + 1);
+					D.data[3] -= at(T, kr + 1, i) * at(T, i, kj + 1);
 				}
-				C.data[0] = C.data[10] = at(A, kr, kr) + at(A, kj, kj);
-				C.data[1] = C.data[11] = at(A, kr + 1, kr);
-				C.data[4] = C.data[14] = at(A, kr, kr + 1);
-				C.data[5] = C.data[15] = at(A, kr + 1, kr + 1) + at(A, kj, kj);
+				C.data[0] = C.data[10] = at(T, kr, kr) + at(T, kj, kj);
+				C.data[1] = C.data[11] = at(T, kr + 1, kr);
+				C.data[4] = C.data[14] = at(T, kr, kr + 1);
+				C.data[5] = C.data[15] = at(T, kr + 1, kr + 1) + at(T, kj, kj);
 				C.data[3] = C.data[6] = C.data[9] = C.data[12] = 0;
-				C.data[2] = C.data[7] = at(A, kj, kj + 1);
-				C.data[8] = C.data[13] = at(A, kj + 1, kj);
+				C.data[2] = C.data[7] = at(T, kj, kj + 1);
+				C.data[8] = C.data[13] = at(T, kj + 1, kj);
 				if (matrixf_solve_lu(&C, &D)) {
-					return -4;
+					return -2;
 				}
-				at(A, kr, kj) = D.data[0];
-				at(A, kr + 1, kj) = D.data[1];
-				at(A, kr, kj + 1) = D.data[2];
-				at(A, kr + 1, kj + 1) = D.data[3];
+				at(T, kr, kj) = D.data[0];
+				at(T, kr + 1, kj) = D.data[1];
+				at(T, kr, kj + 1) = D.data[2];
+				at(T, kr + 1, kj + 1) = D.data[3];
 			}
 		}
 		kj += sj;
 		j++;
 	}
-	for (j = 0; j < n; j++) {
-		for (i = 0; i < n; i++) {
-			work[i] = at(A, i, j);
-		}
-		for (i = 0; i < n; i++) {
-			for (t = 0, r = 0; r < n; r++) {
-				t += work[r] * at(&U, i, r);
-			}
-			at(A, i, j) = t;
-		}
+	for (i = 2; i < n; i++) {
+		k[i] = 0;
 	}
-	for (i = 0; i < n; i++) {
-		for (j = 0; j < n; j++) {
-			work[j] = at(A, i, j);
-		}
-		for (j = 0; j < n; j++) {
-			for (t = 0, r = 0; r < n; r++) {
-				t += work[r] * at(&U, j, r);
-			}
-			at(A, i, j) = t;
-		}
+	return 0;
+}
+
+int matrixf_sqrt(Matrixf* A, float* work)
+{
+	int exitflag;
+	const int n = A->size[0];
+	Matrixf U = { { n, n }, work + n };
+
+	exitflag = matrixf_decomp_schur(A, &U);
+	if (exitflag < 0) {
+		return exitflag;
 	}
-	return iter;
+	exitflag = matrixf_sqrt_quasitriu(A);
+	if (exitflag < 0) {
+		return exitflag - 1;
+	}
+	matrixf_multiply_inplace(A, &U, &U, 0, 1, work);
+	return exitflag;
 }
 
 int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
@@ -2179,7 +2162,7 @@ int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 	int i, j, k;
 	const int m = C->size[0];
 	const int n = C->size[1];
-	const int p = (transA) ? A->size[0] : A->size[1];
+	const int p = transA ? A->size[0] : A->size[1];
 	float b, c;
 
 	for (i = 0; i < m * n; i++) {
@@ -2242,6 +2225,79 @@ int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 					for (i = 0; i < m; i++) {
 						at(C, i, j) += alpha * at(A, i, k) * b;
 					}
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+int matrixf_multiply_inplace(Matrixf* A, Matrixf* L, Matrixf* R,
+	int transL, int transR, float* work)
+{
+	int i, j, k;
+	const int m = A->size[0];
+	const int n = A->size[1];
+	float t;
+
+	if (L) {
+		if (m != L->size[0] || m != L->size[1]) {
+			return -1;
+		}
+		if (transL) { // A = L' * A
+			for (j = 0; j < n; j++) {
+				for (i = 0; i < m; i++) {
+					work[i] = at(A, i, j);
+				}
+				for (i = 0; i < m; i++) {
+					for (t = 0, k = 0; k < m; k++) {
+						t += work[k] * at(L, k, i);
+					}
+					at(A, i, j) = t;
+				}
+			}
+		}
+		else { // A = L * A
+			for (j = 0; j < n; j++) {
+				for (i = 0; i < m; i++) {
+					work[i] = at(A, i, j);
+				}
+				for (i = 0; i < m; i++) {
+					for (t = 0, k = 0; k < m; k++) {
+						t += work[k] * at(L, i, k);
+					}
+					at(A, i, j) = t;
+				}
+			}
+		}
+	}
+	if (R) {
+		if (n != R->size[0] || n != R->size[1]) {
+			return -1;
+		}
+		if (transR) { // A = A * R'
+			for (i = 0; i < m; i++) {
+				for (j = 0; j < n; j++) {
+					work[j] = at(A, i, j);
+				}
+				for (j = 0; j < n; j++) {
+					for (t = 0, k = 0; k < n; k++) {
+						t += work[k] * at(R, j, k);
+					}
+					at(A, i, j) = t;
+				}
+			}
+		}
+		else { // A = A * R
+			for (i = 0; i < m; i++) {
+				for (j = 0; j < n; j++) {
+					work[j] = at(A, i, j);
+				}
+				for (j = 0; j < n; j++) {
+					for (t = 0, k = 0; k < n; k++) {
+						t += work[k] * at(R, k, j);
+					}
+					at(A, i, j) = t;
 				}
 			}
 		}
