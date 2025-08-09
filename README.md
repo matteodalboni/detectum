@@ -26,7 +26,8 @@ The library includes:
 * minimum-norm solver;
 * Moore-Penrose pseudoinverse;
 * matrix exponential;
-* real square root of a real matrix.
+* real matrix logarithm;
+* real matrix square root.
 
 ## Testing on Linux
 gcc -o mydemo demo/mydemo.c src/detectum.c -lm -I inc
@@ -36,4 +37,5 @@ gcc -o mydemo demo/mydemo.c src/detectum.c -lm -I inc
 [2] Nash, John C. *Compact numerical methods for computers: linear algebra and function minimisation*. Routledge, 2018.\
 [3] MATLAB documentation.\
 [4] M. Galassi et al. *GNU Scientific Library Reference Manual (3rd Ed.)*. ISBN 0954612078.\
-[5] Higham, Nicholas J. *Computing real square roots of a real matrix*. Linear Algebra and its applications 88 (1987): 405-430.
+[5] Higham, Nicholas J. *Computing real square roots of a real matrix*. Linear Algebra and its applications 88 (1987): 405-430.\
+[6] Higham, Nicholas J. *Functions of matrices: theory and computation*. Society for Industrial and Applied Mathematics, 2008.
