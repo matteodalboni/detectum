@@ -8,6 +8,12 @@ typedef struct {
 	float* data;
 } Matrixf;
 
+// This macro initializes a rows-by-cols matrix instance A while allocating 
+// its data memory on the stack; rows and cols must be known at compile time.
+#define Matrixf_(A, rows, cols) \
+float A##_data[rows * cols] = { 0 }; \
+Matrixf A = { { rows, cols }, A##_data}
+
 // This macro allows accessing the element A(i, j).
 #define at(A, i, j) ((A)->data[(i) + (j) * (A)->size[0]])
 
@@ -76,8 +82,8 @@ static inline void matrixf_print(Matrixf* A, const char* format)
 #endif
 
 #ifdef RAND_MAX // include stdlib.h before detectum.h to enable this section
-// This function initializes a rows-by-cols matrix instance while dynamically
-// allocating its data memory. On allocation failure, the data pointer is null.
+// This function initializes a rows-by-cols matrix instance while allocating
+// its data memory on the heap. On allocation failure, the data pointer is null.
 static inline Matrixf matrixf(int rows, int cols)
 {
 	Matrixf A = { { rows, cols }, calloc(sizeof(float), rows * cols) };
@@ -320,9 +326,9 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U);
 // respectively. If V (or W) is a null pointer, its computation is omitted. The 
 // array work is the additional workspace memory: in general, if T is n-by-n, its 
 // minimum length is max(2,4*(n-2)^2); if all the eigenvalues are real, the 
-// minimum length of work is max(2,(n-1)^2). The function returns -1 if the 
-// matrices of eigenvectors are not n-by-n; it returns -2 if a singularity is 
-// detected. On success, it returns 0.
+// minimum length of work is max(2,(n-1)^2). If the matrices of eigenvectors are
+// not n-by-n, the function returns -1; if a singularity is detected, it returns
+// -2. On success, it returns 0.
 int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 	Matrixf* V, Matrixf* W, int pseudo, float* work);
 
@@ -419,10 +425,21 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work);
 
 // This function computes the exponential of the square matrix A by scaling
 // and squaring algorithm with Padé approximation. The array work is the
-// additional workspace memory: if A is n-by-n, its minimum length is n*(3*n+1).
-// The function returns -1 if the input matrix is not square; it returns -2 if a
-// singularity is detected. On success, it returns 0.
+// additional workspace memory: if A is n-by-n, its minimum length is 3*n*n+n.
+// The function returns -1 if the input matrix is not square; if a singularity 
+// is detected, it returns -2. On success, it returns 0.
 int matrixf_exp(Matrixf* A, float* work);
+
+// This function computes the real logarithm of a real matrix by inverse scaling
+// and squaring and Gregory series expansion. The n-by-n matrix A is transformed
+// into its logarithm. The array work is the additional workspace memory: its 
+// minimum length is 3*n*n+n. If Schur decomposition fails to converge, the 
+// function returns -2. If A is singular and its logarithm cannot be computed, 
+// the function returns -3. If A has negative real eigenvalues, the real 
+// logarithm does not exist and the function returns -4. If A is not square, the
+// function returns -1. On success, it returns the number of iterations performed
+// by Schur decomposition.
+int matrixf_log(Matrixf* A, float* work);
 
 // This function computes the principal real square root of a real quasitriangular
 // matrix T by real Schur method. T is obtained by Schur decomposition. The n-by-n

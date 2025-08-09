@@ -5,45 +5,65 @@
 // number of rows and the number of columns of the input matrix.
 #define DETECTUM_SVD_ITER_MAX (100 * n)
 #endif
+
 #ifndef DETECTUM_SVD_TOL
 // SVD tolerance.
 #define DETECTUM_SVD_TOL (3e-7f)
 #endif
+
 #ifndef DETECTUM_SVD_JACOBI_ITER_MAX
 // Maximum number of Jacobi SVD iterations. n is the smaller between the 
 // number of rows and the number of columns of the input matrix.
 #define DETECTUM_SVD_JACOBI_ITER_MAX (10 * n)
 #endif
+
 #ifndef DETECTUM_SVD_JACOBI_TOL
 // Jacobi SVD tolerance.
 #define DETECTUM_SVD_JACOBI_TOL (3e-7f)
 #endif
+
 #ifndef DETECTUM_SCHUR_SYMM_ITER_MAX
 // Maximum number of symmetric Schur decomposition iterations. n is the 
 // number of rows of the square input matrix.
 #define DETECTUM_SCHUR_SYMM_ITER_MAX (100 * n)
 #endif
+
 #ifndef DETECTUM_SCHUR_SYMM_TOL
 // Symmetric Schur decomposition tolerance.
 #define DETECTUM_SCHUR_SYMM_TOL (3e-7f)
 #endif
+
 #ifndef DETECTUM_SCHUR_ITER_MAX
 // Maximum number of Schur decomposition iterations. n is the number of
 // rows of the square input matrix.
 #define DETECTUM_SCHUR_ITER_MAX (100 * n)
 #endif
+
 #ifndef DETECTUM_SCHUR_TOL
 // Schur decomposition tolerance.
 #define DETECTUM_SCHUR_TOL (3e-7f)
 #endif
+
 #ifndef DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT
 // Iteration count defining the period for the application of ad hoc
 // shifts in Schur decomposition.
 #define DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT (5)
 #endif
+
 #ifndef DETECTUM_EXPM_PADE_ORDER
-// Order of diagonal Padé approximation of matrix exponential
+// Order of diagonal Padé approximation of matrix exponential.
 #define DETECTUM_EXPM_PADE_ORDER (4)
+#endif
+
+#ifndef DETECTUM_LOGM_ISS_THR
+// Inverse scaling and squaring threshold applied in matrix logarithm
+// computation.
+#define DETECTUM_LOGM_ISS_THR (0.5f)
+#endif
+
+#ifndef DETECTUM_LOGM_NTERMS
+// Number of terms of Gregory series expansion for matrix logarithm.
+#define DETECTUM_LOGM_NTERMS (4)
 #endif
 
 // Householder transformation X(i0:iend,j0:jend) = H*X(i0:iend,j0:jend),
@@ -2005,6 +2025,63 @@ int matrixf_exp(Matrixf* A, float* work)
 		matrixf_multiply(&N, &N, A, 1, 0, 0, 0);
 	}
 	return 0;
+}
+
+int matrixf_log(Matrixf* A, float* work)
+{
+	int i, k, f, s = 1, iter;
+	const int n = A->size[0];
+	const int nterms = DETECTUM_LOGM_NTERMS;
+	const float tol = DETECTUM_LOGM_ISS_THR;
+	float tmp, norm1;
+	Matrixf U = { { n, n }, work + n };
+	Matrixf N = { { n, n }, work + n + n * n };
+	Matrixf D = { { n, n }, work + n + n * n * 2 };
+
+	iter = matrixf_decomp_schur(A, &U);
+	if (iter < 0) {
+		return iter;
+	}
+	do {
+		f = matrixf_sqrt_quasitriu(A);
+		if (f < 0) {
+			return f - 1;
+		}
+		s <<= 1;
+		for (norm1 = 0, k = 0; k < n; k++) {
+			for (tmp = 0, i = 0; i < n; i++) {
+				tmp += fabsf(at(A, i, k) - (i == k));
+			}
+			if (tmp > norm1) {
+				norm1 = tmp;
+			}
+		}
+	} while (norm1 > tol);
+	matrixf_transpose(A);
+	for (k = 0; k < n * n; k++) {
+		f = !(k % (n + 1));
+		D.data[k] = f + A->data[k];
+		N.data[k] = f - A->data[k];
+	}
+	if (matrixf_solve_lu(&D, &N) < 0) {
+		return -3;
+	}
+	matrixf_transpose(&N);
+	for (k = 0; k < n * n; k++) {
+		A->data[k] = N.data[k];
+	}
+	matrixf_multiply(A, A, &D, 1, 0, 0, 0);
+	for (i = 1; i < nterms; i++) {
+		matrixf_multiply_inplace(&N, 0, &D, 0, 0, work);
+		for (k = 0; k < n * n; k++) {
+			A->data[k] += N.data[k] / (2 * i + 1);
+		}
+	}
+	for (k = 0; k < n * n; k++) {
+		A->data[k] *= -2 * s;
+	}
+	matrixf_multiply_inplace(A, &U, &U, 0, 1, work);
+	return iter;
 }
 
 int matrixf_sqrt_quasitriu(Matrixf* T)
