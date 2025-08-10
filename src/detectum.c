@@ -63,7 +63,7 @@
 
 #ifndef DETECTUM_LOGM_NTERMS
 // Number of terms of Gregory series expansion for matrix logarithm.
-#define DETECTUM_LOGM_NTERMS (4)
+#define DETECTUM_LOGM_NTERMS (5)
 #endif
 
 // Householder transformation X(i0:iend,j0:jend) = H*X(i0:iend,j0:jend),
@@ -2029,7 +2029,7 @@ int matrixf_exp(Matrixf* A, float* work)
 
 int matrixf_log(Matrixf* A, float* work)
 {
-	int i, k, f, s = 1, iter;
+	int i, k, f, s = 1;
 	const int n = A->size[0];
 	const int nterms = DETECTUM_LOGM_NTERMS;
 	const float tol = DETECTUM_LOGM_ISS_THR;
@@ -2038,14 +2038,17 @@ int matrixf_log(Matrixf* A, float* work)
 	Matrixf N = { { n, n }, work + n + n * n };
 	Matrixf D = { { n, n }, work + n + n * n * 2 };
 
-	iter = matrixf_decomp_schur(A, &U);
-	if (iter < 0) {
-		return iter;
+	f = matrixf_decomp_schur(A, &U);
+	if (f < 0) {
+		return f;
 	}
 	do {
 		f = matrixf_sqrt_quasitriu(A);
 		if (f < 0) {
-			return f - 1;
+			return f;
+		}
+		else if (f == 1) {
+			return -3;
 		}
 		s <<= 1;
 		for (norm1 = 0, k = 0; k < n; k++) {
@@ -2064,7 +2067,7 @@ int matrixf_log(Matrixf* A, float* work)
 		N.data[k] = f - A->data[k];
 	}
 	if (matrixf_solve_lu(&D, &N) < 0) {
-		return -3;
+		return -4;
 	}
 	matrixf_transpose(&N);
 	for (k = 0; k < n * n; k++) {
@@ -2081,12 +2084,12 @@ int matrixf_log(Matrixf* A, float* work)
 		A->data[k] *= -2 * s;
 	}
 	matrixf_multiply_inplace(A, &U, &U, 0, 1, work);
-	return iter;
+	return 0;
 }
 
 int matrixf_sqrt_quasitriu(Matrixf* T)
 {
-	int i, j = 0, r, k1, kj = 0, kr, kr1, sj, sr;
+	int i, j = 0, r, k1, kj = 0, kr, kr1, sj, sr, singular = 0;
 	const int n = T->size[0];
 	float T00, T10, T01, t;
 	float* k = T->data, C_data[16] = { 0 }, D_data[4] = { 0 };
@@ -2097,8 +2100,11 @@ int matrixf_sqrt_quasitriu(Matrixf* T)
 		sj = kj < n - 1 ? 1 + (at(T, kj + 1, kj) != 0) : 1;
 		if (sj == 1) {
 			T00 = at(T, kj, kj);
-			if (T00 >= 0) {
+			if (T00 > 0) {
 				at(T, kj, kj) = sqrtf(T00);
+			}
+			else if (T00 == 0) {
+				singular = 1;
 			}
 			else {
 				return -3;
@@ -2140,7 +2146,7 @@ int matrixf_sqrt_quasitriu(Matrixf* T)
 					D.data[0] -= at(T, kr, i) * at(T, i, kj);
 				}
 				if (C.data[0] == 0) {
-					return -2;
+					return -4;
 				}
 				at(T, kr, kj) = D.data[0] / C.data[0];
 			}
@@ -2157,7 +2163,7 @@ int matrixf_sqrt_quasitriu(Matrixf* T)
 					C.data[2] = at(T, kr, kr + 1);
 					C.data[3] = at(T, kr + 1, kr + 1) + at(T, kj, kj);
 					if (matrixf_solve_lu(&C, &D)) {
-						return -2;
+						return -4;
 					}
 					at(T, kr, kj) = D.data[0];
 					at(T, kr + 1, kj) = D.data[1];
@@ -2173,7 +2179,7 @@ int matrixf_sqrt_quasitriu(Matrixf* T)
 					C.data[2] = at(T, kj + 1, kj);
 					C.data[3] = at(T, kr, kr) + at(T, kj + 1, kj + 1);
 					if (matrixf_solve_lu(&C, &D)) {
-						return -2;
+						return -4;
 					}
 					at(T, kr, kj) = D.data[0];
 					at(T, kr, kj + 1) = D.data[1];
@@ -2198,7 +2204,7 @@ int matrixf_sqrt_quasitriu(Matrixf* T)
 				C.data[2] = C.data[7] = at(T, kj, kj + 1);
 				C.data[8] = C.data[13] = at(T, kj + 1, kj);
 				if (matrixf_solve_lu(&C, &D)) {
-					return -2;
+					return -4;
 				}
 				at(T, kr, kj) = D.data[0];
 				at(T, kr + 1, kj) = D.data[1];
@@ -2212,25 +2218,25 @@ int matrixf_sqrt_quasitriu(Matrixf* T)
 	for (i = 2; i < n; i++) {
 		k[i] = 0;
 	}
-	return 0;
+	return singular;
 }
 
 int matrixf_sqrt(Matrixf* A, float* work)
 {
-	int exitflag;
+	int f;
 	const int n = A->size[0];
 	Matrixf U = { { n, n }, work + n };
 
-	exitflag = matrixf_decomp_schur(A, &U);
-	if (exitflag < 0) {
-		return exitflag;
+	f = matrixf_decomp_schur(A, &U);
+	if (f < 0) {
+		return f;
 	}
-	exitflag = matrixf_sqrt_quasitriu(A);
-	if (exitflag < 0) {
-		return exitflag - 1;
+	f = matrixf_sqrt_quasitriu(A);
+	if (f < 0) {
+		return f;
 	}
 	matrixf_multiply_inplace(A, &U, &U, 0, 1, work);
-	return exitflag;
+	return f;
 }
 
 int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,

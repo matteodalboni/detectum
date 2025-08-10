@@ -327,8 +327,8 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U);
 // array work is the additional workspace memory: in general, if T is n-by-n, its 
 // minimum length is max(2,4*(n-2)^2); if all the eigenvalues are real, the 
 // minimum length of work is max(2,(n-1)^2). If the matrices of eigenvectors are
-// not n-by-n, the function returns -1; if a singularity is detected, it returns
-// -2. On success, it returns 0.
+// not n-by-n, the function returns -1; if an eigenvector cannot be computed due to
+// a singularity, it returns -2. On success, it returns 0.
 int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 	Matrixf* V, Matrixf* W, int pseudo, float* work);
 
@@ -337,8 +337,8 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 // whether L is unitriangular: if the flag is enabled, the elements on the main
 // diagonal are ignored. Matrix L remains the same while B is destroyed. Also, 
 // the matrix B can share the data array with X, provided that the array is 
-// large enough to accommodate the larger of B or X. It returns -2 if L is rank
-// deficient, -1 on size mismatch. On success, it returns 0.
+// large enough to accommodate the larger of B or X. If L is rank deficient, 
+// it returns -2. On size mismatch, it returns -1. On success, it returns 0.
 int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri);
 
 // This function performs the backward substitution on the upper-triangular
@@ -346,8 +346,8 @@ int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri);
 // whether U is unitriangular: if the flag is enabled, the elements on the main
 // diagonal are ignored. Matrix U remains the same while B is destroyed. Also,
 // the matrix B can share the data array with X, provided that the array is 
-// large enough to accommodate the larger of B or X. It returns -2 if U is rank
-// deficient, -1 on size mismatch. On success, it returns 0.
+// large enough to accommodate the larger of B or X. If U is rank deficient, 
+// it returns -2. On size mismatch, it returns -1. On success, it returns 0.
 int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri);
 
 // This function solves in place the linear system A*X = B for X by Cholesky
@@ -426,38 +426,41 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work);
 // This function computes the exponential of the square matrix A by scaling
 // and squaring algorithm with Padé approximation. The array work is the
 // additional workspace memory: if A is n-by-n, its minimum length is 3*n*n+n.
-// The function returns -1 if the input matrix is not square; if a singularity 
-// is detected, it returns -2. On success, it returns 0.
+// The function returns -1 if the input matrix is not square; if the matrix 
+// exponential cannot be computed due to a singularity, it returns -2. On 
+// success, it returns 0.
 int matrixf_exp(Matrixf* A, float* work);
 
-// This function computes the real logarithm of a real matrix by inverse scaling
+// This function computes the principal logarithm of matrix A by inverse scaling
 // and squaring and Gregory series expansion. The n-by-n matrix A is transformed
 // into its logarithm. The array work is the additional workspace memory: its 
-// minimum length is 3*n*n+n. If Schur decomposition fails to converge, the 
-// function returns -2. If A is singular and its logarithm cannot be computed, 
-// the function returns -3. If A has negative real eigenvalues, the real 
-// logarithm does not exist and the function returns -4. If A is not square, the
-// function returns -1. On success, it returns the number of iterations performed
-// by Schur decomposition.
+// minimum length is 3*n*n+n. If A is not square, the function returns -1. If 
+// Schur decomposition fails to converge, the function returns -2. If A has 
+// nonpositive real eigenvalues, the principal logarithm does not exist, and the 
+// function returns -3. If the matrix logarithm cannot be computed due to a 
+// singularity, it returns -4. On success, it returns 0.
 int matrixf_log(Matrixf* A, float* work);
 
-// This function computes the principal real square root of a real quasitriangular
+// This function computes the principal real square root of the quasitriangular
 // matrix T by real Schur method. T is obtained by Schur decomposition. The n-by-n
-// matrix T is transformed into X so that T = X*X. If T is singular and its square 
-// root cannot be computed, the function returns -2: in fact, a singular matrix may
-// not have a square root. If T has negative real eigenvalues, a real square root 
-// does not exist, and the function returns -3. On success, it returns 0.
+// matrix T is transformed into X so that T = X*X. If T has negative real 
+// eigenvalues, a real square root does not exist, and the function returns -3. 
+// If the matrix logarithm cannot be computed due to a singularity, it returns -4.
+// If T is singular, the function attempts to compute a matrix square root and,
+// if no error occurs, returns 1; however, a singular matrix may not have a square
+// root. Otherwise, on success, it returns 0.
 int matrixf_sqrt_quasitriu(Matrixf* T);
 
-// This function computes the principal real square root of a real matrix by real
+// This function computes the principal real square root of matrix A by real
 // Schur method. The n-by-n matrix A is transformed into X so that A = X*X. The 
-// array work is the additional workspace memory: its minimum length is n*(n+1).
-// If Schur decomposition fails to converge, the function returns -2. If A is 
-// singular and its square root cannot be computed, the function returns -3: in 
-// fact, a singular matrix may not have a square root. If A has negative real 
-// eigenvalues, a real square root does not exist, and the function returns -4. 
-// If A is not square, the function returns -1. On success, it returns the number
-// of iterations performed by Schur decomposition.
+// array work is the additional workspace memory: its minimum length is n*n+n.
+// If A is not square, the function returns -1. If Schur decomposition fails to
+// converge, the function returns -2. If A has negative real eigenvalues, a real
+// square root does not exist, and the function returns -3. If the matrix square
+// root cannot be computed due to a singularity, it returns -4. If A is singular,
+// the function attempts to compute a matrix square root and, if no error occurs,
+// returns 1; however, a singular matrix may not have a square root. Otherwise, 
+// on success, it returns 0.
 int matrixf_sqrt(Matrixf* A, float* work);
 
 // This function performs the general matrix multiplication (GEMM), which has
