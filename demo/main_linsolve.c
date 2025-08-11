@@ -26,11 +26,11 @@ int main()
 	matrixf_init(&A, M, N, A_data, 1);
 	matrixf_init(&B, M, P, B_data, 1);
 	matrixf_init(&X, N, P, B_data, 0);
-	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
-	printf("B = \n"); matrixf_print(&B, "%9.4f "); printf("\n");
+	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
+	printf("\nB = \n"); matrixf_print(&B, "%9.4f ");
 	matrixf_solve_qr(&A, &B, &X);
-	printf("The (least-squares) solution to the linear system A*X = B is:\n\n");
-	printf("X = \n"); matrixf_print(&X, "%9.4f "); printf("\n");
+	printf("\nThe (least-squares) solution to the linear system A*X = B is:\n");
+	printf("\nX = \n"); matrixf_print(&X, "%9.4f ");
 
 	return 0;
 }
