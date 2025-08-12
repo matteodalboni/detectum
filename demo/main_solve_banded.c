@@ -11,8 +11,8 @@ int main()
 	float X_data[n * p] = { 0 };
 	float C_data[n * n] = { 0 };
 	Matrixf A, B;
-	Matrixf X = { {n, p}, X_data };
-	Matrixf C = { {n, n}, C_data };
+	Matrixf X = { n, p, X_data };
+	Matrixf C = { n, n, C_data };
 #if 0
 	float A_data[n * n] = { 0 };
 	float B_data[n * p] = { 0 };

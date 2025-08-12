@@ -17,9 +17,9 @@ static int polyfit(float* x, float* y, int pts, int deg, float* work)
 	int i, j;
 	const int m = pts;
 	const int n = deg + 1;
-	Matrixf A = { { m, n }, work };
-	Matrixf b = { { m, 1 }, y };
-	Matrixf p = { { n, 1 }, y };
+	Matrixf A = { m, n, work };
+	Matrixf b = { m, 1, y };
+	Matrixf p = { n, 1, y };
 
 	for (j = 0; j < n; j++)
 		for (i = 0; i < m; i++)

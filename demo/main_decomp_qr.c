@@ -68,8 +68,8 @@ int main()
 	matrixf_init(&QR, M, N, QR_data, 0);
 	matrixf_multiply(&Q, &A, &QR, 1, 0, 0, 0);
 	printf("Q*R = \n"); matrixf_print(&QR, "%9.4f "); printf("\n");
-	A.size[0] = M;
-	A.size[1] = N;
+	A.rows = M;
+	A.cols = N;
 	matrixf_multiply(&QR, &P, &A, 1, 0, 0, 1);
 	printf("Q*R*P' = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
 

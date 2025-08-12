@@ -38,7 +38,7 @@ int main()
 	printf("P*V = [\n"); matrixf_print(&V, "%10.5g "); printf("];\n\n");
 	// Matrix reconstruction
 	matrixf_multiply(&U, &A, &UT, 1, 0, 0, 0);
-	A.size[0] = m; A.size[1] = n;
+	A.rows = m; A.cols = n;
 	matrixf_multiply(&UT, &V, &A, 1, 0, 0, 1);
 	printf("U*T*(P*V)' = [\n"); matrixf_print(&A, "%10.5g "); printf("];\n\n");
 	// Memory release

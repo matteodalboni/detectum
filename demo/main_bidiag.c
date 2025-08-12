@@ -6,29 +6,29 @@ static void unpack_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 {
 	int i, j;
 
-	if (A->size[0] < A->size[1]) {
+	if (A->rows < A->cols) {
 		matrixf_transpose(A);
 		unpack_bidiag(A, V, U);
 		matrixf_transpose(A);
 		return;
 	}
-	for (i = 0; i < U->size[1]; i++) {
+	for (i = 0; i < U->cols; i++) {
 		at(U, i, i) = 1;
 	}
-	for (i = 0; i < V->size[1]; i++) {
+	for (i = 0; i < V->cols; i++) {
 		at(V, i, i) = 1;
 	}
 	matrixf_unpack_householder_bwd(A, U, 0);
 	matrixf_transpose(A);
 	matrixf_unpack_householder_bwd(A, V, 1);
 	matrixf_transpose(A);
-	if (U->size[0] == U->size[1]) {
+	if (U->rows == U->cols) {
 		matrixf_transpose(A);
-		A->size[1] = U->size[0];
+		A->cols = U->rows;
 		matrixf_transpose(A);
 	}
-	for (j = 0; j < A->size[1]; j++) {
-		for (i = 0; i < A->size[0]; i++) {
+	for (j = 0; j < A->cols; j++) {
+		for (i = 0; i < A->rows; i++) {
 			if (i != j && (i + 1) != j) {
 				at(A, i, j) = 0;
 			}
@@ -70,10 +70,10 @@ int main()
 	printf("U = [\n"); matrixf_print(&U, "%9.4f "); printf("];\n\n");
 	printf("V = [\n"); matrixf_print(&V, "%9.4f "); printf("];\n\n");
 
-	C = matrixf(U.size[0], A.size[1]);
+	C = matrixf(U.rows, A.cols);
 	matrixf_multiply(&U, &A, &C, 1, 0, 0, 0);
-	A.size[0] = m;
-	A.size[1] = n;
+	A.rows = m;
+	A.cols = n;
 	matrixf_multiply(&C, &V, &A, 1, 0, 0, 1);
 	printf("U*B*V' = [\n"); matrixf_print(&A, "%9.4f "); printf("];\n\n");
 

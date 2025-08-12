@@ -46,8 +46,8 @@ int main()
 	matrixf_init(&A, m, n, A_data, 1);
 	matrixf_init(&b, m, 2, data, 0);
 	matrixf_init(&x, n, 2, data, 0);
-	for (j = 0; j < b.size[1]; j++)
-		for (i = 0; i < b.size[0]; i++)
+	for (j = 0; j < b.cols; j++)
+		for (i = 0; i < b.rows; i++)
 			at(&b, i, j) = (float)j + 1;
 
 	printf("A = [\n"); matrixf_print(&A, "%9.4f "); printf("];\n");

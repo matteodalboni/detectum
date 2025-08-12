@@ -8,7 +8,7 @@ do{ printf(#A" = \n"); matrixf_print(&A, format); printf("\n");} while (0)
 static void print_complex_eigenvectors(Matrixf* T, Matrixf* V)
 {
 	int i, j;
-	const int n = T->size[0];
+	const int n = T->rows;
 
 	for (i = 0; i < n; i++) {
 		for (j = 0; j < n; j++) {

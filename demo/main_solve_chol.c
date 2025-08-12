@@ -18,7 +18,7 @@ int main()
 	};
 	float C_data[n * n] = { 0 };
 	int i, j;
-	Matrixf A, B, C = { {n, n}, C_data };
+	Matrixf A, B, C = { n, n, C_data };
 
 	matrixf_init(&A, n, n, A_data, 1);
 	matrixf_init(&B, n, 1, B_data, 1);

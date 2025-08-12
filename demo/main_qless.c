@@ -23,16 +23,16 @@
 int main()
 {
 	Matrixf A = matrixf(5, 3);
-	Matrixf b = matrixf(A.size[0], 1);
-	Matrixf x = matrixf(A.size[1], 1);
+	Matrixf b = matrixf(A.rows, 1);
+	Matrixf x = matrixf(A.cols, 1);
 	FILE* A_file = fopen("../A.bin", "rb");
 	int i;
 
 	if (!A.data) return -1;
-	fread(A.data, sizeof(float), (size_t)(A.size[0] * A.size[1]), A_file);
+	fread(A.data, sizeof(float), (size_t)(A.rows * A.cols), A_file);
 	fclose(A_file);
 	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
-	for (i = 0; i < b.size[0]; i++) at(&b, i, 0) = 1;
+	for (i = 0; i < b.rows; i++) at(&b, i, 0) = 1;
 	printf("b = \n"); matrixf_print(&b, "%9.4f "); printf("\n");
 	matrixf_multiply(&A, &b, &x, 1, 0, 1, 0);
 	matrixf_decomp_qr(&A, 0, 0, 0);

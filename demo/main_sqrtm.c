@@ -7,7 +7,7 @@ int main()
 {
 	int exitflag;
 	float work[n * n + n] = { 0 };
-	Matrixf A, XX = { { n, n }, work };
+	Matrixf A, XX = { n, n, work };
 #if 0
 	float A_data[n * n] = { 0 };
 	FILE* A_file = fopen("../A.bin", "rb");

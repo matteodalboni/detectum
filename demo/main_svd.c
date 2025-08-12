@@ -7,10 +7,10 @@
 
 static void copy_matrix(Matrixf* Dest, Matrixf* Src)
 {
-	int len = Src->size[0] * Src->size[1];
+	int len = Src->rows * Src->cols;
 
-	Dest->size[0] = Src->size[0];
-	Dest->size[1] = Src->size[1];
+	Dest->rows = Src->rows;
+	Dest->cols = Src->cols;
 	while (len--) Dest->data[len] = Src->data[len];
 }
 
@@ -75,11 +75,11 @@ int main()
 	float Q_data[p * p] = { 0 };
 	float W_data[p * p] = { 0 };
 	Matrixf A = { 0 };
-	Matrixf U = { { m, m }, U_data };
-	Matrixf V = { { n, n }, V_data };
-	Matrixf P = { { m, m }, P_data };
-	Matrixf Q = { { m, m }, Q_data };
-	Matrixf W = { { m, n }, W_data };
+	Matrixf U = { m, m, U_data };
+	Matrixf V = { n, n, V_data };
+	Matrixf P = { m, m, P_data };
+	Matrixf Q = { m, m, Q_data };
+	Matrixf W = { m, n, W_data };
 	Matrixf* X;
 
 	matrixf_init(&A, m, n, A_data, 1);
@@ -95,8 +95,8 @@ int main()
 	for (j = 0; j < 2 * iter; j++) {
 		copy_matrix(&W, &A);
 		matrixf_multiply(&P, &W, &A, 1, 0, 0, 0);
-		P.size[0] = A.size[1]; P.size[1] = A.size[1];
-		Q.size[0] = A.size[0]; Q.size[1] = A.size[0];
+		P.rows = A.cols; P.cols = A.cols;
+		Q.rows = A.rows; Q.cols = A.rows;
 		matrixf_decomp_qr(&A, &Q, &P, 0);
 		X = (j % 2) ? &V : &U;
 		copy_matrix(&W, X);

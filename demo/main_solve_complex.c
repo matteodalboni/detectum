@@ -45,9 +45,9 @@ int main()
 	float A_data[4 * m * n] = { 0 };
 	float b_data[2 * m] = { 0 };
 	Matrixf A_real, A_imag, b_real, b_imag;
-	Matrixf A = { { 2 * m, 2 * n }, A_data };
-	Matrixf b = { { 2 * m, 1 }, b_data };
-	Matrixf x = { { 2 * n, 1 }, b_data };
+	Matrixf A = { 2 * m, 2 * n, A_data };
+	Matrixf b = { 2 * m, 1, b_data };
+	Matrixf x = { 2 * n, 1, b_data };
 	int i, j;
 
 	printf("\nA = \n"); print_complex(A_real_data, A_imag_data, m, n, "%5.0f%+.0fi\t"); 

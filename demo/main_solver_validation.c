@@ -61,13 +61,13 @@ int main()
 	FILE* b_file = fopen("../b.bin", "rb");
 	FILE* x_file = fopen("../x.bin", "wb");
 	Matrixf A = matrixf(M, N), B = matrixf(M, P);
-	Matrixf X = { { N, P }, B.data };
+	Matrixf X = { N, P, B.data };
 #ifdef TICKTOCK
 	struct timespec t0;
 #endif
 	if (!A.data || !B.data) return -1;
-	fread(A.data, sizeof(float), (size_t)(A.size[0] * A.size[1]), A_file);
-	fread(B.data, sizeof(float), (size_t)(B.size[0] * B.size[1]), b_file);
+	fread(A.data, sizeof(float), (size_t)(A.rows * A.cols), A_file);
+	fread(B.data, sizeof(float), (size_t)(B.rows * B.cols), b_file);
 	fclose(A_file);
 	fclose(b_file);
 #ifdef TICKTOCK
@@ -77,7 +77,7 @@ int main()
 #ifdef TICKTOCK
 	printf("Elapsed time: %f s\n", tock(&t0));
 #endif
-	fwrite(X.data, sizeof(float), (size_t)(X.size[0] * X.size[1]), x_file);
+	fwrite(X.data, sizeof(float), (size_t)(X.rows * X.cols), x_file);
 	fclose(x_file);
 	free(A.data);
 	free(B.data);

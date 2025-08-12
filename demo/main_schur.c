@@ -7,7 +7,7 @@
 static void get_eigvals(Matrixf* T, float* lambda_re, float* lambda_im)
 {
 	int i = 0;
-	const int n = T->size[0];
+	const int n = T->rows;
 	float t, s, r;
 
 	while (i < n)
@@ -52,7 +52,7 @@ static void get_eigvals2x2(float* lambda,
 static int is_quasitriu(Matrixf* T, float tol)
 {
 	int i = 0;
-	const int n = T->size[0];
+	const int n = T->rows;
 	const float eps = tol * normf(T->data, n * n, 1);
 
 	while (i < n - 2) {
@@ -161,10 +161,10 @@ int main()
 	float U_data[NUMEL] = { 0 };
 	float Q_data[NUMEL] = { 0 };
 	float R_data[NUMEL] = { 0 };
-	Matrixf A = { {n, n}, A_data };
-	Matrixf U = { {n, n}, U_data };
-	Matrixf Q = { {n, n}, Q_data };
-	Matrixf R = { {n, n}, R_data };
+	Matrixf A = { n, n, A_data };
+	Matrixf U = { n, n, U_data };
+	Matrixf Q = { n, n, Q_data };
+	Matrixf R = { n, n, R_data };
 
 	matrixf_transpose(&A);
 	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
@@ -219,10 +219,10 @@ int main()
 	float P_data[NUMEL] = { 0 };
 	float U_data[NUMEL] = { 0 };
 	float T_data[NUMEL] = { 0 };
-	Matrixf A = { {n, n}, A_data };
-	Matrixf P = { {n, n}, P_data };
-	Matrixf U = { {n, n}, U_data };
-	Matrixf T = { {n, n}, T_data };
+	Matrixf A = { n, n, A_data };
+	Matrixf P = { n, n, P_data };
+	Matrixf U = { n, n, U_data };
+	Matrixf T = { n, n, T_data };
 
 	matrixf_transpose(&A);
 	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
@@ -275,9 +275,9 @@ int main()
 	float lambda[NUMEL] = { 0 };
 	float U_data[NUMEL] = { 0 };
 	float B_data[NUMEL] = { 0 };
-	Matrixf A = { {n, n}, A_data };
-	Matrixf U = { {n, n}, U_data };
-	Matrixf B = { {n, n}, B_data };
+	Matrixf A = { n, n, A_data };
+	Matrixf U = { n, n, U_data };
+	Matrixf B = { n, n, B_data };
 
 	matrixf_transpose(&A);
 	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");

@@ -18,10 +18,10 @@ int main()
 	float P_data[n * n] = { 0 };
 	float T_data[n * n] = { 0 };
 	float B_data[n * n] = { 0 };
-	Matrixf A = { {n, n}, A_data };
-	Matrixf P = { {n, n}, P_data };
-	Matrixf T = { {n, n}, T_data };
-	Matrixf B = { {n, n}, B_data };
+	Matrixf A = { n, n, A_data };
+	Matrixf P = { n, n, P_data };
+	Matrixf T = { n, n, T_data };
+	Matrixf B = { n, n, B_data };
 
 	matrixf_init(&A, n, n, A_data, 1);
 	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");

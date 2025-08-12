@@ -6,10 +6,10 @@ static int inverse_iteration(Matrixf* A, Matrixf* v,
 	float eigval_re, float eigval_im, float* work, int iter)
 {
 	int i, j;
-	const int n = A->size[0];
+	const int n = A->rows;
 	float norm;
-	Matrixf p = { { 2 * n, 1 }, work };
-	Matrixf C = { { 2 * n, 2 * n }, work + 2 * n };
+	Matrixf p = { 2 * n, 1, work };
+	Matrixf C = { 2 * n, 2 * n, work + 2 * n };
 
 	for (j = 0; j < n; j++) {
 		for (i = 0; i < n; i++) {
@@ -25,8 +25,8 @@ static int inverse_iteration(Matrixf* A, Matrixf* v,
 		v->data[j] = 1;
 		v->data[j + n] = 0;
 	}
-	v->size[0] = 2 * n; 
-	v->size[1] = 1;
+	v->rows = 2 * n; 
+	v->cols = 1;
 	matrixf_decomp_lu(&C, &p);
 	for (i = 0; i < iter; i++) {
 		matrixf_permute(v, &p, 0);
@@ -37,8 +37,8 @@ static int inverse_iteration(Matrixf* A, Matrixf* v,
 			v->data[j] /= norm;
 		}
 	}
-	v->size[0] = n;
-	v->size[1] = 2;
+	v->rows = n;
+	v->cols = 2;
 	return 0;
 }
 

@@ -9,12 +9,12 @@
 static int mpoweri(Matrixf* A, unsigned const int p, float* work)
 {
 	int j, k = 0;
-	const int n = A->size[0];
+	const int n = A->rows;
 	unsigned int s = 1, i = 0;
-	Matrixf Z = { { n, n }, work };
-	Matrixf F = { { n, n }, work + n * n };
+	Matrixf Z = { n, n, work };
+	Matrixf F = { n, n, work + n * n };
 
-	if (A->size[1] != n) {
+	if (A->cols != n) {
 		return -1;
 	}
 	if (p == 0) {

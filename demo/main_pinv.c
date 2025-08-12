@@ -17,7 +17,7 @@ int main()
         260, 260, 260, 260, 260, 260, 260, 260 
     };
     float work[6 * 7];
-    Matrixf A, b, x = { { 6, 1 }, work };
+    Matrixf A, b, x = { 6, 1, work };
     
     matrixf_init(&A, 8, 6, A_data, 1);
     matrixf_init(&b, 8, 1, b_data, 0);

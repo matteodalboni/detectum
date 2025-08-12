@@ -4,7 +4,7 @@
 #include <math.h>
 
 typedef struct {
-	int size[2];
+	int rows, cols;
 	float* data;
 } Matrixf;
 
@@ -12,10 +12,10 @@ typedef struct {
 // its data memory on the stack; rows and cols must be known at compile time.
 #define Matrixf_(A, rows, cols) \
 float A##_data[rows * cols] = { 0 }; \
-Matrixf A = { { rows, cols }, A##_data}
+Matrixf A = { rows, cols, A##_data }
 
 // This macro allows accessing the element A(i, j).
-#define at(A, i, j) ((A)->data[(i) + (j) * (A)->size[0]])
+#define at(A, i, j) ((A)->data[(i) + (j) * (A)->rows])
 
 // This function returns the positive distance from abs(x) to the next 
 // larger floating-point number.
@@ -72,8 +72,8 @@ static inline void matrixf_print(Matrixf* A, const char* format)
 {
 	int i, j;
 
-	for (i = 0; i < A->size[0]; i++) {
-		for (j = 0; j < A->size[1]; j++) {
+	for (i = 0; i < A->rows; i++) {
+		for (j = 0; j < A->cols; j++) {
 			printf(format, at(A, i, j));
 		}
 		printf("\n");
@@ -86,7 +86,7 @@ static inline void matrixf_print(Matrixf* A, const char* format)
 // its data memory on the heap. On allocation failure, the data pointer is null.
 static inline Matrixf matrixf(int rows, int cols)
 {
-	Matrixf A = { { rows, cols }, calloc(sizeof(float), rows * cols) };
+	Matrixf A = { rows, cols, calloc(sizeof(float), rows * cols) };
 	return A;
 }
 #endif
