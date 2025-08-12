@@ -733,8 +733,9 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 	if (matrixf_decomp_bidiag(A, U, V)) {
 		return -1;
 	}
+	q = A->size[0];
 	for (j = 0; j < n; j++) {
-		for (i = 0; i < m; i++) {
+		for (i = 0; i < q; i++) {
 			if (i != j && (i + 1) != j) {
 				at(A, i, j) = 0;
 			}
