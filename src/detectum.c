@@ -227,9 +227,9 @@ int matrixf_decomp_chol(Matrixf* A)
 
 int matrixf_decomp_ltl(Matrixf* A)
 {
-	int i, j, k, m;
+	int i, j, k, p;
 	const int n = A->rows;
-	float s, Ljj, P1, A0 = A->data[0], * h = A->data;
+	float tmp, P1, A0 = A->data[0], * h = A->data;
 	float* col1, * col2;
 
 	if (A->cols != n) {
@@ -239,53 +239,76 @@ int matrixf_decomp_ltl(Matrixf* A)
 		at(A, 0, j) = (float)j;
 	}
 	for (j = 0; j < n; j++) {
-		if (j) {
-			h[0] = (j == 1) ? at(A, 0, 1) : at(A, 0, 1) * at(A, j, 1);
-			for (k = 1; k < j; k++) {
-				Ljj = (j == k + 1) ? 1.0f : at(A, j, k + 1);
-				h[k] = (k > 1) ? at(A, k - 1, k) * at(A, j, k - 1) : 0;
-				h[k] += at(A, k, k) * at(A, j, k) + at(A, k, k + 1) * Ljj;
+		if (j > 0) {
+			h[0] = at(A, 0, 1);
+			if (j > 1) {
+				h[0] *= at(A, j, 1);
+				if (j == 2) {
+					h[1] = at(A, 1, 1) * at(A, 2, 1) + at(A, 1, 2);
+				}
+				else {
+					h[1] = at(A, 1, 1) * at(A, j, 1)
+						+ at(A, 1, 2) * at(A, j, 2);
+					for (k = 2; k < j - 1; k++) {
+						h[k] = at(A, k, k) * at(A, j, k)
+							+ at(A, k - 1, k) * at(A, j, k - 1)
+							+ at(A, k, k + 1) * at(A, j, k + 1);
+					}
+					h[j - 1] = at(A, j - 1, j - 1) * at(A, j, j - 1)
+						+ at(A, j - 2, j - 1) * at(A, j, j - 2)
+						+ at(A, j - 1, j);
+				}
 			}
-			for (s = 0, k = 1; k < j; k++) {
-				s += at(A, j, k) * h[k];
+			for (tmp = 0, k = 1; k < j; k++) {
+				tmp += at(A, j, k) * h[k];
 			}
-			h[j] = at(A, j, j) - s;
+			h[j] = at(A, j, j) - tmp;
 			at(A, j, j) = h[j];
 			if (j > 1) {
 				at(A, j, j) -= at(A, j - 1, j) * at(A, j, j - 1);
 			}
 			for (i = j + 1; i < n; i++) {
-				for (s = 0, k = 1; k <= j; k++) {
-					s += at(A, i, k) * h[k];
+				for (tmp = 0, k = 1; k <= j; k++) {
+					tmp += at(A, i, k) * h[k];
 				}
-				h[i] = at(A, j, i) - s;
+				h[i] = at(A, j, i) - tmp;
 			}
 		}
 		if (j < n - 1) {
-			for (m = j + 1, k = j + 1; k < n; k++) {
-				if (fabsf(h[k]) > fabsf(h[m])) {
-					m = k;
+			for (p = j + 1, k = j + 1; k < n; k++) {
+				if (fabsf(h[k]) > fabsf(h[p])) {
+					p = k;
 				}
 			}
 			for (k = 0; k < n; k++) {
-				s = at(A, m, k);
-				at(A, m, k) = at(A, j + 1, k);
-				at(A, j + 1, k) = s;
+				tmp = at(A, p, k);
+				at(A, p, k) = at(A, j + 1, k);
+				at(A, j + 1, k) = tmp;
 			}
-			col1 = &at(A, 0, m);
+			col1 = &at(A, 0, p);
 			col2 = &at(A, 0, j + 1);
-			for (k = 0; k < n; k++) {
-				s = col1[k];
+			tmp = col1[0];
+			col1[0] = col2[0];
+			col2[0] = tmp;
+			for (k = j + 1; k < n; k++) {
+				tmp = col1[k];
 				col1[k] = col2[k];
-				col2[k] = s;
+				col2[k] = tmp;
 			}
-			if (!j) {
+			if (j == 0) {
 				P1 = at(A, 0, 1);
 			}
 			at(A, j, j + 1) = h[j + 1];
 			if (j < n - 2) {
-				for (i = j + 2; i < n; i++) {
-					at(A, i, j + 1) = h[m] ? h[i] / h[j + 1] : 0;
+				if (h[p] != 0) {
+					for (i = j + 2; i < n; i++) {
+						at(A, i, j + 1) = h[i] / h[j + 1];
+					}
+				}
+				else {
+					for (i = j + 2; i < n; i++) {
+						at(A, i, j + 1) = 0;
+					}
 				}
 			}
 		}
@@ -1645,7 +1668,7 @@ int matrixf_solve_ltl(Matrixf* A, Matrixf* B)
 	int i, j, k, s = 0;
 	const int n = A->rows;
 	const int p = B->cols;
-	float beta, tau, t, Aii, Aij, Aji;
+	float beta, tau, tmp, Aii, Aij, Aji;
 	float* col1, * col2;
 	Matrixf perm = { 1, n, 0 };
 
@@ -1653,11 +1676,11 @@ int matrixf_solve_ltl(Matrixf* A, Matrixf* B)
 		return -1;
 	}
 	matrixf_transpose(B);
-	t = A->data[0];
+	tmp = A->data[0];
 	A->data[0] = 0;
 	perm.data = A->data;
 	matrixf_permute(B, &perm, 0);
-	A->data[0] = t;
+	A->data[0] = tmp;
 	for (i = 1; i < n; i++) {
 		for (j = 1; j < i; j++) {
 			Aij = at(A, i, j);
@@ -1671,23 +1694,23 @@ int matrixf_solve_ltl(Matrixf* A, Matrixf* B)
 		s = 0;
 		if (fabsf(at(A, j, j)) < fabsf(beta)) {
 			s = 1;
-			t = at(A, j, j + 1);
+			tmp = at(A, j, j + 1);
 			at(A, j, j + 1) = at(A, j + 1, j + 1);
-			at(A, j + 1, j + 1) = t;
+			at(A, j + 1, j + 1) = tmp;
 			if (j + 2 < n) {
-				t = at(A, j, j + 2);
+				tmp = at(A, j, j + 2);
 				at(A, j, j + 2) = at(A, j + 1, j + 2);
-				at(A, j + 1, j + 2) = t;
+				at(A, j + 1, j + 2) = tmp;
 			}
-			t = at(A, j, j);
+			tmp = at(A, j, j);
 			at(A, j, j) = beta;
-			beta = t;
+			beta = tmp;
 			col1 = &at(B, 0, j);
 			col2 = &at(B, 0, j + 1);
 			for (k = 0; k < p; k++) {
-				t = col1[k];
+				tmp = col1[k];
 				col1[k] = col2[k];
-				col2[k] = t;
+				col2[k] = tmp;
 			}
 		}
 		if (at(A, j, j) != 0) {
@@ -2257,7 +2280,7 @@ int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 	for (i = 0; i < m * n; i++) {
 		C->data[i] *= beta;
 	}
-	if (!alpha) {
+	if (alpha == 0) {
 		return 0;
 	}
 	if (transA) {

@@ -6,6 +6,12 @@
 int main()
 {
 	int i;
+#if 0
+	float A_data[n * n] = { 0 };
+	FILE* A_file = fopen("../A.bin", "rb");
+	fread(A_data, sizeof(float), n * n, A_file); 
+	fclose(A_file);
+#else
 	float A_data[n * n] = { 
 		 92,   85,   -4, -60,  -40,  55,
 		 85, -147,   44, -84, -111,  97,
@@ -14,6 +20,7 @@ int main()
 		-40, -111, -125,  -4,  173, -93,
 		 55,   97,   23, -99,  -93,  93 
 	};
+#endif
 	float A_copy[n * n] = { 0 };
 	float P_data[n * n] = { 0 };
 	float T_data[n * n] = { 0 };
