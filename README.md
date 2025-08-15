@@ -5,7 +5,6 @@ One of the distinctive traits of DeTecTUM is that all the algorithms are built a
 
 The library includes:
 * Cholesky decomposition;
-* LTL' decomposition;
 * LU decomposition;
 * QR decomposition;
 * bidiagonal decomposition;
@@ -17,9 +16,8 @@ The library includes:
 * pseudo-eigenvector computation;
 * solver for lower-triangular systems;
 * solver for upper-triangular systems;
-* solver for banded Hessenberg systems;
 * solver for symmetric positive definite systems;
-* solver for symmetric indefinite systems;
+* solver for banded Hessenberg systems;
 * solver for square full-rank systems;
 * solver for general full-rank systems;
 * solver for general rank-deficient systems;

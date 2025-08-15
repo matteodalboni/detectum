@@ -1,6 +1,118 @@
 #include <stdio.h>
 #include "detectum.h"
 
+// This function performs the LTL' decomposition with pivoting using the method
+// of Aasen. The n-by-n symmetric indefinite matrix A is decomposed so that  
+// P*A*P' = L*T*L', where L is unit lower triangular, T is symmetric tridiagonal,
+// and P is a permutation matrix. The matrix A is transformed so that:
+// 1) its diagonal contains the main diagonal of T;
+// 2) its superdiagonal stores the first diagonals of T;
+// 3) its strictly lower part holds the strictly lower part of L, assuming also
+//    L(i,0) = 0 for 0 < i < n;
+// 4) the permutation matrix P is encoded in the first column of A so that 
+//    P(0,0) = 1 and P(i,A(i,0)) = 1 for 0 < i < n.
+// The function returns -1 if A is not square. On success, it returns 0.
+int matrixf_decomp_ltl(Matrixf* A)
+{
+	int i, j, k, p;
+	const int n = A->rows;
+	float tmp, P1, A0 = A->data[0], * h = A->data;
+	float* col1, * col2;
+
+	if (A->cols != n) {
+		return -1;
+	}
+	for (j = 1; j < n; j++) {
+		at(A, 0, j) = (float)j;
+	}
+	for (j = 0; j < n; j++) {
+		if (j > 0) {
+			h[0] = at(A, 0, 1);
+			if (j > 1) {
+				h[0] *= at(A, j, 1);
+				if (j == 2) {
+					h[1] = at(A, 1, 1) * at(A, 2, 1) + at(A, 1, 2);
+				}
+				else {
+					h[1] = at(A, 1, 1) * at(A, j, 1)
+						+ at(A, 1, 2) * at(A, j, 2);
+					for (k = 2; k < j - 1; k++) {
+						h[k] = at(A, k, k) * at(A, j, k)
+							+ at(A, k - 1, k) * at(A, j, k - 1)
+							+ at(A, k, k + 1) * at(A, j, k + 1);
+					}
+					h[j - 1] = at(A, j - 1, j - 1) * at(A, j, j - 1)
+						+ at(A, j - 2, j - 1) * at(A, j, j - 2)
+						+ at(A, j - 1, j);
+				}
+			}
+			for (tmp = 0, k = 1; k < j; k++) {
+				tmp += at(A, j, k) * h[k];
+			}
+			h[j] = at(A, j, j) - tmp;
+			at(A, j, j) = h[j];
+			if (j > 1) {
+				at(A, j, j) -= at(A, j - 1, j) * at(A, j, j - 1);
+			}
+			for (i = j + 1; i < n; i++) {
+				for (tmp = 0, k = 1; k <= j; k++) {
+					tmp += at(A, i, k) * h[k];
+				}
+				h[i] = at(A, j, i) - tmp;
+			}
+		}
+		if (j < n - 1) {
+			for (p = j + 1, k = j + 1; k < n; k++) {
+				if (fabsf(h[k]) > fabsf(h[p])) {
+					p = k;
+				}
+			}
+			for (k = 0; k < n; k++) {
+				tmp = at(A, p, k);
+				at(A, p, k) = at(A, j + 1, k);
+				at(A, j + 1, k) = tmp;
+			}
+			col1 = &at(A, 0, p);
+			col2 = &at(A, 0, j + 1);
+			tmp = col1[0];
+			col1[0] = col2[0];
+			col2[0] = tmp;
+			for (k = j + 1; k < n; k++) {
+				tmp = col1[k];
+				col1[k] = col2[k];
+				col2[k] = tmp;
+			}
+			if (j == 0) {
+				P1 = at(A, 0, 1);
+			}
+			at(A, j, j + 1) = h[j + 1];
+			if (j < n - 2) {
+				if (h[p] != 0) {
+					for (i = j + 2; i < n; i++) {
+						at(A, i, j + 1) = h[i] / h[j + 1];
+					}
+				}
+				else {
+					for (i = j + 2; i < n; i++) {
+						at(A, i, j + 1) = 0;
+					}
+				}
+			}
+		}
+	}
+	A->data[0] = A0;
+	if (n > 1) {
+		A->data[1] = P1;
+	}
+	for (j = 2; j < n; j++) {
+		at(A, j, 0) = at(A, 0, j);
+		for (i = 0; i < j - 1; i++) {
+			at(A, i, j) = 0;
+		}
+	}
+	return 0;
+}
+
 #define n 6
 
 int main()

@@ -122,19 +122,6 @@ void matrixf_transpose(Matrixf* A);
 // not positive definite. On success, it returns 0.
 int matrixf_decomp_chol(Matrixf* A);
 
-// This function performs the LTL' decomposition with pivoting using the method
-// of Aasen. The n-by-n symmetric indefinite matrix A is decomposed so that  
-// P*A*P' = L*T*L', where L is unit lower triangular, T is symmetric tridiagonal,
-// and P is a permutation matrix. The matrix A is transformed so that:
-// 1) its diagonal contains the main diagonal of T;
-// 2) its superdiagonal stores the first diagonals of T;
-// 3) its strictly lower part holds the strictly lower part of L, assuming also
-//    L(i,0) = 0 for 0 < i < n;
-// 4) the permutation matrix P is encoded in the first column of A so that 
-//    P(0,0) = 1 and P(i,A(i,0)) = 1 for 0 < i < n.
-// The function returns -1 if A is not square. On success, it returns 0.
-int matrixf_decomp_ltl(Matrixf* A);
-
 // This function performs the LU decomposition with partial pivoting of the 
 // n-by-n matrix A so that A = P'*L*U. The matrix A is transformed so that 
 // its upper triangular part stores the matrix U, whereas its strictly lower
@@ -357,13 +344,6 @@ int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri);
 // function returns -2. On size mismatch or non-square system, the function 
 // returns -1. On success, it returns 0.
 int matrixf_solve_chol(Matrixf* A, Matrixf* B);
-
-// This function solves in place the linear system A*X = B for X by LTL'
-// decomposition with pivoting of the square symmetric indefinite matrix A. 
-// The matrix A is destroyed while B is overwritten with the matrix X. If A is 
-// singular, the function returns -2. On size mismatch or non-square system,
-// the function returns -1. On success, it returns 0.
-int matrixf_solve_ltl(Matrixf* A, Matrixf* B);
 
 // This function solves in place the linear system A*X = B for X by LU
 // decomposition with partial pivoting of the square matrix A. The matrix A
