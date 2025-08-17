@@ -35,17 +35,17 @@ int main()
 	struct timespec t0;
 #endif
 
-	for (i = 0; i < M * P; i++) A.data[i] = (float)i;
-	for (i = 0; i < P * N; i++) B.data[i] = (float)i;
-	for (i = 0; i < M * N; i++) C.data[i] = (float)i;
+	for (i = 0; i < M * P; i++) A.data[i] = (float)rand()/(float)RAND_MAX;
+	for (i = 0; i < P * N; i++) B.data[i] = (float)rand()/(float)RAND_MAX;
+	for (i = 0; i < M * N; i++) C.data[i] = (float)rand()/(float)RAND_MAX;
 
 	if (transA) matrixf_transpose(&A);
 	if (transB) matrixf_transpose(&B);
 
 #if PRINT_MATRIX
-	printf("A = \n"); matrixf_print(&A, "%7.0f "); printf("\n");
-	printf("B = \n"); matrixf_print(&B, "%7.0f "); printf("\n");
-	printf("C = \n"); matrixf_print(&C, "%7.0f "); printf("\n");
+	printf("A = [\n"); matrixf_print(&A, "%9.4f "); printf("];\n");
+	printf("B = [\n"); matrixf_print(&B, "%9.4f "); printf("];\n");
+	printf("C = [\n"); matrixf_print(&C, "%9.4f "); printf("];\n");
 #endif
 #ifdef TICKTOCK
 	tick(&t0);
@@ -57,10 +57,8 @@ int main()
 #endif
 	}
 #else
-	if (transA) matrixf_transpose(&A);
 	if (transB) matrixf_transpose(&B);
-	if (!matrixf_multiply(&A, &B, &C, alpha, beta, 0, 0)) {
-		if (transA) matrixf_transpose(&A);
+	if (!matrixf_multiply(&A, &B, &C, alpha, beta, transA, 0)) {
 		if (transB) matrixf_transpose(&B);
 #ifdef TICKTOCK
 		printf("Elapsed time: %f s\n\n", tock(&t0));
@@ -71,9 +69,9 @@ int main()
 		printf("ERROR: size mismatch\n\n");
 	}
 #if PRINT_MATRIX
-	printf("%g * A%s * B%s + %g * C = \n", alpha,
+	printf("%g * A%s * B%s + %g * C = D = [\n", alpha,
 		transA ? "'" : "", transB ? "'" : "", beta);
-	matrixf_print(&C, "%7.0f "); printf("\n");
+	matrixf_print(&C, "%9.4f "); printf("];\n");
 #endif
 
 	free(A.data);

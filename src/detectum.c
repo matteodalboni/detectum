@@ -209,9 +209,9 @@ int matrixf_decomp_chol(Matrixf* A)
 	}
 	for (j = 0; j < n; j++) {
 		for (i = j; i < n; i++) {
-			v = at(A, j, i);
 			colAi = &at(A, 0, i);
 			colAj = &at(A, 0, j);
+			v = colAi[j];
 			for (k = 0; k < j; k++) {
 				v -= colAi[k] * colAj[k];
 			}
@@ -2178,8 +2178,9 @@ int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 	const int m = C->rows;
 	const int n = C->cols;
 	const int p = transA ? A->rows : A->cols;
-	float b, c;
-	float* colA, * colB, * colC;
+	const int q = transB ? B->cols : B->rows;
+	const int r = transB ? B->rows : B->cols;
+	float b, * colAk, * colCj;
 
 	for (i = 0; i < m * n; i++) {
 		C->data[i] *= beta;
@@ -2188,69 +2189,23 @@ int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 		return 0;
 	}
 	if (transA) {
-		if (transB) { // C = alpha * A' * B' + beta * C
-			if (m != A->cols || p != B->cols || n != B->rows) {
-				return -1;
-			}
-			for (j = 0; j < n; j++) {
-				for (i = 0; i < m; i++) {
-					c = at(C, i, j);
-					colA = &at(A, 0, i);
-					for (k = 0; k < p; k++) {
-						c += alpha * colA[k] * at(B, j, k);
-					}
-					at(C, i, j) = c;
-				}
-			}
-		}
-		else { // C = alpha * A' * B + beta * C
-			if (m != A->cols || p != B->rows || n != B->cols) {
-				return -1;
-			}
-			for (j = 0; j < n; j++) {
-				for (i = 0; i < m; i++) {
-					c = at(C, i, j);
-					colA = &at(A, 0, i);
-					colB = &at(B, 0, j);
-					for (k = 0; k < p; k++) {
-						c += alpha * colA[k] * colB[k];
-					}
-					at(C, i, j) = c;
-				}
+		matrixf_transpose(A);
+	}
+	if (m != A->rows || p != q || r != n) {
+		return -1;
+	}
+	for (j = 0; j < n; j++) {
+		colCj = &at(C, 0, j);
+		for (k = 0; k < p; k++) {
+			b = transB ? at(B, j, k) : at(B, k, j);
+			colAk = &at(A, 0, k);
+			for (i = 0; i < m; i++) {
+				colCj[i] += alpha * colAk[i] * b;
 			}
 		}
 	}
-	else {
-		if (transB) { // C = alpha * A * B' + beta * C
-			if (m != A->rows || p != B->cols || n != B->rows) {
-				return -1;
-			}
-			for (k = 0; k < p; k++) {
-				for (j = 0; j < n; j++) {
-					b = at(B, j, k);
-					colA = &at(A, 0, k);
-					colC = &at(C, 0, j);
-					for (i = 0; i < m; i++) {
-						colC[i] += alpha * colA[i] * b;
-					}
-				}
-			}
-		}
-		else { // C = alpha * A * B + beta * C
-			if (m != A->rows || p != B->rows || n != B->cols) {
-				return -1;
-			}
-			for (j = 0; j < n; j++) {
-				for (k = 0; k < p; k++) {
-					b = at(B, k, j);
-					colA = &at(A, 0, k);
-					colC = &at(C, 0, j);
-					for (i = 0; i < m; i++) {
-						colC[i] += alpha * colA[i] * b;
-					}
-				}
-			}
-		}
+	if (transA) {
+		matrixf_transpose(A);
 	}
 	return 0;
 }
@@ -2261,7 +2216,7 @@ int matrixf_multiply_inplace(Matrixf* A, Matrixf* L, Matrixf* R,
 	int i, j, k;
 	const int m = A->rows;
 	const int n = A->cols;
-	float t, * col;
+	float* colA, * colX;
 
 	if (L) {
 		if (m != L->rows || m != L->cols) {
@@ -2269,30 +2224,31 @@ int matrixf_multiply_inplace(Matrixf* A, Matrixf* L, Matrixf* R,
 		}
 		if (transL) { // A = L' * A
 			for (j = 0; j < n; j++) {
-				col = &at(A, 0, j);
+				colA = &at(A, 0, j);
 				for (i = 0; i < m; i++) {
-					work[i] = col[i];
+					work[i] = colA[i];
+					colA[i] = 0;
 				}
 				for (i = 0; i < m; i++) {
-					col = &at(L, 0, i);
-					for (t = 0, k = 0; k < m; k++) {
-						t += work[k] * col[k];
+					colX = &at(L, 0, i);
+					for (k = 0; k < m; k++) {
+						colA[i] += work[k] * colX[k];
 					}
-					at(A, i, j) = t;
 				}
 			}
 		}
 		else { // A = L * A
 			for (j = 0; j < n; j++) {
-				col = &at(A, 0, j);
+				colA = &at(A, 0, j);
 				for (i = 0; i < m; i++) {
-					work[i] = col[i];
+					work[i] = colA[i];
+					colA[i] = 0;
 				}
-				for (i = 0; i < m; i++) {
-					for (t = 0, k = 0; k < m; k++) {
-						t += work[k] * at(L, i, k);
+				for (k = 0; k < m; k++) {
+					colX = &at(L, 0, k);
+					for (i = 0; i < m; i++) {
+						colA[i] += work[k] * colX[i];
 					}
-					at(A, i, j) = t;
 				}
 			}
 		}
@@ -2301,33 +2257,38 @@ int matrixf_multiply_inplace(Matrixf* A, Matrixf* L, Matrixf* R,
 		if (n != R->rows || n != R->cols) {
 			return -1;
 		}
+		matrixf_transpose(A);
 		if (transR) { // A = A * R'
-			for (i = 0; i < m; i++) {
-				for (j = 0; j < n; j++) {
-					work[j] = at(A, i, j);
+			for (j = 0; j < m; j++) {
+				colA = &at(A, 0, j);
+				for (i = 0; i < n; i++) {
+					work[i] = colA[i];
+					colA[i] = 0;
 				}
-				for (j = 0; j < n; j++) {
-					for (t = 0, k = 0; k < n; k++) {
-						t += work[k] * at(R, j, k);
+				for (k = 0; k < n; k++) {
+					colX = &at(R, 0, k);
+					for (i = 0; i < n; i++) {
+						colA[i] += work[k] * colX[i];
 					}
-					at(A, i, j) = t;
 				}
 			}
 		}
 		else { // A = A * R
-			for (i = 0; i < m; i++) {
-				for (j = 0; j < n; j++) {
-					work[j] = at(A, i, j);
+			for (j = 0; j < m; j++) {
+				colA = &at(A, 0, j);
+				for (i = 0; i < n; i++) {
+					work[i] = colA[i];
+					colA[i] = 0;
 				}
-				for (j = 0; j < n; j++) {
-					col = &at(R, 0, j);
-					for (t = 0, k = 0; k < n; k++) {
-						t += work[k] * col[k];
+				for (i = 0; i < n; i++) {
+					colX = &at(R, 0, i);
+					for (k = 0; k < n; k++) {
+						colA[i] += work[k] * colX[k];
 					}
-					at(A, i, j) = t;
 				}
 			}
 		}
+		matrixf_transpose(A);
 	}
 	return 0;
 }

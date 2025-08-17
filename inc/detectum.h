@@ -4,8 +4,9 @@
 #include <math.h>
 
 typedef struct {
-	int rows, cols;
-	float* data;
+	int rows; // number of rows (must be <= 2^24)
+	int cols; // number of columns (must be <= 2^24)
+	float* data; // pointer to data array
 } Matrixf;
 
 // This macro initializes a rows-by-cols matrix instance A while allocating 
