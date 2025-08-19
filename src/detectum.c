@@ -66,8 +66,35 @@
 #define DETECTUM_LOGM_NTERMS (5)
 #endif
 
+// Householder vector. The vector x is transformed so that x(0) is 
+// the norm of x and v = [1; x(1:end)], where v is the normalized
+// Householder vector. len is x length and stride is its increment.
+static float householder_v(float* x, int len, int stride)
+{
+	int i;
+	float t, mu, beta = 0;
+
+	mu = normf(x, len, stride);
+	if (mu > 0) {
+		if (x[0] < 0) {
+			t = x[0] - mu;
+			beta = -t / mu;
+			x[0] = +mu;
+		}
+		else {
+			t = x[0] + mu;
+			beta = +t / mu;
+			x[0] = -mu;
+		}
+		for (i = 1; i < len; i++) {
+			x[stride * i] /= t;
+		}
+	}
+	return beta;
+}
+
 // Householder transformation X(i0:iend,j0:jend) = H*X(i0:iend,j0:jend),
-// where H = I - beta*v*v'; stride is the increment of v.
+// where H = I - beta*v*v' and v(0) = 1. stride is the increment of v.
 static void householder_hx(Matrixf* X, const float* v, float beta,
 	int i0, int iend, int j0, int jend, int stride)
 {
@@ -76,7 +103,7 @@ static void householder_hx(Matrixf* X, const float* v, float beta,
 
 	for (j = j0; j <= jend; j++) {
 		colXj = &at(X, 0, j);
-		h = at(X, i0, j) * v[0];
+		h = at(X, i0, j);
 		for (i = i0 + 1; i <= iend; i++) {
 			h += colXj[i] * v[(i - i0) * stride];
 		}
@@ -88,7 +115,7 @@ static void householder_hx(Matrixf* X, const float* v, float beta,
 }
 
 // Householder transformation X(i0:iend,j0:jend) = X(i0:iend,j0:jend)*H,
-// where H = I - beta*v*v'; stride is the increment of v.
+// where H = I - beta*v*v' and v(0) = 1. stride is the increment of v.
 static void householder_xh(Matrixf* X, const float* v, float beta,
 	int i0, int iend, int j0, int jend, int stride)
 {
@@ -96,7 +123,7 @@ static void householder_xh(Matrixf* X, const float* v, float beta,
 	float h;
 
 	for (i = i0; i <= iend; i++) {
-		h = at(X, i, j0) * v[0];
+		h = at(X, i, j0);
 		for (j = j0 + 1; j <= jend; j++) {
 			h += at(X, i, j) * v[(j - j0) * stride];
 		}
@@ -342,12 +369,12 @@ int matrixf_unpack_lu_banded(Matrixf* A, Matrixf* B)
 
 int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 {
-	int i, km = 0, k = 0, r = 0, q = 0;
+	int i, jm = 0, j = 0, k = 0, q = 0;
 	const int m = A->rows;
 	const int n = A->cols;
-	const int rmax = m < n ? m - 1 : n - 1;
-	float alpha, beta, s, t, c, cm = 1, * v, v0;
-	float* colAr, * colAk, * colAkm;
+	const int kmax = m < n ? m - 1 : n - 1;
+	float beta, t, c, cm = 1.0f, * v;
+	float* colAk, * colAj, * colAjm;
 	Matrixf A_econ = { n, n, A->data };
 
 	if (Q) {
@@ -363,81 +390,71 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 		if ((P->rows != 1 && P->rows != n) || P->cols != n) {
 			return -1;
 		}
-		for (cm = 0, km = 0, k = 0; k < n; k++) {
-			colAk = &at(A, 0, k);
+		for (cm = 0, jm = 0, j = 0; j < n; j++) {
+			colAj = &at(A, 0, j);
 			for (c = 0, i = 0; i < m; i++) {
-				c += colAk[i] * colAk[i];
+				c += colAj[i] * colAj[i];
 			}
 			if (c > cm) {
 				cm = c;
-				km = k;
+				jm = j;
 			}
-			P->data[k] = (float)k;
+			P->data[j] = (float)j;
 		}
 	}
 	if (B && B->rows != m) {
 		return -1;
 	}
-	while (cm > 0 && r <= rmax) {
-		colAr = &at(A, 0, r);
+	while (cm > 0 && k <= kmax) {
+		colAk = &at(A, 0, k);
 		if (P) {
-			colAkm = &at(A, 0, km);
-			for (k = 0; k < m; k++) {
-				t = colAr[k];
-				colAr[k] = colAkm[k];
-				colAkm[k] = t;
+			colAjm = &at(A, 0, jm);
+			for (j = 0; j < m; j++) {
+				t = colAk[j];
+				colAk[j] = colAjm[j];
+				colAjm[j] = t;
 			}
-			t = P->data[r];
-			P->data[r] = P->data[km];
-			P->data[km] = t;
+			t = P->data[k];
+			P->data[k] = P->data[jm];
+			P->data[jm] = t;
 		}
-		i = r + 1;
-		while (i < m && colAr[i] == 0) {
+		i = k + 1;
+		while (i < m && colAk[i] == 0) {
 			i++;
 		}
 		if (i < m) {
-			alpha = normf(&colAr[r], m - r, 1);
-			s = colAr[r] >= 0 ? 1.0f : -1.0f;
-			t = colAr[r] + s * alpha;
-			colAr[r] = -s * alpha;
-			for (i = r + 1; i < m; i++) {
-				colAr[i] /= t;
-			}
-			beta = t * s / alpha;
-			v0 = colAr[r];
-			v = &colAr[r];
-			v[0] = 1;
-			householder_hx(A, v, beta, r, m - 1, r + 1, n - 1, 1);
+			v = &colAk[k];
+			beta = householder_v(v, m - k, 1);
+			householder_hx(A, v, beta, k, m - 1, k + 1, n - 1, 1);
 			if (B) {
-				householder_hx(B, v, beta, r, m - 1, 0, B->cols - 1, 1);
+				householder_hx(B, v, beta, k, m - 1, 0, B->cols - 1, 1);
 			}
 			if (Q && q == m) {
-				householder_xh(Q, v, beta, 0, m - 1, r, m - 1, 1);
-				for (i = r + 1; i < m; i++) {
-					colAr[i] = 0;
+				householder_xh(Q, v, beta, 0, m - 1, k, m - 1, 1);
+				for (i = k + 1; i < m; i++) {
+					colAk[i] = 0;
 				}
 			}
-			colAr[r] = v0;
 		}
-		if (P && r + 1 <= rmax) {
-			for (cm = 0, km = 0, k = r + 1; k < n; k++) {
-				colAk = &at(A, 0, k);
-				for (c = 0, i = r + 1; i < m; i++) {
-					c += colAk[i] * colAk[i];
+		if (P && k + 1 <= kmax) {
+			for (cm = 0, jm = 0, j = k + 1; j < n; j++) {
+				colAj = &at(A, 0, j);
+				for (c = 0, i = k + 1; i < m; i++) {
+					c += colAj[i] * colAj[i];
 				}
 				if (c > cm) {
 					cm = c;
-					km = k;
+					jm = j;
 				}
 			}
 		}
-		r++;
+		k++;
 	}
 	if (Q && q < m) {
 		matrixf_unpack_householder_bwd(A, Q, 0);
-		for (k = 0; k < n; k++) {
+		for (j = 0; j < n; j++) {
 			for (i = 0; i < n; i++) {
-				at(&A_econ, i, k) = (i <= k) ? at(A, i, k) : 0;
+				at(&A_econ, i, j) = (i <= j) ? at(A, i, j) : 0;
 			}
 		}
 		A->rows = n;
@@ -447,9 +464,9 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 			P->data[i] = 0;
 		}
 		for (i = n - 1; i >= 0; i--) {
-			k = (int)P->data[i];
+			j = (int)P->data[i];
 			at(P, i, 0) = 0;
-			at(P, k, i) = 1;
+			at(P, j, i) = 1;
 		}
 	}
 	return 0;
@@ -462,7 +479,7 @@ int matrixf_unpack_householder_fwd(Matrixf* A, Matrixf* B, int s)
 	const int n = A->cols;
 	const int p = B->cols;
 	const int kmax = m - 1 < n ? m - 2 : n - 1;
-	float gamma, * v, v0, * colAk;
+	float gamma, * v, * colAk;
 
 	if (B->rows != m || s < 0) {
 		return -1;
@@ -473,11 +490,8 @@ int matrixf_unpack_householder_fwd(Matrixf* A, Matrixf* B, int s)
 			gamma += colAk[i] * colAk[i];
 		}
 		if (gamma > 1) {
-			v0 = colAk[k + s];
 			v = &colAk[k + s];
-			v[0] = 1;
 			householder_hx(B, v, 2.0f / gamma, k + s, m - 1, 0, p - 1, 1);
-			colAk[k + s] = v0;
 		}
 	}
 	return 0;
@@ -490,7 +504,7 @@ int matrixf_unpack_householder_bwd(Matrixf* A, Matrixf* B, int s)
 	const int n = A->cols;
 	const int p = B->cols;
 	const int kmax = m - 1 < n ? m - 2 : n - 1;
-	float gamma, * v, v0, * colAk;
+	float gamma, * v, * colAk;
 
 	if (B->rows != m || s < 0) {
 		return -1;
@@ -501,11 +515,8 @@ int matrixf_unpack_householder_bwd(Matrixf* A, Matrixf* B, int s)
 			gamma += colAk[i] * colAk[i];
 		}
 		if (gamma > 1) {
-			v0 = colAk[k + s];
 			v = &colAk[k + s];
-			v[0] = 1;
 			householder_hx(B, v, 2.0f / gamma, k + s, m - 1, 0, p - 1, 1);
-			colAk[k + s] = v0;
 		}
 	}
 	return 0;
@@ -517,7 +528,7 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 	const int m = A->rows;
 	const int n = A->cols;
 	const int kmax = m - 1 < n ? m - 2 : n - 1;
-	float alpha, beta, s, t, * v, v0, * colAk;
+	float beta, * v, * colAk;
 	Matrixf A_econ = { n, n, A->data };
 
 	if (m < n) {
@@ -548,17 +559,8 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 			i++;
 		}
 		if (i < m) {
-			alpha = normf(&colAk[k], m - k, 1);
-			s = colAk[k] >= 0 ? 1.0f : -1.0f;
-			t = colAk[k] + s * alpha;
-			colAk[k] = -s * alpha;
-			for (i = k + 1; i < m; i++) {
-				colAk[i] /= t;
-			}
-			beta = t * s / alpha;
-			v0 = colAk[k];
 			v = &colAk[k];
-			v[0] = 1;
+			beta = householder_v(v, m - k, 1);
 			householder_hx(A, v, beta, k, m - 1, k + 1, n - 1, 1);
 			if (U && q == m) {
 				householder_xh(U, v, beta, 0, m - 1, k, m - 1, 1);
@@ -566,24 +568,14 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 					colAk[i] = 0;
 				}
 			}
-			colAk[k] = v0;
 		}
 		i = k + 2;
 		while (i < n && at(A, k, i) == 0) {
 			i++;
 		}
 		if (i < n && k + 2 < n) {
-			alpha = normf(&at(A, k, k + 1), n - k - 1, m);
-			s = at(A, k, k + 1) >= 0 ? 1.0f : -1.0f;
-			t = at(A, k, k + 1) + s * alpha;
-			at(A, k, k + 1) = -s * alpha;
-			for (i = k + 2; i < n; i++) {
-				at(A, k, i) /= t;
-			}
-			beta = t * s / alpha;
-			v0 = at(A, k, k + 1);
 			v = &at(A, k, k + 1);
-			v[0] = 1;
+			beta = householder_v(v, n - k - 1, m);
 			householder_xh(A, v, beta, k + 1, m - 1, k + 1, n - 1, m);
 			if (V) {
 				householder_xh(V, v, beta, 0, n - 1, k + 1, n - 1, m);
@@ -591,7 +583,6 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 					at(A, k, i) = 0;
 				}
 			}
-			at(A, k, k + 1) = v0;
 		}
 	}
 	if (U && q < m) {
@@ -606,7 +597,7 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 	return 0;
 }
 
-int matrixf_decomp_cod(Matrixf* A, Matrixf* P, Matrixf* U, Matrixf* V, float tol)
+int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* P, float tol)
 {
 	int i, j, rank = 0;
 	const int m = A->rows;
@@ -965,10 +956,10 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 
 int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
 {
-	int i, r;
+	int i, k;
 	const int n = A->rows;
-	float alpha, beta, s, t, * v, v0;
-	float* colAr;
+	float beta, * v;
+	float* colAk;
 
 	if (A->cols != n || (P && (P->rows != n || P->cols != n))) {
 		return -1;
@@ -978,33 +969,23 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
 			P->data[i] = !(i % (n + 1));
 		}
 	}
-	for (r = 0; r < n - 2; r++) {
-		colAr = &at(A, 0, r);
-		i = r + 2;
-		while (i < n && colAr[i] == 0) {
+	for (k = 0; k < n - 2; k++) {
+		colAk = &at(A, 0, k);
+		i = k + 2;
+		while (i < n && colAk[i] == 0) {
 			i++;
 		}
 		if (i < n) {
-			alpha = normf(&colAr[r + 1], n - r - 1, 1);
-			s = colAr[r + 1] >= 0 ? 1.0f : -1.0f;
-			t = colAr[r + 1] + s * alpha;
-			colAr[r + 1] = -s * alpha;
-			for (i = r + 2; i < n; i++) {
-				colAr[i] /= t;
-			}
-			beta = t * s / alpha;
-			v0 = colAr[r + 1];
-			v = &colAr[r + 1];
-			v[0] = 1;
-			householder_hx(A, v, beta, r + 1, n - 1, r + 1, n - 1, 1);
-			householder_xh(A, v, beta, 0, n - 1, r + 1, n - 1, 1);
+			v = &colAk[k + 1];
+			beta = householder_v(v, n - k - 1, 1);
+			householder_hx(A, v, beta, k + 1, n - 1, k + 1, n - 1, 1);
+			householder_xh(A, v, beta, 0, n - 1, k + 1, n - 1, 1);
 			if (P) {
-				householder_xh(P, v, beta, 0, n - 1, r + 1, n - 1, 1);
-				for (i = r + 2; i < n; i++) {
-					colAr[i] = 0;
+				householder_xh(P, v, beta, 0, n - 1, k + 1, n - 1, 1);
+				for (i = k + 2; i < n; i++) {
+					colAk[i] = 0;
 				}
 			}
-			colAr[r + 1] = v0;
 		}
 	}
 	return 0;
@@ -1097,7 +1078,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 	const int ahsc = DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT;
 	const float tol = DETECTUM_SCHUR_TOL;
 	const float eps = epsf(1);
-	float r, s, t, x, y, z, alpha, beta, v[3] = { 1, 0, 0 };
+	float r, s, t, x, y, z, mu, beta, v[3] = { 1, 0, 0 };
 	float sine, cosine, Xk, Xk1;
 	float* colXk, * colXk1;
 
@@ -1152,13 +1133,13 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 				z = at(A, q + 1, q) * at(A, q + 2, q + 1);
 				for (k = q - 1; k <= m - 3; k++) {
 					t = hypotf(x, y);
-					alpha = hypotf(t, z);
-					if (alpha > 0) {
+					mu = hypotf(t, z);
+					if (mu > 0) {
 						s = x >= 0 ? 1.0f : -1.0f;
-						t = x + s * alpha;
+						t = x + s * mu;
 						v[1] = y / t;
 						v[2] = z / t;
-						beta = t * s / alpha;
+						beta = t * s / mu;
 						householder_hx(A, v, beta, k + 1, k + 3, q > k ? q : k, n - 1, 1);
 						householder_xh(A, v, beta, 0, (k + 4) < m ? (k + 4) : m, k + 1, k + 3, 1);
 						if (U) {
@@ -1171,12 +1152,12 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 						z = at(A, k + 4, k + 1);
 					}
 				}
-				alpha = hypotf(x, y);
-				if (alpha > 0) {
+				mu = hypotf(x, y);
+				if (mu > 0) {
 					s = x >= 0 ? 1.0f : -1.0f;
-					t = x + s * alpha;
+					t = x + s * mu;
 					v[1] = y / t;
-					beta = t * s / alpha;
+					beta = t * s / mu;
 					householder_hx(A, v, beta, m - 1, m, m - 2, n - 1, 1);
 					householder_xh(A, v, beta, 0, m, m - 1, m, 1);
 					if (U) {

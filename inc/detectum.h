@@ -30,21 +30,19 @@ static inline float epsf(float x)
 static inline float normf(const float* vec, int len, int stride)
 {
 	int i;
-	float x = 0, s = 0, t;
-
+	float x = 0, t;
+#ifdef DETECTUM_FAST_NORM
 	for (i = 0; i < len; i++) {
-		t = fabsf(vec[i * stride]);
-		if (t > s) {
-			s = t;
-		}
+		t = vec[i * stride];
+		x += t * t;
 	}
-	if (s > 0) {
-		for (i = 0; i < len; i++) {
-			t = vec[i * stride] / s;
-			x += t * t;
-		}
-		x = s * sqrtf(x);
+	x = sqrtf(x);
+#else // 2-norm without under/overflow
+	for (i = 0; i < len; i++) {
+		t = vec[i * stride];
+		x = hypotf(x, t);
 	}
+#endif
 	return x;
 }
 
@@ -155,8 +153,8 @@ int matrixf_unpack_lu_banded(Matrixf* A, Matrixf* B);
 // This function performs the QR decomposition of the m-by-n matrix A, which is
 // transformed into matrix R. If Q is a null pointer, the computation of 
 // the orthogonal matrix is omitted, and the strictly lower triangular part of A 
-// stores the relevant parts of the Householder vectors, which can be used to
-// accumulate Q afterwards. For the sake of clarity, the relevant part of a 
+// stores the essential parts of the Householder vectors, which can be used to
+// accumulate Q afterwards. For the sake of clarity, the essential part of a 
 // Householder vector comprises all elements but the first, which is always 1. 
 // If P is a non-null pointer, the decomposition makes use of column pivoting 
 // so that A*P = Q*R and so that the magnitude of the elements of the main 
@@ -175,7 +173,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B);
 // This function unpacks an orthogonal matrix from its factored representation. 
 // In particular, the function transforms B into Q'*B by forward accumulation 
 // of Householder matrices. Matrix A remains the same. The lower triangular part
-// of A below the s-th subdiagonal must store the relevant parts of the Householder
+// of A below the s-th subdiagonal must store the essential parts of the Householder
 // vectors. For instance, if s = 0, the Householder vectors are below the main 
 // diagonal of A; whereas, if s = 1, the Householder vectors are below the first 
 // subdiagonal of A. On size mismatch or if s < 0, the function returns -1. On 
@@ -185,7 +183,7 @@ int matrixf_unpack_householder_fwd(Matrixf* A, Matrixf* B, int s);
 // This function unpacks an orthogonal matrix from its factored representation. 
 // In particular, the function transforms B into Q*B by backward accumulation 
 // of Householder matrices. Matrix A remains the same. The lower triangular part
-// of A below the s-th subdiagonal must store the relevant parts of the Householder
+// of A below the s-th subdiagonal must store the essential parts of the Householder
 // vectors. For instance, if s = 0, the Householder vectors are below the main 
 // diagonal of A; whereas, if s = 1, the Householder vectors are below the first 
 // subdiagonal of A. On size mismatch or if s < 0, the function returns -1. On 
@@ -196,7 +194,7 @@ int matrixf_unpack_householder_bwd(Matrixf* A, Matrixf* B, int s);
 // that A = U*B*V'. A is overwritten by the bidiagonal matrix B. Specifically, B
 // is upper bidiagonal if m >= n, otherwise B is lower bidiagonal. The computation
 // of the matrices U and V is omitted if these are null pointers. If U (V) is
-// a null pointer, the relevant parts of the Householder vectors are stored
+// a null pointer, the essential parts of the Householder vectors are stored
 // off the bidiagonal band and can be used to accumulate U (V) afterwards.
 // In particular, U is encoded below the main diagonal of A, while V is encoded 
 // below the first subdiagonal of A'.
@@ -228,7 +226,7 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V);
 // on-diagonal element of R with the largest magnitude, R being the upper triangular
 // matrix obtained by QR decomposition with column pivoting of A. On size mismatch,
 // the function returns -1. On success, it returns the rank of A.
-int matrixf_decomp_cod(Matrixf* A, Matrixf* P, Matrixf* U, Matrixf* V, float tol);
+int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* P, float tol);
 
 // This function performs the singular value decomposition of the m-by-n matrix A
 // by QR iteration. The decomposition is such that A = U*S*V'. The computation of 
@@ -275,7 +273,7 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V);
 // This function performs the Hessenberg decomposition of the square matrix A, 
 // which is transformed into the Hessenberg matrix H so that A = P*H*P'. If P 
 // is a null pointer, the computation of the orthogonal matrix is omitted, and
-// the triangular part of A below the first subdiagonal stores the relevant 
+// the triangular part of A below the first subdiagonal stores the essential 
 // parts of the Householder vectors, which can be used to accumulate P afterwards. 
 // The function returns -1 if the matrices are not square or on size mismatch.
 // On success, it returns 0.

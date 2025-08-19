@@ -30,7 +30,7 @@ int main()
 	matrixf_init(&A, m, n, A_data, 1);
 	printf("A = [\n"); matrixf_print(&A, "%10.5g "); printf("];\n\n");
 	// Complete orthogonal decomposition (COD)
-	rank = matrixf_decomp_cod(&A, &P, &U, &V, -1);
+	rank = matrixf_decomp_cod(&A, &U, &V, &P, -1);
 	matrixf_permute(&V, &P, 1);
 	printf("The rank of A is %d\n\n", rank);
 	printf("U = [\n"); matrixf_print(&U, "%10.5g "); printf("];\n\n");
