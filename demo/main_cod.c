@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "detectum.h"
 
+#define ONE_STEP 1
 #define m 10
 #define n 5
 
@@ -30,7 +31,24 @@ int main()
 	matrixf_init(&A, m, n, A_data, 1);
 	printf("A = [\n"); matrixf_print(&A, "%10.5g "); printf("];\n\n");
 	// Complete orthogonal decomposition (COD)
+#if ONE_STEP
 	rank = matrixf_decomp_cod(&A, &U, &V, &P, -1);
+#else
+	rank = matrixf_decomp_cod(&A, &U, 0, &P, -1);
+	matrixf_transpose(&A);
+	A.cols = rank;
+	for (int i = 0; i < n; i++) {
+		at(&V, i, i) = 1;
+	}
+	matrixf_unpack_householder_bwd(&A, &V, 0);
+	for (int j = 0; j < rank; j++) {
+		for (int i = j + 1; i < A.rows; i++) {
+			at(&A, i, j) = 0;
+		}
+	}
+	A.cols = m;
+	matrixf_transpose(&A);
+#endif
 	matrixf_permute(&V, &P, 1);
 	printf("The rank of A is %d\n\n", rank);
 	printf("U = [\n"); matrixf_print(&U, "%10.5g "); printf("];\n\n");

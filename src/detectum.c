@@ -626,19 +626,7 @@ int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* P, float tol
 	if (matrixf_decomp_qr(A, V, 0, 0)) {
 		return -1;
 	}
-	else {
-		for (j = 0; j < rank; j++) {
-			for (i = j + 1; i < n; i++) {
-				at(A, i, j) = 0;
-			}
-		}
-	}
-	if (U) {
-		A->cols = U->cols;
-	}
-	else {
-		A->cols = m;
-	}
+	A->cols = U ? U->cols : m;
 	matrixf_transpose(A);
 	return rank;
 }

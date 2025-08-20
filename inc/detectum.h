@@ -151,7 +151,7 @@ int matrixf_decomp_lu_banded(Matrixf* A, int ubw);
 int matrixf_unpack_lu_banded(Matrixf* A, Matrixf* B);
 
 // This function performs the QR decomposition of the m-by-n matrix A, which is
-// transformed into matrix R. If Q is a null pointer, the computation of 
+// transformed into matrix R. If Q is a null pointer, the explicit formation of 
 // the orthogonal matrix is omitted, and the strictly lower triangular part of A 
 // stores the essential parts of the Householder vectors, which can be used to
 // accumulate Q afterwards. For the sake of clarity, the essential part of a 
@@ -191,13 +191,16 @@ int matrixf_unpack_householder_fwd(Matrixf* A, Matrixf* B, int s);
 int matrixf_unpack_householder_bwd(Matrixf* A, Matrixf* B, int s);
 
 // This function accomplishes the bidiagonalization of the m-by-n matrix A so
-// that A = U*B*V'. A is overwritten by the bidiagonal matrix B. Specifically, B
-// is upper bidiagonal if m >= n, otherwise B is lower bidiagonal. The computation
-// of the matrices U and V is omitted if these are null pointers. If U (V) is
-// a null pointer, the essential parts of the Householder vectors are stored
-// off the bidiagonal band and can be used to accumulate U (V) afterwards.
-// In particular, U is encoded below the main diagonal of A, while V is encoded 
-// below the first subdiagonal of A'.
+// that A = U*B*V'. A is overwritten by the bidiagonal matrix B. Specifically,
+// B is upper bidiagonal if m >= n, otherwise B is lower bidiagonal. The
+// explicit formation of the matrices U and V is omitted if these are null 
+// pointers. If U (V) is a null pointer, the essential parts of the Householder
+// vectors are stored off the bidiagonal band and can be used to accumulate U 
+// (V) afterwards. In particular: 
+// - if m >= n, U is encoded below the main diagonal of A, while V is encoded 
+//   below the first subdiagonal of A';
+// - if m < n, U is encoded below the first subdiagonal of A, while V is encoded 
+//   below the main diagonal of A'.
 // The function can also produce the economy-size decomposition such that:
 // - if m > n, only the first n columns of U are computed (thin U) and the last 
 //   m - n rows of B are excluded so that B becomes n-by-n; to enable the 
@@ -216,16 +219,19 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V);
 // pivoting. If P is initialized as a 1-by-n vector and n > 1, the permutations are
 // encoded so that (P(i),i) for 0 <= i < n are the unit elements of the permutation 
 // matrix. Else, if P is initialized as an n-by-n matrix, the full permutation 
-// matrix is returned. The computation of the matrices U and V is omitted if these
-// are null pointers. If m > n, the function can also produce the economy-size 
-// decomposition such that only the first n columns of U are computed (thin U) and
-// the last m - n rows of T are excluded so that T becomes n-by-n. To enable the 
-// economy-size decomposition, U must be initialized as an m-by-n matrix. tol is the
-// tolerance to determine the rank of A: if the input tolerance is negative, the 
-// default value max(m,n)*eps(R(0,0)) is used instead, where R(0,0) is the 
-// on-diagonal element of R with the largest magnitude, R being the upper triangular
-// matrix obtained by QR decomposition with column pivoting of A. On size mismatch,
-// the function returns -1. On success, it returns the rank of A.
+// matrix is returned. If U is a null pointer, the computation of the matrix U is 
+// omitted. If V is a null pinter, the explicit formation of the matrix V is omitted;
+// in this case, the essential parts of the Householder vectors are stored below the 
+// main diagonal of L' and can be used to accumulate V afterwards. If m > n, the 
+// function can also produce the economy-size decomposition such that only the first
+// n columns of U are computed (thin U) and the last m - n rows of T are excluded so
+// that T becomes n-by-n. To enable the economy-size decomposition, U must be 
+// initialized as an m-by-n matrix. tol is the tolerance to determine the rank of A:
+// if the input tolerance is negative, the default value max(m,n)*eps(R(0,0)) is 
+// used instead, where R(0,0) is the on-diagonal element of R with the largest 
+// magnitude, R being the upper triangular matrix obtained by QR decomposition with
+// column pivoting of A. On size mismatch, the function returns -1. On success, it 
+// returns the rank of A.
 int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* P, float tol);
 
 // This function performs the singular value decomposition of the m-by-n matrix A
@@ -272,8 +278,8 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V);
 
 // This function performs the Hessenberg decomposition of the square matrix A, 
 // which is transformed into the Hessenberg matrix H so that A = P*H*P'. If P 
-// is a null pointer, the computation of the orthogonal matrix is omitted, and
-// the triangular part of A below the first subdiagonal stores the essential 
+// is a null pointer, the explicit formation of the orthogonal matrix is omitted,
+// and the triangular part of A below the first subdiagonal stores the essential 
 // parts of the Householder vectors, which can be used to accumulate P afterwards. 
 // The function returns -1 if the matrices are not square or on size mismatch.
 // On success, it returns 0.

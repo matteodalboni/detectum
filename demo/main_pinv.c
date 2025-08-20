@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include "detectum.h"
 
+#define m 8
+#define n 6
+
 int main()
 {
-	float A_data[8 * 6] = {
+	float A_data[] = {
         64,   2,   3,  61,  60,   6,
          9,  55,  54,  12,  13,  51,
         17,  47,  46,  20,  21,  43,
@@ -13,14 +16,14 @@ int main()
         49,  15,  14,  52,  53,  11,
          8,  58,  59,   5,   4,  62
 	};
-    float b_data[8] = { 
+    float b_data[] = { 
         260, 260, 260, 260, 260, 260, 260, 260 
     };
-    float work[6 * 7];
-    Matrixf A, b, x = { 6, 1, work };
+    float work[n * (n + 1)];
+    Matrixf A, b, x = { n, 1, work };
     
-    matrixf_init(&A, 8, 6, A_data, 1);
-    matrixf_init(&b, 8, 1, b_data, 0);
+    matrixf_init(&A, m, n, A_data, 1);
+    matrixf_init(&b, m, 1, b_data, 0);
     printf("A = \n"); matrixf_print(&A, "%9.0f"); printf("\n");
     matrixf_pseudoinv(&A, -1, work);
     printf("pinv(A) = \n"); matrixf_print(&A, "%9.4f"); printf("\n");
