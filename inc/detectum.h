@@ -25,23 +25,23 @@ static inline float epsf(float x)
 	return powf(2.0f, floorf(log2f(fabsf(x))) - 23.0f);
 }
 
-// This function returns the 2-norm of the vector vec. The length of the
+// This function returns the 2-norm of the vector v. The length of the
 // vector is len, and stride is its increment.
-static inline float normf(const float* vec, int len, int stride)
+static inline float normf(const float* v, int len, int stride)
 {
 	int i;
 	float x = 0, t;
-#ifdef DETECTUM_FAST_NORM
+#ifdef DETECTUM_ROBUST_NORM // 2-norm without under/overflow
 	for (i = 0; i < len; i++) {
-		t = vec[i * stride];
+		t = v[i * stride];
+		x = hypotf(x, t);
+	}
+#else
+	for (i = 0; i < len; i++) {
+		t = v[i * stride];
 		x += t * t;
 	}
 	x = sqrtf(x);
-#else // 2-norm without under/overflow
-	for (i = 0; i < len; i++) {
-		t = vec[i * stride];
-		x = hypotf(x, t);
-	}
 #endif
 	return x;
 }

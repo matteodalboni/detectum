@@ -103,13 +103,14 @@ static void householder_hx(Matrixf* X, const float* v, float beta,
 
 	for (j = j0; j <= jend; j++) {
 		colXj = &at(X, 0, j);
-		h = at(X, i0, j);
+		h = colXj[i0];
 		for (i = i0 + 1; i <= iend; i++) {
 			h += colXj[i] * v[(i - i0) * stride];
 		}
-		at(X, i0, j) -= beta * h;
+		h *= beta;
+		colXj[i0] -= h;
 		for (i = i0 + 1; i <= iend; i++) {
-			colXj[i] -= beta * h * v[(i - i0) * stride];
+			colXj[i] -= h * v[(i - i0) * stride];
 		}
 	}
 }
@@ -127,9 +128,10 @@ static void householder_xh(Matrixf* X, const float* v, float beta,
 		for (j = j0 + 1; j <= jend; j++) {
 			h += at(X, i, j) * v[(j - j0) * stride];
 		}
-		at(X, i, j0) -= beta * h;
+		h *= beta;
+		at(X, i, j0) -= h;
 		for (j = j0 + 1; j <= jend; j++) {
-			at(X, i, j) -= beta * h * v[(j - j0) * stride];
+			at(X, i, j) -= h * v[(j - j0) * stride];
 		}
 	}
 }
