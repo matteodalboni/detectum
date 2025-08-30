@@ -66,36 +66,9 @@
 #define DETECTUM_LOGM_NTERMS (5)
 #endif
 
-// Householder vector. The vector x is transformed so that x(0) is 
-// the norm of x and v = [1; x(1:end)], where v is the normalized
-// Householder vector. len is x length and stride is its increment.
-static float householder_v(float* x, int len, int stride)
-{
-	int i;
-	float t, mu, beta = 0;
-
-	mu = normf(x, len, stride);
-	if (mu > 0) {
-		if (x[0] < 0) {
-			t = x[0] - mu;
-			beta = -t / mu;
-			x[0] = +mu;
-		}
-		else {
-			t = x[0] + mu;
-			beta = +t / mu;
-			x[0] = -mu;
-		}
-		for (i = 1; i < len; i++) {
-			x[stride * i] /= t;
-		}
-	}
-	return beta;
-}
-
 // Householder transformation X(i0:iend,j0:jend) = H*X(i0:iend,j0:jend),
 // where H = I - beta*v*v' and v(0) = 1. stride is the increment of v.
-static void householder_hx(Matrixf* X, const float* v, float beta,
+static void housef_apply_l(Matrixf* X, const float* v, float beta,
 	int i0, int iend, int j0, int jend, int stride)
 {
 	int i, j;
@@ -117,7 +90,7 @@ static void householder_hx(Matrixf* X, const float* v, float beta,
 
 // Householder transformation X(i0:iend,j0:jend) = X(i0:iend,j0:jend)*H,
 // where H = I - beta*v*v' and v(0) = 1. stride is the increment of v.
-static void householder_xh(Matrixf* X, const float* v, float beta,
+static void housef_apply_r(Matrixf* X, const float* v, float beta,
 	int i0, int iend, int j0, int jend, int stride)
 {
 	int i, j;
@@ -426,13 +399,13 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 		}
 		if (i < m) {
 			v = &colAk[k];
-			beta = householder_v(v, m - k, 1);
-			householder_hx(A, v, beta, k, m - 1, k + 1, n - 1, 1);
+			beta = housef(v, m - k, 1);
+			housef_apply_l(A, v, beta, k, m - 1, k + 1, n - 1, 1);
 			if (B) {
-				householder_hx(B, v, beta, k, m - 1, 0, B->cols - 1, 1);
+				housef_apply_l(B, v, beta, k, m - 1, 0, B->cols - 1, 1);
 			}
 			if (Q && q == m) {
-				householder_xh(Q, v, beta, 0, m - 1, k, m - 1, 1);
+				housef_apply_r(Q, v, beta, 0, m - 1, k, m - 1, 1);
 				for (i = k + 1; i < m; i++) {
 					colAk[i] = 0;
 				}
@@ -453,7 +426,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 		k++;
 	}
 	if (Q && q < m) {
-		matrixf_unpack_householder_bwd(A, Q, 0);
+		matrixf_unpack_house_bwd(A, Q, 0);
 		for (j = 0; j < n; j++) {
 			for (i = 0; i < n; i++) {
 				at(&A_econ, i, j) = (i <= j) ? at(A, i, j) : 0;
@@ -474,7 +447,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 	return 0;
 }
 
-int matrixf_unpack_householder_fwd(Matrixf* A, Matrixf* B, int s)
+int matrixf_unpack_house_fwd(Matrixf* A, Matrixf* B, int s)
 {
 	int i, k;
 	const int m = A->rows;
@@ -493,13 +466,13 @@ int matrixf_unpack_householder_fwd(Matrixf* A, Matrixf* B, int s)
 		}
 		if (gamma > 1) {
 			v = &colAk[k + s];
-			householder_hx(B, v, 2.0f / gamma, k + s, m - 1, 0, p - 1, 1);
+			housef_apply_l(B, v, 2.0f / gamma, k + s, m - 1, 0, p - 1, 1);
 		}
 	}
 	return 0;
 }
 
-int matrixf_unpack_householder_bwd(Matrixf* A, Matrixf* B, int s)
+int matrixf_unpack_house_bwd(Matrixf* A, Matrixf* B, int s)
 {
 	int i, k;
 	const int m = A->rows;
@@ -518,7 +491,7 @@ int matrixf_unpack_householder_bwd(Matrixf* A, Matrixf* B, int s)
 		}
 		if (gamma > 1) {
 			v = &colAk[k + s];
-			householder_hx(B, v, 2.0f / gamma, k + s, m - 1, 0, p - 1, 1);
+			housef_apply_l(B, v, 2.0f / gamma, k + s, m - 1, 0, p - 1, 1);
 		}
 	}
 	return 0;
@@ -562,10 +535,10 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 		}
 		if (i < m) {
 			v = &colAk[k];
-			beta = householder_v(v, m - k, 1);
-			householder_hx(A, v, beta, k, m - 1, k + 1, n - 1, 1);
+			beta = housef(v, m - k, 1);
+			housef_apply_l(A, v, beta, k, m - 1, k + 1, n - 1, 1);
 			if (U && q == m) {
-				householder_xh(U, v, beta, 0, m - 1, k, m - 1, 1);
+				housef_apply_r(U, v, beta, 0, m - 1, k, m - 1, 1);
 				for (i = k + 1; i < m; i++) {
 					colAk[i] = 0;
 				}
@@ -577,10 +550,10 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 		}
 		if (i < n && k + 2 < n) {
 			v = &at(A, k, k + 1);
-			beta = householder_v(v, n - k - 1, m);
-			householder_xh(A, v, beta, k + 1, m - 1, k + 1, n - 1, m);
+			beta = housef(v, n - k - 1, m);
+			housef_apply_r(A, v, beta, k + 1, m - 1, k + 1, n - 1, m);
 			if (V) {
-				householder_xh(V, v, beta, 0, n - 1, k + 1, n - 1, m);
+				housef_apply_r(V, v, beta, 0, n - 1, k + 1, n - 1, m);
 				for (i = k + 2; i < n; i++) {
 					at(A, k, i) = 0;
 				}
@@ -588,7 +561,7 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 		}
 	}
 	if (U && q < m) {
-		matrixf_unpack_householder_bwd(A, U, 0);
+		matrixf_unpack_house_bwd(A, U, 0);
 		for (k = 0; k < n; k++) {
 			for (i = 0; i < n; i++) {
 				at(&A_econ, i, k) = (i <= k) ? at(A, i, k) : 0;
@@ -967,11 +940,11 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
 		}
 		if (i < n) {
 			v = &colAk[k + 1];
-			beta = householder_v(v, n - k - 1, 1);
-			householder_hx(A, v, beta, k + 1, n - 1, k + 1, n - 1, 1);
-			householder_xh(A, v, beta, 0, n - 1, k + 1, n - 1, 1);
+			beta = housef(v, n - k - 1, 1);
+			housef_apply_l(A, v, beta, k + 1, n - 1, k + 1, n - 1, 1);
+			housef_apply_r(A, v, beta, 0, n - 1, k + 1, n - 1, 1);
 			if (P) {
-				householder_xh(P, v, beta, 0, n - 1, k + 1, n - 1, 1);
+				housef_apply_r(P, v, beta, 0, n - 1, k + 1, n - 1, 1);
 				for (i = k + 2; i < n; i++) {
 					colAk[i] = 0;
 				}
@@ -1130,10 +1103,10 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 						v[1] = y / t;
 						v[2] = z / t;
 						beta = t * s / mu;
-						householder_hx(A, v, beta, k + 1, k + 3, q > k ? q : k, n - 1, 1);
-						householder_xh(A, v, beta, 0, (k + 4) < m ? (k + 4) : m, k + 1, k + 3, 1);
+						housef_apply_l(A, v, beta, k + 1, k + 3, q > k ? q : k, n - 1, 1);
+						housef_apply_r(A, v, beta, 0, (k + 4) < m ? (k + 4) : m, k + 1, k + 3, 1);
 						if (U) {
-							householder_xh(U, v, beta, 0, n - 1, k + 1, k + 3, 1);
+							housef_apply_r(U, v, beta, 0, n - 1, k + 1, k + 3, 1);
 						}
 					}
 					x = at(A, k + 2, k + 1);
@@ -1148,10 +1121,10 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 					t = x + s * mu;
 					v[1] = y / t;
 					beta = t * s / mu;
-					householder_hx(A, v, beta, m - 1, m, m - 2, n - 1, 1);
-					householder_xh(A, v, beta, 0, m, m - 1, m, 1);
+					housef_apply_l(A, v, beta, m - 1, m, m - 2, n - 1, 1);
+					housef_apply_r(A, v, beta, 0, m, m - 1, m, 1);
 					if (U) {
-						householder_xh(U, v, beta, 0, n - 1, m - 1, m, 1);
+						housef_apply_r(U, v, beta, 0, n - 1, m - 1, m, 1);
 					}
 				}
 			}
@@ -1698,7 +1671,7 @@ int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X)
 			return -2;
 		}
 		matrixf_transpose(A);
-		matrixf_unpack_householder_bwd(A, X, 0);
+		matrixf_unpack_house_bwd(A, X, 0);
 	}
 	else {
 		matrixf_decomp_qr(A, 0, 0, B);
@@ -1826,7 +1799,7 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 			}
 		}
 	}
-	matrixf_unpack_householder_bwd(A, X, 0);
+	matrixf_unpack_house_bwd(A, X, 0);
 	matrixf_permute(X, &perm, 1);
 	A->rows = m;
 	A->cols = n;

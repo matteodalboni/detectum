@@ -64,6 +64,34 @@ static inline float givensf(float a, float b, float* c, float* s)
 	return r;
 }
 
+// This function generates a Householder vector. The vector x is
+// transformed so that x(0) is the norm of x and v = [1; x(1:end)],
+// where v is the normalized Householder vector. len is x length 
+// and stride is its increment.
+static inline float housef(float* x, int len, int stride)
+{
+	int i;
+	float t, mu, beta = 0;
+
+	mu = normf(x, len, stride);
+	if (mu > 0) {
+		if (x[0] < 0) {
+			t = x[0] - mu;
+			beta = -t / mu;
+			x[0] = +mu;
+		}
+		else {
+			t = x[0] + mu;
+			beta = +t / mu;
+			x[0] = -mu;
+		}
+		for (i = 1; i < len; i++) {
+			x[stride * i] /= t;
+		}
+	}
+	return beta;
+}
+
 #ifdef EOF // include stdio.h before detectum.h to enable this section
 // This function prints the matrix A on the standard output according to
 // the specified format.
@@ -178,7 +206,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B);
 // diagonal of A; whereas, if s = 1, the Householder vectors are below the first 
 // subdiagonal of A. On size mismatch or if s < 0, the function returns -1. On 
 // success, it returns 0.
-int matrixf_unpack_householder_fwd(Matrixf* A, Matrixf* B, int s);
+int matrixf_unpack_house_fwd(Matrixf* A, Matrixf* B, int s);
 
 // This function unpacks an orthogonal matrix from its factored representation. 
 // In particular, the function transforms B into Q*B by backward accumulation 
@@ -188,7 +216,7 @@ int matrixf_unpack_householder_fwd(Matrixf* A, Matrixf* B, int s);
 // diagonal of A; whereas, if s = 1, the Householder vectors are below the first 
 // subdiagonal of A. On size mismatch or if s < 0, the function returns -1. On 
 // success, it returns 0.
-int matrixf_unpack_householder_bwd(Matrixf* A, Matrixf* B, int s);
+int matrixf_unpack_house_bwd(Matrixf* A, Matrixf* B, int s);
 
 // This function accomplishes the bidiagonalization of the m-by-n matrix A so
 // that A = U*B*V'. A is overwritten by the bidiagonal matrix B. Specifically,
