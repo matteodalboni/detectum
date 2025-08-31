@@ -67,23 +67,24 @@ static inline float givensf(float a, float b, float* c, float* s)
 // This function generates a Householder vector. The vector x is
 // transformed so that x(0) is the norm of x and v = [1; x(1:end)],
 // where v is the normalized Householder vector. len is x length 
-// and stride is its increment.
+// and stride is its increment. Also, the function returns beta
+// such that H = I - beta*v*v' is a Householder matrix.
 static inline float housef(float* x, int len, int stride)
 {
 	int i;
-	float b, tau = 0;
+	float b, beta = 0;
 	const float a = x[0];
 	const float nrm = normf(x + stride, len - 1, stride);
 
 	if (nrm > 0) {
 		b = a < 0 ? hypotf(a, nrm) : -hypotf(a, nrm);
-		tau = (b - a) / b;
+		beta = (b - a) / b;
 		x[0] = b;
 		for (i = 1; i < len; i++) {
-			x[stride * i] /= (a - b);
+			x[stride * i] /= a - b;
 		}
 	}
-	return tau;
+	return beta;
 }
 
 #ifdef EOF // include stdio.h before detectum.h to enable this section
