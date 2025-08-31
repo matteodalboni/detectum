@@ -71,25 +71,19 @@ static inline float givensf(float a, float b, float* c, float* s)
 static inline float housef(float* x, int len, int stride)
 {
 	int i;
-	float t, mu, beta = 0;
+	float b, tau = 0;
+	const float a = x[0];
+	const float nrm = normf(x + stride, len - 1, stride);
 
-	mu = normf(x, len, stride);
-	if (mu > 0) {
-		if (x[0] < 0) {
-			t = x[0] - mu;
-			beta = -t / mu;
-			x[0] = +mu;
-		}
-		else {
-			t = x[0] + mu;
-			beta = +t / mu;
-			x[0] = -mu;
-		}
+	if (nrm > 0) {
+		b = a < 0 ? hypotf(a, nrm) : -hypotf(a, nrm);
+		tau = (b - a) / b;
+		x[0] = b;
 		for (i = 1; i < len; i++) {
-			x[stride * i] /= t;
+			x[stride * i] /= (a - b);
 		}
 	}
-	return beta;
+	return tau;
 }
 
 #ifdef EOF // include stdio.h before detectum.h to enable this section

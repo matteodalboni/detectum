@@ -74,16 +74,18 @@ static void housef_apply_l(Matrixf* X, const float* v, float beta,
 	int i, j;
 	float h, * colXj;
 
-	for (j = j0; j <= jend; j++) {
-		colXj = &at(X, 0, j);
-		h = colXj[i0];
-		for (i = i0 + 1; i <= iend; i++) {
-			h += colXj[i] * v[(i - i0) * stride];
-		}
-		h *= beta;
-		colXj[i0] -= h;
-		for (i = i0 + 1; i <= iend; i++) {
-			colXj[i] -= h * v[(i - i0) * stride];
+	if (beta != 0) {
+		for (j = j0; j <= jend; j++) {
+			colXj = &at(X, 0, j);
+			h = colXj[i0];
+			for (i = i0 + 1; i <= iend; i++) {
+				h += colXj[i] * v[(i - i0) * stride];
+			}
+			h *= beta;
+			colXj[i0] -= h;
+			for (i = i0 + 1; i <= iend; i++) {
+				colXj[i] -= h * v[(i - i0) * stride];
+			}
 		}
 	}
 }
@@ -96,15 +98,17 @@ static void housef_apply_r(Matrixf* X, const float* v, float beta,
 	int i, j;
 	float h;
 
-	for (i = i0; i <= iend; i++) {
-		h = at(X, i, j0);
-		for (j = j0 + 1; j <= jend; j++) {
-			h += at(X, i, j) * v[(j - j0) * stride];
-		}
-		h *= beta;
-		at(X, i, j0) -= h;
-		for (j = j0 + 1; j <= jend; j++) {
-			at(X, i, j) -= h * v[(j - j0) * stride];
+	if (beta != 0) {
+		for (i = i0; i <= iend; i++) {
+			h = at(X, i, j0);
+			for (j = j0 + 1; j <= jend; j++) {
+				h += at(X, i, j) * v[(j - j0) * stride];
+			}
+			h *= beta;
+			at(X, i, j0) -= h;
+			for (j = j0 + 1; j <= jend; j++) {
+				at(X, i, j) -= h * v[(j - j0) * stride];
+			}
 		}
 	}
 }
@@ -393,22 +397,16 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 			P->data[k] = P->data[jm];
 			P->data[jm] = t;
 		}
-		i = k + 1;
-		while (i < m && colAk[i] == 0) {
-			i++;
+		v = &colAk[k];
+		beta = housef(v, m - k, 1);
+		housef_apply_l(A, v, beta, k, m - 1, k + 1, n - 1, 1);
+		if (B) {
+			housef_apply_l(B, v, beta, k, m - 1, 0, B->cols - 1, 1);
 		}
-		if (i < m) {
-			v = &colAk[k];
-			beta = housef(v, m - k, 1);
-			housef_apply_l(A, v, beta, k, m - 1, k + 1, n - 1, 1);
-			if (B) {
-				housef_apply_l(B, v, beta, k, m - 1, 0, B->cols - 1, 1);
-			}
-			if (Q && q == m) {
-				housef_apply_r(Q, v, beta, 0, m - 1, k, m - 1, 1);
-				for (i = k + 1; i < m; i++) {
-					colAk[i] = 0;
-				}
+		if (Q && q == m) {
+			housef_apply_r(Q, v, beta, 0, m - 1, k, m - 1, 1);
+			for (i = k + 1; i < m; i++) {
+				colAk[i] = 0;
 			}
 		}
 		if (P && k + 1 <= kmax) {
@@ -528,27 +526,17 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 		}
 	}
 	for (k = 0; k <= kmax; k++) {
-		i = k + 1;
 		colAk = &at(A, 0, k);
-		while (i < m && colAk[i] == 0) {
-			i++;
-		}
-		if (i < m) {
-			v = &colAk[k];
-			beta = housef(v, m - k, 1);
-			housef_apply_l(A, v, beta, k, m - 1, k + 1, n - 1, 1);
-			if (U && q == m) {
-				housef_apply_r(U, v, beta, 0, m - 1, k, m - 1, 1);
-				for (i = k + 1; i < m; i++) {
-					colAk[i] = 0;
-				}
+		v = &colAk[k];
+		beta = housef(v, m - k, 1);
+		housef_apply_l(A, v, beta, k, m - 1, k + 1, n - 1, 1);
+		if (U && q == m) {
+			housef_apply_r(U, v, beta, 0, m - 1, k, m - 1, 1);
+			for (i = k + 1; i < m; i++) {
+				colAk[i] = 0;
 			}
 		}
-		i = k + 2;
-		while (i < n && at(A, k, i) == 0) {
-			i++;
-		}
-		if (i < n && k + 2 < n) {
+		if (k + 2 < n) {
 			v = &at(A, k, k + 1);
 			beta = housef(v, n - k - 1, m);
 			housef_apply_r(A, v, beta, k + 1, m - 1, k + 1, n - 1, m);
@@ -934,20 +922,14 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
 	}
 	for (k = 0; k < n - 2; k++) {
 		colAk = &at(A, 0, k);
-		i = k + 2;
-		while (i < n && colAk[i] == 0) {
-			i++;
-		}
-		if (i < n) {
-			v = &colAk[k + 1];
-			beta = housef(v, n - k - 1, 1);
-			housef_apply_l(A, v, beta, k + 1, n - 1, k + 1, n - 1, 1);
-			housef_apply_r(A, v, beta, 0, n - 1, k + 1, n - 1, 1);
-			if (P) {
-				housef_apply_r(P, v, beta, 0, n - 1, k + 1, n - 1, 1);
-				for (i = k + 2; i < n; i++) {
-					colAk[i] = 0;
-				}
+		v = &colAk[k + 1];
+		beta = housef(v, n - k - 1, 1);
+		housef_apply_l(A, v, beta, k + 1, n - 1, k + 1, n - 1, 1);
+		housef_apply_r(A, v, beta, 0, n - 1, k + 1, n - 1, 1);
+		if (P) {
+			housef_apply_r(P, v, beta, 0, n - 1, k + 1, n - 1, 1);
+			for (i = k + 2; i < n; i++) {
+				colAk[i] = 0;
 			}
 		}
 	}
