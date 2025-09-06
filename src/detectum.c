@@ -369,15 +369,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 		if ((P->rows != 1 && P->rows != n) || P->cols != n) {
 			return -1;
 		}
-		for (cm = 0, jm = 0, j = 0; j < n; j++) {
-			colAj = &at(A, 0, j);
-			for (c = 0, i = 0; i < m; i++) {
-				c += colAj[i] * colAj[i];
-			}
-			if (c > cm) {
-				cm = c;
-				jm = j;
-			}
+		for (j = 0; j < n; j++) {
 			P->data[j] = (float)j;
 		}
 	}
@@ -385,34 +377,10 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 		return -1;
 	}
 	while (cm > 0 && k <= kmax) {
-		colAk = &at(A, 0, k);
 		if (P) {
-			colAjm = &at(A, 0, jm);
-			for (j = 0; j < m; j++) {
-				t = colAk[j];
-				colAk[j] = colAjm[j];
-				colAjm[j] = t;
-			}
-			t = P->data[k];
-			P->data[k] = P->data[jm];
-			P->data[jm] = t;
-		}
-		v = &colAk[k];
-		beta = housef(v, m - k, 1);
-		housef_apply_l(A, v, beta, k, m - 1, k + 1, n - 1, 1);
-		if (B) {
-			housef_apply_l(B, v, beta, k, m - 1, 0, B->cols - 1, 1);
-		}
-		if (Q && q == m) {
-			housef_apply_r(Q, v, beta, 0, m - 1, k, m - 1, 1);
-			for (i = k + 1; i < m; i++) {
-				colAk[i] = 0;
-			}
-		}
-		if (P && k + 1 <= kmax) {
-			for (cm = 0, jm = 0, j = k + 1; j < n; j++) {
+			for (cm = 0, jm = 0, j = k; j < n; j++) {
 				colAj = &at(A, 0, j);
-				for (c = 0, i = k + 1; i < m; i++) {
+				for (c = 0, i = k; i < m; i++) {
 					c += colAj[i] * colAj[i];
 				}
 				if (c > cm) {
@@ -421,7 +389,33 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 				}
 			}
 		}
-		k++;
+		if (cm > 0) {
+			colAk = &at(A, 0, k);
+			if (P) {
+				colAjm = &at(A, 0, jm);
+				for (j = 0; j < m; j++) {
+					t = colAk[j];
+					colAk[j] = colAjm[j];
+					colAjm[j] = t;
+				}
+				t = P->data[k];
+				P->data[k] = P->data[jm];
+				P->data[jm] = t;
+			}
+			v = &colAk[k];
+			beta = housef(v, m - k, 1);
+			housef_apply_l(A, v, beta, k, m - 1, k + 1, n - 1, 1);
+			if (B) {
+				housef_apply_l(B, v, beta, k, m - 1, 0, B->cols - 1, 1);
+			}
+			if (Q && q == m) {
+				housef_apply_r(Q, v, beta, 0, m - 1, k, m - 1, 1);
+				for (i = k + 1; i < m; i++) {
+					colAk[i] = 0;
+				}
+			}
+			k++;
+		}
 	}
 	if (Q && q < m) {
 		matrixf_unpack_house_bwd(A, Q, 0);
