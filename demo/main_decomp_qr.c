@@ -63,7 +63,7 @@ int main()
 	matrixf_decomp_qr(&A, &Q, &P, 0);
 	printf("Q = \n"); matrixf_print(&Q, "%9.4f "); printf("\n");
 	printf("R = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
-	printf("P = \n"); matrixf_print(&P, "%9.4f "); printf("\n");
+	printf("P = \n"); matrixf_print(&P, "%5.0f "); printf("\n");
 
 	matrixf_init(&QR, M, N, QR_data, 0);
 	matrixf_multiply(&Q, &A, &QR, 1, 0, 0, 0);

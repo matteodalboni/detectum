@@ -352,7 +352,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 	const int m = A->rows;
 	const int n = A->cols;
 	const int kmax = m < n ? m - 1 : n - 1;
-	float beta, t, c, cm = 1.0f, * v;
+	float beta, t, c, cm, * v;
 	float* colAk, * colAj, * colAjm;
 	Matrixf A_econ = { n, n, A->data };
 
@@ -376,7 +376,8 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 	if (B && B->rows != m) {
 		return -1;
 	}
-	while (cm > 0 && k <= kmax) {
+	for (k = 0; k <= kmax; k++) {
+		colAk = &at(A, 0, k);
 		if (P) {
 			for (cm = 0, jm = 0, j = k; j < n; j++) {
 				colAj = &at(A, 0, j);
@@ -388,33 +389,30 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 					jm = j;
 				}
 			}
+			if (cm == 0) {
+				break;
+			}
+			colAjm = &at(A, 0, jm);
+			for (j = 0; j < m; j++) {
+				t = colAk[j];
+				colAk[j] = colAjm[j];
+				colAjm[j] = t;
+			}
+			t = P->data[k];
+			P->data[k] = P->data[jm];
+			P->data[jm] = t;
 		}
-		if (cm > 0) {
-			colAk = &at(A, 0, k);
-			if (P) {
-				colAjm = &at(A, 0, jm);
-				for (j = 0; j < m; j++) {
-					t = colAk[j];
-					colAk[j] = colAjm[j];
-					colAjm[j] = t;
-				}
-				t = P->data[k];
-				P->data[k] = P->data[jm];
-				P->data[jm] = t;
+		v = &colAk[k];
+		beta = housef(v, m - k, 1);
+		housef_apply_l(A, v, beta, k, m - 1, k + 1, n - 1, 1);
+		if (B) {
+			housef_apply_l(B, v, beta, k, m - 1, 0, B->cols - 1, 1);
+		}
+		if (Q && q == m) {
+			housef_apply_r(Q, v, beta, 0, m - 1, k, m - 1, 1);
+			for (i = k + 1; i < m; i++) {
+				colAk[i] = 0;
 			}
-			v = &colAk[k];
-			beta = housef(v, m - k, 1);
-			housef_apply_l(A, v, beta, k, m - 1, k + 1, n - 1, 1);
-			if (B) {
-				housef_apply_l(B, v, beta, k, m - 1, 0, B->cols - 1, 1);
-			}
-			if (Q && q == m) {
-				housef_apply_r(Q, v, beta, 0, m - 1, k, m - 1, 1);
-				for (i = k + 1; i < m; i++) {
-					colAk[i] = 0;
-				}
-			}
-			k++;
 		}
 	}
 	if (Q && q < m) {
