@@ -29,8 +29,8 @@ int main()
 		}
 		else {
 			float im = sqrtf(-at(&A, i + 1, i) * at(&A, i, i + 1));
-			printf("%d) %+.4f%+.4fi\n", i + 0, at(&A, i + 0, i + 0), -im);
-			printf("%d) %+.4f%+.4fi\n", i + 1, at(&A, i + 1, i + 1), +im);
+			printf("%d) %+.4f%+.4fi\n", i + 1, at(&A, i + 0, i + 0), -im);
+			printf("%d) %+.4f%+.4fi\n", i + 2, at(&A, i + 1, i + 1), +im);
 			i += 2;
 		}
 	}
