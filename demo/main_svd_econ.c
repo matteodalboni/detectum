@@ -13,8 +13,8 @@ int main()
 		10, 12, 19, 21,
 		11, 18, 25,  2
 	};
-	Matrixf_(U, m, n);
-	Matrixf_(V, n, n);
+	Matrixf(U, m, n);
+	Matrixf(V, n, n);
 #else
 #define m 4
 #define n 5
@@ -24,17 +24,17 @@ int main()
 		 4,  6, 13, 20, 22,
 		10, 12, 19, 21,  3
 	};
-	Matrixf_(U, m, m);
-	Matrixf_(V, n, m);
+	Matrixf(U, m, m);
+	Matrixf(V, n, m);
 #endif
 	Matrixf A;
 
 	matrixf_init(&A, m, n, A_data, 1);
-	printf("\nA =\n"); matrixf_print(&A, "%9.4f ");
+	printf("\nA =\n"); matrixf_print(&A, "%9.4f");
 	int exitflag = matrixf_decomp_svd(&A, &U, &V);
-	printf("\nS =\n"); matrixf_print(&A, "%9.4f ");
-	printf("\nU =\n"); matrixf_print(&U, "%9.4f ");
-	printf("\nV =\n"); matrixf_print(&V, "%9.4f ");
+	printf("\nS =\n"); matrixf_print(&A, "%9.4f");
+	printf("\nU =\n"); matrixf_print(&U, "%9.4f");
+	printf("\nV =\n"); matrixf_print(&V, "%9.4f");
 
 	return exitflag;
 }

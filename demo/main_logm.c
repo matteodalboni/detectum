@@ -4,7 +4,7 @@
 int main()
 {
 	float work[30];
-	Matrixf_(A, 3, 3);
+	Matrixf(A, 3, 3);
 	at(&A, 0, 0) = 1;
 	at(&A, 0, 1) = 1;
 	at(&A, 0, 2) = 0;
