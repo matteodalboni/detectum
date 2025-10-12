@@ -31,17 +31,23 @@ static inline float normf(const float* v, int len, int stride)
 {
 	int i;
 	float x = 0, t;
-#ifdef DETECTUM_ROBUST_NORM // 2-norm without under/overflow
+#ifdef DETECTUM_USE_ROBUST_NORM // 2-norm without under/overflow
 	for (i = 0; i < len; i++) {
 		t = v[i * stride];
 		x = hypotf(x, t);
 	}
 #else
+	float a, c = 0;
 	for (i = 0; i < len; i++) {
-		t = v[i * stride];
-		x += t * t;
+		a = v[i * stride];
+		a *= a;
+		t = x + a;
+#ifdef DETECTUM_USE_NEUMAIER_SUM
+		c += fabsf(x) < fabsf(a) ? (a - t) + x : (x - t) + a;
+#endif
+		x = t;
 	}
-	x = sqrtf(x);
+	x = sqrtf(x + c);
 #endif
 	return x;
 }

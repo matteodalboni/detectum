@@ -72,15 +72,21 @@ static void housef_apply_l(Matrixf* X, const float* v, float beta,
 	int i0, int iend, int j0, int jend, int stride)
 {
 	int i, j;
-	float h, * colXj;
+	float h, a, t, c, * colXj;
 
 	if (beta != 0) {
 		for (j = j0; j <= jend; j++) {
 			colXj = &at(X, 0, j);
 			h = colXj[i0];
-			for (i = i0 + 1; i <= iend; i++) {
-				h += colXj[i] * v[(i - i0) * stride];
+			for (c = 0, i = i0 + 1; i <= iend; i++) {
+				a = colXj[i] * v[(i - i0) * stride];
+				t = h + a;
+#ifdef DETECTUM_USE_NEUMAIER_SUM
+				c += fabsf(h) < fabsf(a) ? (a - t) + h : (h - t) + a;
+#endif
+				h = t;
 			}
+			h += c;
 			h *= beta;
 			colXj[i0] -= h;
 			for (i = i0 + 1; i <= iend; i++) {
@@ -96,14 +102,20 @@ static void housef_apply_r(Matrixf* X, const float* v, float beta,
 	int i0, int iend, int j0, int jend, int stride)
 {
 	int i, j;
-	float h;
+	float h, a, t, c;
 
 	if (beta != 0) {
 		for (i = i0; i <= iend; i++) {
 			h = at(X, i, j0);
-			for (j = j0 + 1; j <= jend; j++) {
-				h += at(X, i, j) * v[(j - j0) * stride];
+			for (c = 0, j = j0 + 1; j <= jend; j++) {
+				a = at(X, i, j) * v[(j - j0) * stride];
+				t = h + a;
+#ifdef DETECTUM_USE_NEUMAIER_SUM
+				c += fabsf(h) < fabsf(a) ? (a - t) + h : (h - t) + a;
+#endif
+				h = t;
 			}
+			h += c;
 			h *= beta;
 			at(X, i, j0) -= h;
 			for (j = j0 + 1; j <= jend; j++) {
