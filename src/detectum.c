@@ -72,19 +72,15 @@ static void housef_apply_l(Matrixf* X, const float* v, float beta,
 	int i0, int iend, int j0, int jend, int stride)
 {
 	int i, j;
-	float h, a, t, c, * colXj;
+	float h, c, * colXj;
 
 	if (beta != 0) {
 		for (j = j0; j <= jend; j++) {
 			colXj = &at(X, 0, j);
 			h = colXj[i0];
-			for (c = 0, i = i0 + 1; i <= iend; i++) {
-				a = colXj[i] * v[(i - i0) * stride];
-				t = h + a;
-#ifdef DETECTUM_USE_NEUMAIER_SUM
-				c += fabsf(h) < fabsf(a) ? (a - t) + h : (h - t) + a;
-#endif
-				h = t;
+			c = 0;
+			for (i = i0 + 1; i <= iend; i++) {
+				sumf(&h, &c, colXj[i] * v[(i - i0) * stride]);
 			}
 			h += c;
 			h *= beta;
@@ -102,18 +98,14 @@ static void housef_apply_r(Matrixf* X, const float* v, float beta,
 	int i0, int iend, int j0, int jend, int stride)
 {
 	int i, j;
-	float h, a, t, c;
+	float h, c;
 
 	if (beta != 0) {
 		for (i = i0; i <= iend; i++) {
 			h = at(X, i, j0);
-			for (c = 0, j = j0 + 1; j <= jend; j++) {
-				a = at(X, i, j) * v[(j - j0) * stride];
-				t = h + a;
-#ifdef DETECTUM_USE_NEUMAIER_SUM
-				c += fabsf(h) < fabsf(a) ? (a - t) + h : (h - t) + a;
-#endif
-				h = t;
+			c = 0;
+			for (j = j0 + 1; j <= jend; j++) {
+				h += at(X, i, j) * v[(j - j0) * stride];
 			}
 			h += c;
 			h *= beta;
@@ -219,7 +211,7 @@ int matrixf_decomp_chol(Matrixf* A)
 {
 	int i, j, k;
 	const int n = A->rows;
-	float v, r = 0;
+	float v, r = 0, c;
 	float* colAi, * colAj;
 
 	if (A->cols != n) {
@@ -230,9 +222,11 @@ int matrixf_decomp_chol(Matrixf* A)
 			colAi = &at(A, 0, i);
 			colAj = &at(A, 0, j);
 			v = colAi[j];
+			c = 0;
 			for (k = 0; k < j; k++) {
-				v -= colAi[k] * colAj[k];
+				sumf(&v, &c, -colAi[k] * colAj[k]);
 			}
+			v += c;
 			if (i == j) {
 				if (v > 0) {
 					r = sqrtf(v);
@@ -2110,6 +2104,7 @@ int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 	const int p = transA ? A->rows : A->cols;
 	const int q = transB ? B->cols : B->rows;
 	const int r = transB ? B->rows : B->cols;
+	const int f = transA && (A == B) ? !transB : transB;
 	float b, * colAk, * colCj;
 
 	for (i = 0; i < m * n; i++) {
@@ -2127,7 +2122,7 @@ int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 	for (j = 0; j < n; j++) {
 		colCj = &at(C, 0, j);
 		for (k = 0; k < p; k++) {
-			b = transB ? at(B, j, k) : at(B, k, j);
+			b = f ? at(B, j, k) : at(B, k, j);
 			colAk = &at(A, 0, k);
 			for (i = 0; i < m; i++) {
 				colCj[i] += alpha * colAk[i] * b;
