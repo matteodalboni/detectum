@@ -72,17 +72,15 @@ static void housef_apply_l(Matrixf* X, const float* v, float beta,
 	int i0, int iend, int j0, int jend, int stride)
 {
 	int i, j;
-	float h, c, * colXj;
+	float h, * colXj;
 
 	if (beta != 0) {
 		for (j = j0; j <= jend; j++) {
 			colXj = &at(X, 0, j);
 			h = colXj[i0];
-			c = 0;
 			for (i = i0 + 1; i <= iend; i++) {
-				sumf(&h, &c, colXj[i] * v[(i - i0) * stride]);
+				h += colXj[i] * v[(i - i0) * stride];
 			}
-			h += c;
 			h *= beta;
 			colXj[i0] -= h;
 			for (i = i0 + 1; i <= iend; i++) {
@@ -98,16 +96,14 @@ static void housef_apply_r(Matrixf* X, const float* v, float beta,
 	int i0, int iend, int j0, int jend, int stride)
 {
 	int i, j;
-	float h, c;
+	float h;
 
 	if (beta != 0) {
 		for (i = i0; i <= iend; i++) {
 			h = at(X, i, j0);
-			c = 0;
 			for (j = j0 + 1; j <= jend; j++) {
 				h += at(X, i, j) * v[(j - j0) * stride];
 			}
-			h += c;
 			h *= beta;
 			at(X, i, j0) -= h;
 			for (j = j0 + 1; j <= jend; j++) {
@@ -211,7 +207,7 @@ int matrixf_decomp_chol(Matrixf* A)
 {
 	int i, j, k;
 	const int n = A->rows;
-	float v, r = 0, c;
+	float v, r = 0;
 	float* colAi, * colAj;
 
 	if (A->cols != n) {
@@ -222,11 +218,9 @@ int matrixf_decomp_chol(Matrixf* A)
 			colAi = &at(A, 0, i);
 			colAj = &at(A, 0, j);
 			v = colAi[j];
-			c = 0;
 			for (k = 0; k < j; k++) {
-				sumf(&v, &c, -colAi[k] * colAj[k]);
+				v -= colAi[k] * colAj[k];
 			}
-			v += c;
 			if (i == j) {
 				if (v > 0) {
 					r = sqrtf(v);

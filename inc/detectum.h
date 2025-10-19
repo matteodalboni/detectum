@@ -25,28 +25,13 @@ static inline float epsf(float x)
 	return powf(2.0f, floorf(log2f(fabsf(x))) - 23.0f);
 }
 
-// This function updates the running sum s by adding the value a. If 
-// DETECTUM_USE_NEUMAIER_SUM is defined, it also accumulates a compensation
-// term c to reduce floating-point error, following Neumaier’s summation 
-// algorithm. Otherwise, it performs a conventional summation without 
-// compensation.
-static inline void sumf(float* s, float* c, float a)
-{
-	float t = *s + a;
-
-#ifdef DETECTUM_USE_NEUMAIER_SUM
-	*c += fabsf(*s) < fabsf(a) ? (a - t) + *s : (*s - t) + a;
-#endif
-	*s = t;
-}
-
 // This function returns the 2-norm of the vector v. The length of the
 // vector is len, and stride is its increment. If DETECTUM_USE_ROBUST_NORM
 // is defined, it computes 2-norm without under/overflow.
 static inline float normf(const float* v, int len, int stride)
 {
 	int i;
-	float x = 0, c = 0, t;
+	float x = 0, t;
 
 #ifdef DETECTUM_USE_ROBUST_NORM
 	for (i = 0; i < len; i++) {
@@ -56,9 +41,9 @@ static inline float normf(const float* v, int len, int stride)
 #else
 	for (i = 0; i < len; i++) {
 		t = v[i * stride];
-		sumf(&x, &c, t * t);
+		x += t * t;
 	}
-	x = sqrtf(x + c);
+	x = sqrtf(x);
 #endif
 	return x;
 }
