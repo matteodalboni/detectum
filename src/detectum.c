@@ -1,71 +1,5 @@
 #include "detectum.h"
 
-#ifndef DETECTUM_SVD_ITER_MAX
-// Maximum number of SVD iterations. n is the smaller between the 
-// number of rows and the number of columns of the input matrix.
-#define DETECTUM_SVD_ITER_MAX (100 * n)
-#endif
-
-#ifndef DETECTUM_SVD_TOL
-// SVD tolerance.
-#define DETECTUM_SVD_TOL (3e-7f)
-#endif
-
-#ifndef DETECTUM_SVD_JACOBI_ITER_MAX
-// Maximum number of Jacobi SVD iterations. n is the smaller between the 
-// number of rows and the number of columns of the input matrix.
-#define DETECTUM_SVD_JACOBI_ITER_MAX (10 * n)
-#endif
-
-#ifndef DETECTUM_SVD_JACOBI_TOL
-// Jacobi SVD tolerance.
-#define DETECTUM_SVD_JACOBI_TOL (3e-7f)
-#endif
-
-#ifndef DETECTUM_SCHUR_SYMM_ITER_MAX
-// Maximum number of symmetric Schur decomposition iterations. n is the 
-// number of rows of the square input matrix.
-#define DETECTUM_SCHUR_SYMM_ITER_MAX (100 * n)
-#endif
-
-#ifndef DETECTUM_SCHUR_SYMM_TOL
-// Symmetric Schur decomposition tolerance.
-#define DETECTUM_SCHUR_SYMM_TOL (3e-7f)
-#endif
-
-#ifndef DETECTUM_SCHUR_ITER_MAX
-// Maximum number of Schur decomposition iterations. n is the number of
-// rows of the square input matrix.
-#define DETECTUM_SCHUR_ITER_MAX (100 * n)
-#endif
-
-#ifndef DETECTUM_SCHUR_TOL
-// Schur decomposition tolerance.
-#define DETECTUM_SCHUR_TOL (3e-7f)
-#endif
-
-#ifndef DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT
-// Iteration count defining the period for the application of ad hoc
-// shifts in Schur decomposition.
-#define DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT (5)
-#endif
-
-#ifndef DETECTUM_EXPM_PADE_ORDER
-// Order of diagonal Padé approximation of matrix exponential.
-#define DETECTUM_EXPM_PADE_ORDER (4)
-#endif
-
-#ifndef DETECTUM_LOGM_ISS_THR
-// Inverse scaling and squaring threshold applied in matrix logarithm
-// computation.
-#define DETECTUM_LOGM_ISS_THR (0.5f)
-#endif
-
-#ifndef DETECTUM_LOGM_NTERMS
-// Number of terms of Gregory series expansion for matrix logarithm.
-#define DETECTUM_LOGM_NTERMS (5)
-#endif
-
 // Householder transformation X(i0:iend,j0:jend) = H*X(i0:iend,j0:jend),
 // where H = I - beta*v*v' and v(0) = 1. stride is the increment of v.
 static void housef_apply_l(Matrixf* X, const float* v, float beta,
@@ -586,6 +520,12 @@ int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* P, float tol
 	return rank;
 }
 
+#ifndef DETECTUM_SVD_ITER_MAX
+#define DETECTUM_SVD_ITER_MAX (100 * n)
+#endif
+#ifndef DETECTUM_SVD_TOL
+#define DETECTUM_SVD_TOL (3e-7f)
+#endif
 int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 {
 	const int m = A->rows;
@@ -798,6 +738,12 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 	return iter == iter_max ? -2 : iter;
 }
 
+#ifndef DETECTUM_SVD_JACOBI_ITER_MAX
+#define DETECTUM_SVD_JACOBI_ITER_MAX (10 * n)
+#endif
+#ifndef DETECTUM_SVD_JACOBI_TOL
+#define DETECTUM_SVD_JACOBI_TOL (3e-7f)
+#endif
 int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 {
 	int i, j, k, count = 1, iter = 0, sorted, orthog;
@@ -928,6 +874,12 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
 	return 0;
 }
 
+#ifndef DETECTUM_SCHUR_SYMM_ITER_MAX
+#define DETECTUM_SCHUR_SYMM_ITER_MAX (100 * n)
+#endif
+#ifndef DETECTUM_SCHUR_SYMM_TOL
+#define DETECTUM_SCHUR_SYMM_TOL (3e-7f)
+#endif
 int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 {
 	const int n = A->rows;
@@ -1007,6 +959,15 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 	return iter == iter_max ? -2 : iter;
 }
 
+#ifndef DETECTUM_SCHUR_ITER_MAX
+#define DETECTUM_SCHUR_ITER_MAX (100 * n)
+#endif
+#ifndef DETECTUM_SCHUR_TOL
+#define DETECTUM_SCHUR_TOL (3e-7f)
+#endif
+#ifndef DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT
+#define DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT (5)
+#endif
 int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 {
 	const int n = A->rows;
@@ -1820,6 +1781,9 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work)
 	return iter;
 }
 
+#ifndef DETECTUM_EXPM_PADE_ORDER
+#define DETECTUM_EXPM_PADE_ORDER (4)
+#endif
 int matrixf_exp(Matrixf* A, float* work)
 {
 	int i, j, k, z, s;
@@ -1877,6 +1841,12 @@ int matrixf_exp(Matrixf* A, float* work)
 	return 0;
 }
 
+#ifndef DETECTUM_LOGM_ISS_THR
+#define DETECTUM_LOGM_ISS_THR (0.5f)
+#endif
+#ifndef DETECTUM_LOGM_NTERMS
+#define DETECTUM_LOGM_NTERMS (5)
+#endif
 int matrixf_log(Matrixf* A, float* work)
 {
 	int i, k, f, s = 1;
@@ -2117,9 +2087,10 @@ int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 		colCj = &at(C, 0, j);
 		for (k = 0; k < p; k++) {
 			b = f ? at(B, j, k) : at(B, k, j);
+			b *= alpha;
 			colAk = &at(A, 0, k);
 			for (i = 0; i < m; i++) {
-				colCj[i] += alpha * colAk[i] * b;
+				colCj[i] += colAk[i] * b;
 			}
 		}
 	}

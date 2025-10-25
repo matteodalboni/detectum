@@ -25,27 +25,25 @@ static inline float epsf(float x)
 	return powf(2.0f, floorf(log2f(fabsf(x))) - 23.0f);
 }
 
-// This function returns the 2-norm of the vector v. The length of the
-// vector is len, and stride is its increment. If DETECTUM_USE_ROBUST_NORM
-// is defined, it computes 2-norm without under/overflow.
+// This function computes 2-norm of vector v without under/overflow. 
+// The length of the vector is len, and stride is its increment. 
 static inline float normf(const float* v, int len, int stride)
 {
 	int i;
-	float x = 0, t;
+	float s = 0, h = 0, a;
+	const float tsml = 1.0842022e-19f; // underflow threshold 
+	const float tbig = 4.5035996e+15f; // overflow threshold
 
-#ifdef DETECTUM_USE_ROBUST_NORM
 	for (i = 0; i < len; i++) {
-		t = v[i * stride];
-		x = hypotf(x, t);
+		a = v[i * stride];
+		if ((fabsf(a) > tsml) && (fabsf(a) < tbig)) {
+			s += a * a;
+		}
+		else {
+			h = hypotf(h, a);
+		}
 	}
-#else
-	for (i = 0; i < len; i++) {
-		t = v[i * stride];
-		x += t * t;
-	}
-	x = sqrtf(x);
-#endif
-	return x;
+	return hypotf(sqrtf(s), h);
 }
 
 // This function computes the Givens rotation pair (c,s) so that 
@@ -276,7 +274,10 @@ int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* P, float tol
 // - if m = n, the economy-size decomposition is the same as the full one.
 // On size mismatch, the function returns -1. It returns -2 if the maximum number
 // of iterations is reached: results may be inaccurate. On success, it returns the
-// number of iterations performed.
+// number of iterations performed. 
+// Related macros
+// - DETECTUM_SVD_ITER_MAX: maximum number of iterations.
+// - DETECTUM_SVD_TOL: tolerance.
 int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V);
 
 // This function performs the singular value decomposition of the m-by-n matrix A
@@ -299,6 +300,9 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V);
 // The function returns -1 on size mismatch. It returns -2 if the maximum 
 // number of iterations is reached: results may be inaccurate. On success, it
 // returns the number of iterations performed.
+// Related macros
+// - DETECTUM_SVD_JACOBI_ITER_MAX: maximum number of iterations.
+// - DETECTUM_SVD_JACOBI_TOL: tolerance.
 int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V);
 
 // This function performs the Hessenberg decomposition of the square matrix A, 
@@ -317,6 +321,9 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P);
 // size mismatch. It returns -2 if the maximum number of iterations is reached: 
 // results may be inaccurate. On success, it returns the number of iterations 
 // performed.
+// Related macros
+// - DETECTUM_SCHUR_SYMM_ITER_MAX: maximum number of iterations.
+// - DETECTUM_SCHUR_SYMM_TOL: tolerance.
 int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U);
 
 // This function performs the Schur decomposition of the square matrix A so that
@@ -329,6 +336,11 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U);
 // function returns -1 if the matrices are not square or on size mismatch. It returns
 // -2 if the maximum number of iterations is reached: results may be inaccurate. On 
 // success, it returns the number of iterations performed.
+// Related macros
+// - DETECTUM_SCHUR_ITER_MAX: maximum number of iterations.
+// - DETECTUM_SCHUR_TOL: tolerance.
+// - DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT: iteration count defining the period for the
+//   application of ad hoc shifts.
 int matrixf_decomp_schur(Matrixf* A, Matrixf* U);
 
 // This function computes the matrices of right (V) and left (W) eigenvectors
@@ -439,6 +451,8 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work);
 // The function returns -1 if the input matrix is not square; if the matrix 
 // exponential cannot be computed due to a singularity, it returns -2. On 
 // success, it returns 0.
+// Related macros
+// - DETECTUM_EXPM_PADE_ORDER: order of diagonal Padé approximation.
 int matrixf_exp(Matrixf* A, float* work);
 
 // This function computes the principal logarithm of matrix A by inverse scaling
@@ -449,6 +463,9 @@ int matrixf_exp(Matrixf* A, float* work);
 // nonpositive real eigenvalues, the principal logarithm does not exist, and the 
 // function returns -3. If the matrix logarithm cannot be computed due to a 
 // singularity, it returns -4. On success, it returns 0.
+// Related macros
+// - DETECTUM_LOGM_ISS_THR: inverse scaling and squaring threshold.
+// - DETECTUM_LOGM_NTERMS: number of terms of Gregory series expansion.
 int matrixf_log(Matrixf* A, float* work);
 
 // This function computes the principal real square root of the quasitriangular

@@ -36,4 +36,5 @@ gcc -o mydemo demo/main_linsolve.c src/detectum.c -lm -I inc
 [3] MATLAB documentation.\
 [4] M. Galassi et al. *GNU Scientific Library Reference Manual (3rd Ed.)*. ISBN 0954612078.\
 [5] Higham, Nicholas J. *Computing real square roots of a real matrix*. Linear Algebra and its applications 88 (1987): 405-430.\
-[6] Higham, Nicholas J. *Functions of matrices: theory and computation*. Society for Industrial and Applied Mathematics, 2008.
+[6] Higham, Nicholas J. *Functions of matrices: theory and computation*. Society for Industrial and Applied Mathematics, 2008.\
+[7] Anderson, Edward. *Algorithm 978: Safe scaling in the level 1 BLAS*. ACM Transactions on Mathematical Software (TOMS) 44.1 (2017): 1-28.
