@@ -18,9 +18,9 @@ static void unpack_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 	for (i = 0; i < V->cols; i++) {
 		at(V, i, i) = 1;
 	}
-	matrixf_unpack_house_bwd(A, U, 0);
+	matrixf_unpack_house(A, U, 0, 0);
 	matrixf_transpose(A);
-	matrixf_unpack_house_bwd(A, V, 1);
+	matrixf_unpack_house(A, V, 1, 0);
 	matrixf_transpose(A);
 	if (U->rows == U->cols) {
 		matrixf_transpose(A);

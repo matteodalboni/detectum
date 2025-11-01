@@ -31,8 +31,8 @@ static inline float normf(const float* v, int len, int stride)
 {
 	int i;
 	float s = 0, h = 0, a;
-	const float tsml = 1.0842022e-19f; // underflow threshold 
-	const float tbig = 4.5035996e+15f; // overflow threshold
+	const float tsml = 1.0842022e-19f; // Blue's underflow threshold 
+	const float tbig = 4.5035996e+15f; // Blue's overflow threshold
 
 	for (i = 0; i < len; i++) {
 		a = v[i * stride];
@@ -194,24 +194,15 @@ int matrixf_unpack_lu_banded(Matrixf* A, Matrixf* B);
 int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B);
 
 // This function unpacks an orthogonal matrix from its factored representation. 
-// In particular, the function transforms B into Q'*B by forward accumulation 
-// of Householder matrices. Matrix A remains the same. The lower triangular part
-// of A below the s-th subdiagonal must store the essential parts of the Householder
-// vectors. For instance, if s = 0, the Householder vectors are below the main 
-// diagonal of A; whereas, if s = 1, the Householder vectors are below the first 
-// subdiagonal of A. On size mismatch or if s < 0, the function returns -1. On 
-// success, it returns 0.
-int matrixf_unpack_house_fwd(Matrixf* A, Matrixf* B, int s);
-
-// This function unpacks an orthogonal matrix from its factored representation. 
-// In particular, the function transforms B into Q*B by backward accumulation 
-// of Householder matrices. Matrix A remains the same. The lower triangular part
-// of A below the s-th subdiagonal must store the essential parts of the Householder
-// vectors. For instance, if s = 0, the Householder vectors are below the main 
-// diagonal of A; whereas, if s = 1, the Householder vectors are below the first 
-// subdiagonal of A. On size mismatch or if s < 0, the function returns -1. On 
-// success, it returns 0.
-int matrixf_unpack_house_bwd(Matrixf* A, Matrixf* B, int s);
+// In particular, if flag fwd > 0, the function transforms B into Q'*B by forward
+// accumulation of Householder matrices. Otherwise, if fwd <= 0, the function 
+// transforms B into Q*B by backward accumulation of Householder matrices. Matrix
+// A remains the same. The lower triangular part of A below the s-th subdiagonal
+// must store the essential parts of the Householder vectors. For instance, if 
+// s = 0, the Householder vectors are below the main diagonal of A; whereas, if 
+// s = 1, the Householder vectors are below the first subdiagonal of A. On size
+// mismatch or if s < 0, the function returns -1. On success, it returns 0.
+int matrixf_unpack_house(Matrixf* A, Matrixf* B, int s, int fwd);
 
 // This function accomplishes the bidiagonalization of the m-by-n matrix A so
 // that A = U*B*V'. A is overwritten by the bidiagonal matrix B. Specifically,

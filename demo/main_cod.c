@@ -40,7 +40,7 @@ int main()
 	for (int i = 0; i < n; i++) {
 		at(&V, i, i) = 1;
 	}
-	matrixf_unpack_house_bwd(&A, &V, 0);
+	matrixf_unpack_house(&A, &V, 0, 0);
 	for (int j = 0; j < rank; j++) {
 		for (int i = j + 1; i < A.rows; i++) {
 			at(&A, i, j) = 0;

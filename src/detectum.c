@@ -350,7 +350,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 		}
 	}
 	if (Q && q < m) {
-		matrixf_unpack_house_bwd(A, Q, 0);
+		matrixf_unpack_house(A, Q, 0, 0);
 		for (j = 0; j < n; j++) {
 			for (i = 0; i < n; i++) {
 				at(&A_econ, i, j) = (i <= j) ? at(A, i, j) : 0;
@@ -371,46 +371,22 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 	return 0;
 }
 
-int matrixf_unpack_house_fwd(Matrixf* A, Matrixf* B, int s)
+int matrixf_unpack_house(Matrixf* A, Matrixf* B, int s, int fwd)
 {
 	int i, k;
+	const int f = fwd > 0 ? 1 : -1;
 	const int m = A->rows;
 	const int n = A->cols;
 	const int p = B->cols;
-	const int kmax = m - 1 < n ? m - 2 : n - 1;
+	const int kmax = m - 1 < n ? m - 2 - s : n - 1 - s;
 	float gamma, * v, * colAk;
 
 	if (B->rows != m || s < 0) {
 		return -1;
 	}
-	for (k = 0; k <= kmax - s; k++) {
+	for (k = (f > 0) ? 0 : kmax; (f > 0) ? (k <= kmax) : (k >= 0); k += f) {
 		colAk = &at(A, 0, k);
-		for (gamma = 1, i = k + 1 + s; i < m; i++) {
-			gamma += colAk[i] * colAk[i];
-		}
-		if (gamma > 1) {
-			v = &colAk[k + s];
-			housef_apply_l(B, v, 2.0f / gamma, k + s, m - 1, 0, p - 1, 1);
-		}
-	}
-	return 0;
-}
-
-int matrixf_unpack_house_bwd(Matrixf* A, Matrixf* B, int s)
-{
-	int i, k;
-	const int m = A->rows;
-	const int n = A->cols;
-	const int p = B->cols;
-	const int kmax = m - 1 < n ? m - 2 : n - 1;
-	float gamma, * v, * colAk;
-
-	if (B->rows != m || s < 0) {
-		return -1;
-	}
-	for (k = kmax - s; k >= 0; k--) {
-		colAk = &at(A, 0, k);
-		for (gamma = 1, i = k + 1 + s; i < m; i++) {
+		for (gamma = 1.0f, i = k + 1 + s; i < m; i++) {
 			gamma += colAk[i] * colAk[i];
 		}
 		if (gamma > 1) {
@@ -475,7 +451,7 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 		}
 	}
 	if (U && q < m) {
-		matrixf_unpack_house_bwd(A, U, 0);
+		matrixf_unpack_house(A, U, 0, 0);
 		for (k = 0; k < n; k++) {
 			for (i = 0; i < n; i++) {
 				at(&A_econ, i, k) = (i <= k) ? at(A, i, k) : 0;
@@ -1606,7 +1582,7 @@ int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X)
 			return -2;
 		}
 		matrixf_transpose(A);
-		matrixf_unpack_house_bwd(A, X, 0);
+		matrixf_unpack_house(A, X, 0, 0);
 	}
 	else {
 		matrixf_decomp_qr(A, 0, 0, B);
@@ -1734,7 +1710,7 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 			}
 		}
 	}
-	matrixf_unpack_house_bwd(A, X, 0);
+	matrixf_unpack_house(A, X, 0, 0);
 	matrixf_permute(X, &perm, 1);
 	A->rows = m;
 	A->cols = n;
