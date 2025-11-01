@@ -193,6 +193,14 @@ int matrixf_unpack_lu_banded(Matrixf* A, Matrixf* B);
 // size mismatch, the function returns -1. On success, it returns 0.
 int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B);
 
+// This function performs the block QR decomposition of the m-by-n matrix A, 
+// which is transformed into matrix R. If Q is a null pointer, the computation of 
+// the orthogonal matrix is omitted. The scalar r is the maximum number of columns
+// in a block. The array work is the additional workspace memory: its minimum 
+// length is m*r. If Q is to be computed and its size is not m-by-m, the function 
+// returns -1. On success, it returns 0.
+int matrixf_decomp_block_qr(Matrixf* A, Matrixf* Q, int r, float* work);
+
 // This function unpacks an orthogonal matrix from its factored representation. 
 // In particular, if flag fwd > 0, the function transforms B into Q'*B by forward
 // accumulation of Householder matrices. Otherwise, if fwd <= 0, the function 

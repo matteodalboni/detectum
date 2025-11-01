@@ -371,6 +371,61 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 	return 0;
 }
 
+int matrixf_decomp_block_qr(Matrixf* A, Matrixf* Q, int r, float* work)
+{
+	int i, j, k, kmax, q, lambda = 0;
+	const int m = A->rows;
+	const int n = A->cols;
+	float gamma, * v;
+	Matrixf A_blk = { 0, 0, work };
+
+	if (Q) {
+		if (Q->rows != m || Q->cols != m) {
+			return -1;
+		}
+		for (i = 0; i < m * m; i++) {
+			Q->data[i] = !(i % (m + 1));
+		}
+	}
+	while (lambda < n) {
+		q = lambda + r;
+		if (q > n) {
+			q = n;
+		}
+		A_blk.rows = m - lambda;
+		A_blk.cols = q - lambda;
+		for (j = 0; j < A_blk.cols; j++) {
+			for (i = 0; i < A_blk.rows; i++) {
+				at(&A_blk, i, j) = at(A, i + lambda, j + lambda);
+			}
+		}
+		matrixf_decomp_qr(&A_blk, 0, 0, 0);
+		kmax = m - 1 < q ? m - lambda - 2 : q - lambda - 1;
+		for (k = 0; k <= kmax; k++) {
+			v = &at(&A_blk, 0, k);
+			for (gamma = 1.0f, i = k + 1; i < m - lambda; i++) {
+				gamma += v[i] * v[i];
+			}
+			if (gamma > 1) {
+				housef_apply_l(A, v + k, 2.0f / gamma,
+					lambda + k, m - 1, lambda, n - 1, 1);
+				if (Q) {
+					housef_apply_l(Q, v + k, 2.0f / gamma,
+						lambda + k, m - 1, 0, m - 1, 1);
+				}
+			}
+		}
+		lambda = q;
+	}
+	for (j = 0; j < n; j++) {
+		for (i = j + 1; i < m; i++) {
+			at(A, i, j) = 0;
+		}
+	}
+	matrixf_transpose(Q);
+	return 0;
+}
+
 int matrixf_unpack_house(Matrixf* A, Matrixf* B, int s, int fwd)
 {
 	int i, k;
@@ -379,19 +434,18 @@ int matrixf_unpack_house(Matrixf* A, Matrixf* B, int s, int fwd)
 	const int n = A->cols;
 	const int p = B->cols;
 	const int kmax = m - 1 < n ? m - 2 - s : n - 1 - s;
-	float gamma, * v, * colAk;
+	float gamma, * v;
 
 	if (B->rows != m || s < 0) {
 		return -1;
 	}
-	for (k = (f > 0) ? 0 : kmax; (f > 0) ? (k <= kmax) : (k >= 0); k += f) {
-		colAk = &at(A, 0, k);
+	for (k = f > 0 ? 0 : kmax; f > 0 ? k <= kmax : k >= 0; k += f) {
+		v = &at(A, 0, k);
 		for (gamma = 1.0f, i = k + 1 + s; i < m; i++) {
-			gamma += colAk[i] * colAk[i];
+			gamma += v[i] * v[i];
 		}
 		if (gamma > 1) {
-			v = &colAk[k + s];
-			housef_apply_l(B, v, 2.0f / gamma, k + s, m - 1, 0, p - 1, 1);
+			housef_apply_l(B, v + k + s, 2.0f / gamma, k + s, m - 1, 0, p - 1, 1);
 		}
 	}
 	return 0;
