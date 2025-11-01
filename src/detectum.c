@@ -371,7 +371,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 	return 0;
 }
 
-int matrixf_decomp_block_qr(Matrixf* A, Matrixf* Q, int r, float* work)
+int matrixf_decomp_qr_block(Matrixf* A, Matrixf* Q, int r, float* work)
 {
 	int i, j, k, kmax, q, lambda = 0;
 	const int m = A->rows;
@@ -422,7 +422,9 @@ int matrixf_decomp_block_qr(Matrixf* A, Matrixf* Q, int r, float* work)
 			at(A, i, j) = 0;
 		}
 	}
-	matrixf_transpose(Q);
+	if (Q) {
+		matrixf_transpose(Q);
+	}
 	return 0;
 }
 

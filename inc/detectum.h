@@ -199,7 +199,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B);
 // in a block. The array work is the additional workspace memory: its minimum 
 // length is m*r. If Q is to be computed and its size is not m-by-m, the function 
 // returns -1. On success, it returns 0.
-int matrixf_decomp_block_qr(Matrixf* A, Matrixf* Q, int r, float* work);
+int matrixf_decomp_qr_block(Matrixf* A, Matrixf* Q, int r, float* work);
 
 // This function unpacks an orthogonal matrix from its factored representation. 
 // In particular, if flag fwd > 0, the function transforms B into Q'*B by forward
