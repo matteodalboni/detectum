@@ -336,27 +336,30 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 			P->data[k] = P->data[jm];
 			P->data[jm] = t;
 		}
-		v = &colAk[k];
+		v = colAk + k;
 		beta = housef(v, m - k, 1);
 		housef_apply_l(A, v, beta, k, m - 1, k + 1, n - 1, 1);
 		if (B) {
 			housef_apply_l(B, v, beta, k, m - 1, 0, B->cols - 1, 1);
 		}
-		if (Q && q == m) {
-			housef_apply_r(Q, v, beta, 0, m - 1, k, m - 1, 1);
-			for (i = k + 1; i < m; i++) {
-				colAk[i] = 0;
-			}
-		}
 	}
-	if (Q && q < m) {
+	if (Q) {
 		matrixf_unpack_house(A, Q, 0, 0);
-		for (j = 0; j < n; j++) {
-			for (i = 0; i < n; i++) {
-				at(&A_econ, i, j) = (i <= j) ? at(A, i, j) : 0;
+		if (q < m) {
+			for (j = 0; j < n; j++) {
+				for (i = 0; i < n; i++) {
+					at(&A_econ, i, j) = (i <= j) ? at(A, i, j) : 0;
+				}
+			}
+			A->rows = n;
+		}
+		else {
+			for (j = 0; j < n; j++) {
+				for (i = j + 1; i < m; i++) {
+					at(A, i, j) = 0;
+				}
 			}
 		}
-		A->rows = n;
 	}
 	if (P && P->rows == n) {
 		for (i = n; i < n * n; i++) {
@@ -367,63 +370,6 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 			at(P, i, 0) = 0;
 			at(P, j, i) = 1;
 		}
-	}
-	return 0;
-}
-
-int matrixf_decomp_qr_block(Matrixf* A, Matrixf* Q, int r, float* work)
-{
-	int i, j, k, kmax, q, lambda = 0;
-	const int m = A->rows;
-	const int n = A->cols;
-	float gamma, * v;
-	Matrixf A_blk = { 0, 0, work };
-
-	if (Q) {
-		if (Q->rows != m || Q->cols != m) {
-			return -1;
-		}
-		for (i = 0; i < m * m; i++) {
-			Q->data[i] = !(i % (m + 1));
-		}
-	}
-	while (lambda < n) {
-		q = lambda + r;
-		if (q > n) {
-			q = n;
-		}
-		A_blk.rows = m - lambda;
-		A_blk.cols = q - lambda;
-		for (j = 0; j < A_blk.cols; j++) {
-			for (i = 0; i < A_blk.rows; i++) {
-				at(&A_blk, i, j) = at(A, i + lambda, j + lambda);
-			}
-		}
-		matrixf_decomp_qr(&A_blk, 0, 0, 0);
-		kmax = m - 1 < q ? m - lambda - 2 : q - lambda - 1;
-		for (k = 0; k <= kmax; k++) {
-			v = &at(&A_blk, 0, k);
-			for (gamma = 1.0f, i = k + 1; i < m - lambda; i++) {
-				gamma += v[i] * v[i];
-			}
-			if (gamma > 1) {
-				housef_apply_l(A, v + k, 2.0f / gamma,
-					lambda + k, m - 1, lambda, n - 1, 1);
-				if (Q) {
-					housef_apply_l(Q, v + k, 2.0f / gamma,
-						lambda + k, m - 1, 0, m - 1, 1);
-				}
-			}
-		}
-		lambda = q;
-	}
-	for (j = 0; j < n; j++) {
-		for (i = j + 1; i < m; i++) {
-			at(A, i, j) = 0;
-		}
-	}
-	if (Q) {
-		matrixf_transpose(Q);
 	}
 	return 0;
 }
@@ -455,11 +401,11 @@ int matrixf_unpack_house(Matrixf* A, Matrixf* B, int s, int fwd)
 
 int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 {
-	int i, k, q = A->rows;
+	int i, j, k, q = A->rows;
 	const int m = A->rows;
 	const int n = A->cols;
 	const int kmax = m - 1 < n ? m - 2 : n - 1;
-	float beta, * v, * colAk;
+	float beta, * v;
 	Matrixf A_econ = { n, n, A->data };
 
 	if (m < n) {
@@ -484,36 +430,42 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 		}
 	}
 	for (k = 0; k <= kmax; k++) {
-		colAk = &at(A, 0, k);
-		v = &colAk[k];
+		v = &at(A, k, k);
 		beta = housef(v, m - k, 1);
 		housef_apply_l(A, v, beta, k, m - 1, k + 1, n - 1, 1);
-		if (U && q == m) {
-			housef_apply_r(U, v, beta, 0, m - 1, k, m - 1, 1);
-			for (i = k + 1; i < m; i++) {
-				colAk[i] = 0;
-			}
-		}
 		if (k + 2 < n) {
 			v = &at(A, k, k + 1);
 			beta = housef(v, n - k - 1, m);
 			housef_apply_r(A, v, beta, k + 1, m - 1, k + 1, n - 1, m);
-			if (V) {
-				housef_apply_r(V, v, beta, 0, n - 1, k + 1, n - 1, m);
-				for (i = k + 2; i < n; i++) {
-					at(A, k, i) = 0;
+		}
+	}
+	if (U) {
+		matrixf_unpack_house(A, U, 0, 0);
+		if (q < m) {
+			for (j = 0; j < n; j++) {
+				for (i = 0; i < n; i++) {
+					at(&A_econ, i, j) = (i <= j) ? at(A, i, j) : 0;
+				}
+			}
+			A->rows = n;
+		}
+		else {
+			for (j = 0; j < n; j++) {
+				for (i = j + 1; i < m; i++) {
+					at(A, i, j) = 0;
 				}
 			}
 		}
 	}
-	if (U && q < m) {
-		matrixf_unpack_house(A, U, 0, 0);
-		for (k = 0; k < n; k++) {
-			for (i = 0; i < n; i++) {
-				at(&A_econ, i, k) = (i <= k) ? at(A, i, k) : 0;
+	if (V) {
+		matrixf_transpose(A);
+		matrixf_unpack_house(A, V, 1, 0);
+		for (j = 0; j < A->cols; j++) {
+			for (i = j + 2; i < A->rows; i++) {
+				at(A, i, j) = 0;
 			}
 		}
-		A->rows = n;
+		matrixf_transpose(A);
 	}
 	return 0;
 }
@@ -877,10 +829,9 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 
 int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
 {
-	int i, k;
+	int i, j, k;
 	const int n = A->rows;
 	float beta, * v;
-	float* colAk;
 
 	if (A->cols != n || (P && (P->rows != n || P->cols != n))) {
 		return -1;
@@ -891,15 +842,16 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
 		}
 	}
 	for (k = 0; k < n - 2; k++) {
-		colAk = &at(A, 0, k);
-		v = &colAk[k + 1];
+		v = &at(A, k + 1, k);
 		beta = housef(v, n - k - 1, 1);
 		housef_apply_l(A, v, beta, k + 1, n - 1, k + 1, n - 1, 1);
 		housef_apply_r(A, v, beta, 0, n - 1, k + 1, n - 1, 1);
-		if (P) {
-			housef_apply_r(P, v, beta, 0, n - 1, k + 1, n - 1, 1);
-			for (i = k + 2; i < n; i++) {
-				colAk[i] = 0;
+	}
+	if (P) {
+		matrixf_unpack_house(A, P, 0, 0);
+		for (j = 0; j < n; j++) {
+			for (i = j + 2; i < n; i++) {
+				at(A, i, j) = 0;
 			}
 		}
 	}

@@ -36,7 +36,7 @@ static void unpack_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 	}
 }
 
-#define ONE_STEP 0
+#define ONE_STEP 1
 #define m 10
 #define n 5
 
