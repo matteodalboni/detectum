@@ -234,7 +234,7 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V);
 // encoded so that (P(i),i) for 0 <= i < n are the unit elements of the permutation 
 // matrix. Else, if P is initialized as an n-by-n matrix, the full permutation 
 // matrix is returned. If U is a null pointer, the computation of the matrix U is 
-// omitted. If V is a null pinter, the explicit formation of the matrix V is omitted;
+// omitted. If V is a null pointer, the explicit formation of the matrix V is omitted;
 // in this case, the essential parts of the Householder vectors are stored below the 
 // main diagonal of L' and can be used to accumulate V afterwards. If m > n, the 
 // function can also produce the economy-size decomposition such that only the first

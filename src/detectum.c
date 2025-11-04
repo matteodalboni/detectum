@@ -291,12 +291,9 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 	Matrixf A_econ = { n, n, A->data };
 
 	if (Q) {
-		q = Q->cols;
-		if (Q->rows != m || (q != m && q != n) || (q == n && m < n)) {
+		if (Q->rows != m || (Q->cols != m && Q->cols != n) ||
+			(Q->cols == n && m < n)) {
 			return -1;
-		}
-		for (i = 0; i < m * q; i++) {
-			Q->data[i] = !(i % (m + 1));
 		}
 	}
 	if (P) {
@@ -344,6 +341,10 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 		}
 	}
 	if (Q) {
+		q = Q->cols;
+		for (i = 0; i < m * q; i++) {
+			Q->data[i] = !(i % (m + 1));
+		}
 		matrixf_unpack_house(A, Q, 0, 0);
 		if (q < m) {
 			for (j = 0; j < n; j++) {
@@ -418,17 +419,6 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 		(V && (V->rows != n || (V->cols != n)))) {
 		return -1;
 	}
-	if (U) {
-		q = U->cols;
-		for (i = 0; i < m * q; i++) {
-			U->data[i] = !(i % (m + 1));
-		}
-	}
-	if (V) {
-		for (i = 0; i < n * n; i++) {
-			V->data[i] = !(i % (n + 1));
-		}
-	}
 	for (k = 0; k <= kmax; k++) {
 		v = &at(A, k, k);
 		beta = housef(v, m - k, 1);
@@ -440,6 +430,10 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 		}
 	}
 	if (U) {
+		q = U->cols;
+		for (i = 0; i < m * q; i++) {
+			U->data[i] = !(i % (m + 1));
+		}
 		matrixf_unpack_house(A, U, 0, 0);
 		if (q < m) {
 			for (j = 0; j < n; j++) {
@@ -459,6 +453,9 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 	}
 	if (V) {
 		matrixf_transpose(A);
+		for (i = 0; i < n * n; i++) {
+			V->data[i] = !(i % (n + 1));
+		}
 		matrixf_unpack_house(A, V, 1, 0);
 		for (j = 0; j < A->cols; j++) {
 			for (i = j + 2; i < A->rows; i++) {
@@ -836,11 +833,6 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
 	if (A->cols != n || (P && (P->rows != n || P->cols != n))) {
 		return -1;
 	}
-	if (P) {
-		for (i = 0; i < n * n; i++) {
-			P->data[i] = !(i % (n + 1));
-		}
-	}
 	for (k = 0; k < n - 2; k++) {
 		v = &at(A, k + 1, k);
 		beta = housef(v, n - k - 1, 1);
@@ -848,7 +840,10 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
 		housef_apply_r(A, v, beta, 0, n - 1, k + 1, n - 1, 1);
 	}
 	if (P) {
-		matrixf_unpack_house(A, P, 0, 0);
+		for (i = 0; i < n * n; i++) {
+			P->data[i] = !(i % (n + 1));
+		}
+		matrixf_unpack_house(A, P, 1, 0);
 		for (j = 0; j < n; j++) {
 			for (i = j + 2; i < n; i++) {
 				at(A, i, j) = 0;
