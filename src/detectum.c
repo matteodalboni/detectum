@@ -969,6 +969,9 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 			}
 		}
 	}
+	else {
+		matrixf_transpose(U);
+	}
 	while (m > 1 && iter < iter_max) {
 		while (m > 1 && (at(A, m, m - 1) == 0 || at(A, m - 1, m - 2) == 0)) {
 			if (at(A, m, m - 1) == 0) {
@@ -1020,7 +1023,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 						housef_apply_l(A, v, beta, k + 1, k + 3, q > k ? q : k, n - 1, 1);
 						housef_apply_r(A, v, beta, 0, (k + 4) < m ? (k + 4) : m, k + 1, k + 3, 1);
 						if (U) {
-							housef_apply_r(U, v, beta, 0, n - 1, k + 1, k + 3, 1);
+							housef_apply_l(U, v, beta, k + 1, k + 3, 0, n - 1, 1);
 						}
 					}
 					x = at(A, k + 2, k + 1);
@@ -1038,7 +1041,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 					housef_apply_l(A, v, beta, m - 1, m, m - 2, n - 1, 1);
 					housef_apply_r(A, v, beta, 0, m, m - 1, m, 1);
 					if (U) {
-						housef_apply_r(U, v, beta, 0, n - 1, m - 1, m, 1);
+						housef_apply_l(U, v, beta, m - 1, m, 0, n - 1, 1);
 					}
 				}
 			}
@@ -1050,6 +1053,9 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 			}
 			iter++;
 		}
+	}
+	if (U) {
+		matrixf_transpose(U);
 	}
 	// Trangularize all 2-by-2 diagonal blocks in A that have real eigenvalues,
 	// and transform the blocks with complex eigenvalues so that the real part
