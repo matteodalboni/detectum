@@ -403,15 +403,15 @@ int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, int ubw);
 int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X);
 
 // This function solves the linear system A*X = B for X by QR decomposition 
-// with column pivoting. The matrices A and B are destroyed. The matrix B
-// can share the data array with X, provided that the array is large enough to 
-// accommodate the larger of B or X. tol is the tolerance to determine the rank 
-// of the A m-by-n matrix A: if the input tolerance is negative, the default 
-// value max(m,n)*eps(R(0,0)) is used instead, where R(0,0) is the on-diagonal 
-// element of R with the largest magnitude, R being the upper triangular matrix 
-// obtained by the QR decomposition with column pivoting of A. The array work is
-// the additional workspace memory: its minimum length is n. On size mismatch, 
-// the function returns -1. On success, it returns 0.
+// with column pivoting of the m-by-n matrix A. The matrices A and B are 
+// destroyed. The matrix B can share the data array with X, provided that the 
+// array is large enough to accommodate the larger of B or X. tol is the 
+// tolerance to determine the rank of A: if the input tolerance is negative,
+// the default value max(m,n)*eps(R(0,0)) is used instead, where R(0,0) is the 
+// on-diagonal element of R with the largest magnitude, R being the upper 
+// triangular matrix obtained by the QR decomposition with column pivoting of A.
+// The array work is the additional workspace memory: its minimum length is n. 
+// On size mismatch, the function returns -1. On success, it returns 0.
 int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work);
 
 // This function solves the linear system A*X = B for X by complete orthogonal
