@@ -6,13 +6,13 @@
 int main()
 {
 	float A_data[] = {
-		16, 2, 3, 13,
-		5, 11, 10, 8,
-		9, 7, 6, 12,
-		4, 14, 15, 1
+		16,  2,  3, 13,
+		 5, 11, 10,  8,
+		 9,  7,  6, 12,
+		 4, 14, 15,  1
 	};
-	int i, j;
 	float work[3 * (2 * n) * (2 * n) + 2 * n];
+	int i, j;
 	Matrixf A;
 	Matrixf(Z, 2 * n, 2 * n);
 	Matrixf(S, n, n);

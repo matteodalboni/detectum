@@ -12,7 +12,7 @@ typedef struct {
 // This macro initializes a rows-by-cols matrix instance A while allocating 
 // its data memory on the stack; rows and cols must be known at compile time.
 #define Matrixf(A, rows, cols) \
-float A##_data[rows * cols] = { 0 }; \
+float A##_data[(rows) * (cols)] = { 0 }; \
 Matrixf A = { rows, cols, A##_data }
 
 // This macro allows accessing the element A(i, j).
