@@ -1766,14 +1766,14 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work)
 	return iter;
 }
 
-#ifndef DETECTUM_EXPM_PADE_ORDER
-#define DETECTUM_EXPM_PADE_ORDER (4)
+#ifndef DETECTUM_EXP_PADE_ORDER
+#define DETECTUM_EXP_PADE_ORDER (4)
 #endif
 int matrixf_exp(Matrixf* A, float* work)
 {
 	int i, j, k, z, s;
 	const int n = A->rows;
-	const int q = DETECTUM_EXPM_PADE_ORDER;
+	const int q = DETECTUM_EXP_PADE_ORDER;
 	float c, p, t;
 	Matrixf X = { n, n, work + n };
 	Matrixf N = { n, n, work + n + n * n };
@@ -1826,18 +1826,18 @@ int matrixf_exp(Matrixf* A, float* work)
 	return 0;
 }
 
-#ifndef DETECTUM_LOGM_ISS_THR
-#define DETECTUM_LOGM_ISS_THR (0.5f)
+#ifndef DETECTUM_LOG_ISS_THR
+#define DETECTUM_LOG_ISS_THR (0.5f)
 #endif
-#ifndef DETECTUM_LOGM_NTERMS
-#define DETECTUM_LOGM_NTERMS (5)
+#ifndef DETECTUM_LOG_NTERMS
+#define DETECTUM_LOG_NTERMS (5)
 #endif
 int matrixf_log(Matrixf* A, float* work)
 {
 	int i, k, f, s = 1;
 	const int n = A->rows;
-	const int nterms = DETECTUM_LOGM_NTERMS;
-	const float tol = DETECTUM_LOGM_ISS_THR;
+	const int nterms = DETECTUM_LOG_NTERMS;
+	const float thr = DETECTUM_LOG_ISS_THR;
 	float tmp, norm1;
 	Matrixf U = { n, n, work + n };
 	Matrixf N = { n, n, work + n + n * n };
@@ -1864,7 +1864,7 @@ int matrixf_log(Matrixf* A, float* work)
 				norm1 = tmp;
 			}
 		}
-	} while (norm1 > tol);
+	} while (norm1 > thr);
 	matrixf_transpose(A);
 	for (k = 0; k < n * n; k++) {
 		f = !(k % (n + 1));

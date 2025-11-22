@@ -6,7 +6,7 @@
 // matrix multiplications. The array work is the additional workspace memory:
 // its minimum length is 2*n*n. The function returns -1 if the input matrix is 
 // not square.
-static int mpoweri(Matrixf* A, unsigned const int p, float* work)
+static int powmi(Matrixf* A, unsigned const int p, float* work)
 {
 	int j, k = 0;
 	const int n = A->rows;
@@ -65,7 +65,7 @@ int main()
 
 	matrixf_init(&A, 3, 3, A_data, 1);
 	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
-	mpoweri(&A, p, work);
+	powmi(&A, p, work);
 	printf("A^%d = \n", p); matrixf_print(&A, "%9.4f "); printf("\n");
 
 	return 0;

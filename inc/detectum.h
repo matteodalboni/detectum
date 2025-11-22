@@ -267,8 +267,9 @@ int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* P, float tol
 // of iterations is reached: results may be inaccurate. On success, it returns the
 // number of iterations performed. 
 // Related macros
-// - DETECTUM_SVD_ITER_MAX: maximum number of iterations.
-// - DETECTUM_SVD_TOL: tolerance.
+// - DETECTUM_SVD_ITER_MAX: maximum number of iterations. The default value is 
+//   100*min(m,n).  
+// - DETECTUM_SVD_TOL: tolerance. The default value is 3e-7.
 int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V);
 
 // This function performs the singular value decomposition of the m-by-n matrix A
@@ -292,8 +293,9 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V);
 // number of iterations is reached: results may be inaccurate. On success, it
 // returns the number of iterations performed.
 // Related macros
-// - DETECTUM_SVD_JACOBI_ITER_MAX: maximum number of iterations.
-// - DETECTUM_SVD_JACOBI_TOL: tolerance.
+// - DETECTUM_SVD_JACOBI_ITER_MAX: maximum number of iterations. The default
+//   value is 10*min(m,n).
+// - DETECTUM_SVD_JACOBI_TOL: tolerance. The default value is 3e-7.
 int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V);
 
 // This function performs the Hessenberg decomposition of the square matrix A, 
@@ -313,8 +315,9 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P);
 // results may be inaccurate. On success, it returns the number of iterations 
 // performed.
 // Related macros
-// - DETECTUM_SCHUR_SYMM_ITER_MAX: maximum number of iterations.
-// - DETECTUM_SCHUR_SYMM_TOL: tolerance.
+// - DETECTUM_SCHUR_SYMM_ITER_MAX: maximum number of iterations. The default value
+//   is 100*n, where n is the number of rows.
+// - DETECTUM_SCHUR_SYMM_TOL: tolerance. The default value is 3e-7.
 int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U);
 
 // This function performs the Schur decomposition of the square matrix A so that
@@ -328,10 +331,11 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U);
 // -2 if the maximum number of iterations is reached: results may be inaccurate. On 
 // success, it returns the number of iterations performed.
 // Related macros
-// - DETECTUM_SCHUR_ITER_MAX: maximum number of iterations.
-// - DETECTUM_SCHUR_TOL: tolerance.
+// - DETECTUM_SCHUR_ITER_MAX: maximum number of iterations. The default value is 
+//   100*n, where n is the number of rows.
+// - DETECTUM_SCHUR_TOL: tolerance. The default value is 3e-7.
 // - DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT: iteration count defining the period for the
-//   application of ad hoc shifts.
+//   application of ad hoc shifts. The default value is 5.
 int matrixf_decomp_schur(Matrixf* A, Matrixf* U);
 
 // This function computes the matrices of right (V) and left (W) eigenvectors
@@ -443,7 +447,8 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work);
 // exponential cannot be computed due to a singularity, it returns -2. On 
 // success, it returns 0.
 // Related macros
-// - DETECTUM_EXPM_PADE_ORDER: order of diagonal Padé approximation.
+// - DETECTUM_EXP_PADE_ORDER: order of diagonal Padé approximation. The 
+//   default value is 4.
 int matrixf_exp(Matrixf* A, float* work);
 
 // This function computes the principal logarithm of matrix A by inverse scaling
@@ -455,30 +460,31 @@ int matrixf_exp(Matrixf* A, float* work);
 // function returns -3. If the matrix logarithm cannot be computed due to a 
 // singularity, it returns -4. On success, it returns 0.
 // Related macros
-// - DETECTUM_LOGM_ISS_THR: inverse scaling and squaring threshold.
-// - DETECTUM_LOGM_NTERMS: number of terms of Gregory series expansion.
+// - DETECTUM_LOG_ISS_THR: inverse scaling and squaring threshold. The default 
+//   value is 0.5.
+// - DETECTUM_LOG_NTERMS: number of terms of Gregory series expansion. The 
+//   default value is 5.
 int matrixf_log(Matrixf* A, float* work);
 
-// This function computes the principal real square root of the quasitriangular
-// matrix T by real Schur method. T is obtained by Schur decomposition. The n-by-n
+// This function computes the principal square root of the quasitriangular matrix 
+// T by real Schur method. T is obtained by Schur decomposition. The n-by-n
 // matrix T is transformed into X so that T = X*X. If T has negative real 
-// eigenvalues, a real square root does not exist, and the function returns -3. 
-// If the matrix logarithm cannot be computed due to a singularity, it returns -4.
-// If T is singular, the function attempts to compute a matrix square root and,
+// eigenvalues, the principal square root does not exist, and the function returns
+// -3. If the matrix logarithm cannot be computed due to a singularity, it returns
+// -4. If T is singular, the function attempts to compute a matrix square root and,
 // if no error occurs, returns 1; however, a singular matrix may not have a square
 // root. Otherwise, on success, it returns 0.
 int matrixf_sqrt_quasitriu(Matrixf* T);
 
-// This function computes the principal real square root of matrix A by real
-// Schur method. The n-by-n matrix A is transformed into X so that A = X*X. The 
-// array work is the additional workspace memory: its minimum length is n*n+n.
-// If A is not square, the function returns -1. If Schur decomposition fails to
-// converge, the function returns -2. If A has negative real eigenvalues, a real
-// square root does not exist, and the function returns -3. If the matrix square
-// root cannot be computed due to a singularity, it returns -4. If A is singular,
-// the function attempts to compute a matrix square root and, if no error occurs,
-// returns 1; however, a singular matrix may not have a square root. Otherwise, 
-// on success, it returns 0.
+// This function computes the principal square root of matrix A by real Schur method.
+// The n-by-n matrix A is transformed into X so that A = X*X. The array work is the
+// additional workspace memory: its minimum length is n*n+n. If A is not square, the
+// function returns -1. If Schur decomposition fails to converge, the function 
+// returns -2. If A has negative real eigenvalues, the principal square root does not
+// exist, and the function returns -3. If the matrix square root cannot be computed
+// due to a singularity, it returns -4. If A is singular, the function attempts to
+// compute a matrix square root and, if no error occurs, returns 1; however, a 
+// singular matrix may not have a square root. Otherwise, on success, it returns 0.
 int matrixf_sqrt(Matrixf* A, float* work);
 
 // This function performs the general matrix multiplication (GEMM), which has

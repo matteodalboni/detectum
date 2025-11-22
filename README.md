@@ -24,8 +24,8 @@ The library includes:
 * minimum-norm solver;
 * Moore-Penrose pseudoinverse;
 * matrix exponential;
-* real matrix logarithm;
-* real matrix square root.
+* principal matrix logarithm;
+* principal matrix square root.
 
 ## Testing on Linux
 gcc -o mydemo demo/main_linsolve.c src/detectum.c -lm -I inc
