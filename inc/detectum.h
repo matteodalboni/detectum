@@ -123,10 +123,11 @@ void matrixf_init(Matrixf* A, int rows, int cols, float* data, int ordmem);
 // permutation indices p, which encodes the permutation matrix P: if p is m-by-1,
 // the rows of A are permuted, whereas, if p is 1-by-n, the columns of A are 
 // permuted. If the flag reverse is enabled, the function transforms also the 
-// vector of permutation indices so that, if p encodes a column permutation:
+// vector of permutation indices so that, if p encodes the column-permutation
+// matrix P:
 // - if p is 1-by-n and reverse == 0, A is transformed into A*P;
 // - if p is 1-by-m and reverse != 0, A is transformed into P*A and p transformed.
-// Whereas, if if p encodes a row permutation:
+// Whereas, if p encodes the row-permutation matrix P:
 // - if p is m-by-1 and reverse == 0, A is transformed into P*A;
 // - if p is n-by-1 and reverse != 0, A is transformed into A*P and p transformed.
 // Essentially, the flag allows reversing the multiplication order, transforming a
