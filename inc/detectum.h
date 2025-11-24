@@ -4,8 +4,8 @@
 #include <math.h>
 
 typedef struct {
-	int rows; // number of rows (must be <= 2^24)
-	int cols; // number of columns (must be <= 2^24)
+	int rows; // number of rows (must be < 2^24)
+	int cols; // number of columns (must be < 2^24)
 	float* data; // pointer to data array
 } Matrixf;
 
@@ -130,10 +130,10 @@ void matrixf_init(Matrixf* A, int rows, int cols, float* data, int ordmem);
 // Whereas, if p encodes the row-permutation matrix P:
 // - if p is m-by-1 and reverse == 0, A is transformed into P*A;
 // - if p is n-by-1 and reverse != 0, A is transformed into A*P and p transformed.
-// Essentially, the flag allows reversing the multiplication order, transforming a
-// column permutation into a row permutation, or vice versa. This enables switching 
-// between pre- and post-multiplication by the same permutation matrix P.
-// On size mismatch, the function returns -1. On success, it returns 0.
+// Essentially, the flag allows reversing the order of multiplication, 
+// transforming a column permutation into a row permutation, or vice versa. This
+// enables switching between pre- and post-multiplication by the same permutation
+// matrix P. On size mismatch, the function returns -1. On success, it returns 0.
 int matrixf_permute(Matrixf* A, Matrixf* p, int reverse);
 
 // This function transposes in place the input matrix.

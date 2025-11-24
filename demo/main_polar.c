@@ -6,7 +6,7 @@
 
 int main()
 {
-	float A_data[] = {
+	float A_data[m * n] = {
 		17, 24,  1,  8,
 		23,  5,  7, 14,
 		 4,  6, 13, 20,
