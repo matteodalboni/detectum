@@ -60,6 +60,7 @@ int main()
 	matrixf_multiply(&UT, &V, &A, 1, 0, 0, 1);
 	printf("U*T*(P*V)' = [\n"); matrixf_print(&A, "%10.5g "); printf("];\n\n");
 	// Memory release
+	free(P.data);
 	free(U.data);
 	free(V.data);
 	free(UT.data);
