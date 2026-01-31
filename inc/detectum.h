@@ -9,13 +9,13 @@ typedef struct {
 	float* data; // pointer to data array
 } Matrixf;
 
-// This macro initializes a rows-by-cols matrix instance A while allocating 
-// its data memory on the stack; rows and cols must be known at compile time.
+// This macro initializes a rows-by-cols matrix A, allocating its data 
+// memory on the stack; rows and cols must be known at compile time.
 #define Matrixf(A, rows, cols) \
 float A##_data[(rows) * (cols)] = { 0 }; \
 Matrixf A = { rows, cols, A##_data }
 
-// This macro allows accessing the element A(i, j).
+// This macro accesses the element A(i, j).
 #define at(A, i, j) ((A)->data[(i) + (j) * (A)->rows])
 
 // This function returns the positive distance from abs(x) to the next 
@@ -120,21 +120,28 @@ static inline Matrixf matrixf(int rows, int cols)
 void matrixf_init(Matrixf* A, int rows, int cols, float* data, int ordmem);
 
 // This function permutes the m-by-n matrix A according to the vector of 
-// permutation indices p, which encodes the permutation matrix P: if p is m-by-1,
-// the rows of A are permuted, whereas, if p is 1-by-n, the columns of A are 
-// permuted. If the flag reverse is enabled, the function transforms also the 
-// vector of permutation indices so that, if p encodes the column-permutation
-// matrix P:
-// - if p is 1-by-n and reverse == 0, A is transformed into A*P;
-// - if p is 1-by-m and reverse != 0, A is transformed into P*A and p transformed.
-// Whereas, if p encodes the row-permutation matrix P:
-// - if p is m-by-1 and reverse == 0, A is transformed into P*A;
-// - if p is n-by-1 and reverse != 0, A is transformed into A*P and p transformed.
-// Essentially, the flag allows reversing the order of multiplication, 
-// transforming a column permutation into a row permutation, or vice versa. This
-// enables switching between pre- and post-multiplication by the same permutation
-// matrix P. On size mismatch, the function returns -1. On success, it returns 0.
-int matrixf_permute(Matrixf* A, Matrixf* p, int reverse);
+// permutation indices p, which encodes the permutation matrix P: if p is 
+// m-by-1, the rows of A are permuted, whereas, if p is 1-by-n, the columns of
+// A are permuted. If the flag reverseP is enabled, the multiplication order 
+// between A and P is reversed, turning a column permutation into a row 
+// permutation and vice versa (assuming the dimensions are compatible). If the
+// flag transP is enabled, the permutation is applied according to the 
+// transpose of P. The following table summarizes how A is transformed.
+// ----------------------------------------------------------------------
+// Does p encode row or column permutations? | reverseP | transP | Output 
+// ------------------------------------------|----------|--------|-------
+//                    row                    |   no     |  no    |  P*A
+//                    row                    |   no     |  yes   |  P'*A
+//                    row                    |   yes    |  no    |  A*P
+//                    row                    |   yes    |  yes   |  A*P'
+//                   column                  |   no     |  no    |  A*P
+//                   column                  |   no     |  yes   |  A*P'
+//                   column                  |   yes    |  no    |  P*A
+//                   column                  |   yes    |  yes   |  P'*A
+// ----------------------------------------------------------------------
+// In general, the vector p is transformed to encode the new permutation. 
+// On size mismatch, the function returns -1. On success, it returns 0.
+int matrixf_permute(Matrixf* A, Matrixf* p, int reverseP, int transP);
 
 // This function transposes in place the input matrix.
 void matrixf_transpose(Matrixf* A);

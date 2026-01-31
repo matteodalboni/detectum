@@ -61,42 +61,46 @@ void matrixf_init(Matrixf* A, int rows, int cols, float* data, int ordmem)
 	}
 }
 
-int matrixf_permute(Matrixf* A, Matrixf* p, int reverse)
+int matrixf_permute(Matrixf* A, Matrixf* p, int reverseP, int transP)
 {
 	int i, j, k, q;
-	const int m = reverse ? p->cols : p->rows;
-	const int n = reverse ? p->rows : p->cols;
-	const int h = m > n ? m : n;
+	const int len = p->rows * p->cols;
 	float t, * x = p->data, * colAi, * colAj;
 
-	if ((A->rows != m || n != 1) &&
-		(A->cols != n || m != 1)) {
+	if (reverseP) {
+		q = p->rows;
+		p->rows = p->cols;
+		p->cols = q;
+	}
+	if ((A->rows != p->rows || p->cols != 1) &&
+		(A->cols != p->cols || p->rows != 1)) {
 		return -1;
 	}
-	if (reverse && h > 1) {
-		p->rows = m;
-		p->cols = n;
-		for (k = 0; k < h; k++) {
-			i = (int)x[k];
-			if (i >= 0) {
-				j = k;
-				do {
-					q = (int)x[i];
-					x[i] = (float)(-j - 1);
-					j = i;
-					i = q;
-				} while (j != k);
+	if ((reverseP && !transP) ||
+		(!reverseP && transP)) {
+		if (len > 1) {
+			for (k = 0; k < len; k++) {
+				i = (int)x[k];
+				if (i >= 0) {
+					j = k;
+					do {
+						q = (int)x[i];
+						x[i] = (float)(-j - 1);
+						j = i;
+						i = q;
+					} while (j != k);
+				}
+			}
+			for (k = 0; k < len; k++) {
+				x[k] = -x[k] - 1;
 			}
 		}
-		for (k = 0; k < h; k++) {
-			x[k] = -x[k] - 1;
-		}
 	}
-	if (n == 1) {
+	if (p->cols == 1) {
 		matrixf_transpose(A);
 	}
 	q = A->rows;
-	for (i = 0; i < h - 1; i++) {
+	for (i = 0; i < len - 1; i++) {
 		j = (int)x[i];
 		while (j < i) {
 			j = (int)x[j];
@@ -111,7 +115,7 @@ int matrixf_permute(Matrixf* A, Matrixf* p, int reverse)
 			}
 		}
 	}
-	if (n == 1) {
+	if (p->cols == 1) {
 		matrixf_transpose(A);
 	}
 	return 0;
@@ -703,11 +707,11 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 		if (U) {
 			k = U->cols;
 			U->cols = n;
-			matrixf_permute(U, &perm, 0);
+			matrixf_permute(U, &perm, 0, 0);
 			U->cols = k;
 		}
 		if (V) {
-			matrixf_permute(V, &perm, 0);
+			matrixf_permute(V, &perm, 0, 0);
 		}
 		p[0] = 0;
 		for (j = 1; j < n; j++) {
@@ -1655,7 +1659,7 @@ int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 			}
 		}
 	}
-	matrixf_permute(X, &perm, 1);
+	matrixf_permute(X, &perm, 1, 0);
 	return 0;
 }
 
@@ -1720,7 +1724,7 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 		}
 	}
 	matrixf_unpack_house(A, X, 0, 0);
-	matrixf_permute(X, &perm, 1);
+	matrixf_permute(X, &perm, 1, 0);
 	A->rows = m;
 	A->cols = n;
 	return 0;

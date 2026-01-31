@@ -29,7 +29,7 @@ static int inverse_iteration(Matrixf* A, Matrixf* v,
 	v->cols = 1;
 	matrixf_decomp_lu(&C, &p);
 	for (i = 0; i < iter; i++) {
-		matrixf_permute(v, &p, 0);
+		matrixf_permute(v, &p, 0, 0);
 		matrixf_solve_tril(&C, v, v, 1);
 		matrixf_solve_triu(&C, v, v, 0);
 		norm = normf(v->data, 2 * n, 1);

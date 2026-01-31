@@ -118,7 +118,7 @@ int main()
 	matrixf_decomp_schur_symm(&Q, &V);
 	matrixf_multiply(&A, &V, &W, 1, 0, 0, 0);
 	matrixf_decomp_qr(&W, &U, &P, 0);
-	matrixf_permute(&V, &P, 0);
+	matrixf_permute(&V, &P, 0, 0);
 	for (j = 0; j < (m < n ? m : n); j++) {
 		if (at(&W, j, j) < 0) {
 			at(&W, j, j) *= -1.0f;

@@ -49,7 +49,7 @@ int main()
 	A.cols = m;
 	matrixf_transpose(&A);
 #endif
-	matrixf_permute(&V, &P, 1);
+	matrixf_permute(&V, &P, 1, 0);
 	printf("The rank of A is %d\n\n", rank);
 	printf("U = [\n"); matrixf_print(&U, "%10.5g "); printf("];\n\n");
 	printf("T = [\n"); matrixf_print(&A, "%10.5g "); printf("];\n\n");

@@ -70,7 +70,15 @@ int main()
 	printf("Q*R = \n"); matrixf_print(&QR, "%9.4f "); printf("\n");
 	A.rows = M;
 	A.cols = N;
-	matrixf_multiply(&QR, &P, &A, 1, 0, 0, 1);
+	if (P.rows > 1) {
+		matrixf_multiply(&QR, &P, &A, 1, 0, 0, 1);
+	}
+	else {
+		matrixf_permute(&QR, &P, 0, 1);
+		for (i = 0; i < M * N; i++) {
+			A.data[i] = QR.data[i];
+		}
+	}
 	printf("Q*R*P' = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
 
 	return 0;
