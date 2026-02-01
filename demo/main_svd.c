@@ -87,25 +87,22 @@ int main()
 	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
 #if (ALGO == 0)
 	for (i = 0; i < p * p; i++) {
-		if (i < m * m) P.data[i] = !(i % (m + 1));
 		if (i < m * m) U.data[i] = !(i % (m + 1));
 		if (i < n * n) V.data[i] = !(i % (n + 1));
 	}
-
 	for (j = 0; j < 2 * iter; j++) {
-		copy_matrix(&W, &A);
-		matrixf_multiply(&P, &W, &A, 1, 0, 0, 0);
-		P.rows = A.cols; P.cols = A.cols;
-		Q.rows = A.rows; Q.cols = A.rows;
+		if (j) matrixf_permute(&A, &P, 1, 0);
+		Q.rows = A.rows; 
+		Q.cols = A.rows;
+		P.rows = 1;
+		P.cols = A.cols;
 		matrixf_decomp_qr(&A, &Q, &P, 0);
 		X = (j % 2) ? &V : &U;
 		copy_matrix(&W, X);
 		matrixf_multiply(&W, &Q, X, 1, 0, 0, 0);
 		matrixf_transpose(&A);
 	}
-
-	copy_matrix(&W, &U);
-	matrixf_multiply(&W, &P, &U, 1, 0, 0, 0);
+	matrixf_permute(&U, &P, 0, 0);
 	for (j = 0; j < (m < n ? m : n); j++) {
 		s = at(&A, j, j) < 0 ? -1.0f : 1.0f;
 		for (i = 0; i < n; i++) at(&V, i, j) *= s;

@@ -61,23 +61,23 @@ void matrixf_init(Matrixf* A, int rows, int cols, float* data, int ordmem)
 	}
 }
 
-int matrixf_permute(Matrixf* A, Matrixf* p, int reverseP, int transP)
+int matrixf_permute(Matrixf* A, Matrixf* perm, int reverse, int transP)
 {
 	int i, j, k, q;
-	const int len = p->rows * p->cols;
-	float t, * x = p->data, * colAi, * colAj;
+	const int len = perm->rows * perm->cols;
+	float t, * x = perm->data, * colAi, * colAj;
 
-	if (reverseP) {
-		q = p->rows;
-		p->rows = p->cols;
-		p->cols = q;
+	if (reverse) {
+		q = perm->rows;
+		perm->rows = perm->cols;
+		perm->cols = q;
 	}
-	if ((A->rows != p->rows || p->cols != 1) &&
-		(A->cols != p->cols || p->rows != 1)) {
+	if ((A->rows != perm->rows || perm->cols != 1) &&
+		(A->cols != perm->cols || perm->rows != 1)) {
 		return -1;
 	}
-	if ((reverseP && !transP) ||
-		(!reverseP && transP)) {
+	if ((reverse && !transP) ||
+		(!reverse && transP)) {
 		if (len > 1) {
 			for (k = 0; k < len; k++) {
 				i = (int)x[k];
@@ -96,7 +96,7 @@ int matrixf_permute(Matrixf* A, Matrixf* p, int reverseP, int transP)
 			}
 		}
 	}
-	if (p->cols == 1) {
+	if (perm->cols == 1) {
 		matrixf_transpose(A);
 	}
 	q = A->rows;
@@ -115,7 +115,7 @@ int matrixf_permute(Matrixf* A, Matrixf* p, int reverseP, int transP)
 			}
 		}
 	}
-	if (p->cols == 1) {
+	if (perm->cols == 1) {
 		matrixf_transpose(A);
 	}
 	return 0;
@@ -173,19 +173,32 @@ int matrixf_decomp_chol(Matrixf* A)
 	return 0;
 }
 
-int matrixf_decomp_lu(Matrixf* A, Matrixf* B)
+int matrixf_decomp_lu(Matrixf* A, Matrixf* perm, Matrixf* B)
 {
 	int i, j, k;
 	const int n = A->rows;
-	const int p = B->cols;
 	float a, b, t;
 	float* colXk, * colXi;
 
-	if (A->cols != n || B->rows != n) {
+	if (A->cols != n) {
+		return -1;
+	}
+	if (perm) {
+		if (perm->rows != n ||
+			perm->cols != 1) {
+			return -1;
+		}
+		for (j = 0; j < n; j++) {
+			perm->data[j] = (float)j;
+		}
+	}
+	if (B && B->rows != n) {
 		return -1;
 	}
 	matrixf_transpose(A);
-	matrixf_transpose(B);
+	if (B) {
+		matrixf_transpose(B);
+	}
 	for (i = 0; i < n - 1; i++) {
 		k = j = i;
 		a = fabsf(at(A, i, j));
@@ -203,12 +216,19 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* B)
 			colXk[j] = colXi[j];
 			colXi[j] = t;
 		}
-		colXk = &at(B, 0, k);
-		colXi = &at(B, 0, i);
-		for (j = 0; j < p; j++) {
-			t = colXk[j];
-			colXk[j] = colXi[j];
-			colXi[j] = t;
+		if (perm) {
+			t = perm->data[k];
+			perm->data[k] = perm->data[i];
+			perm->data[i] = t;
+		}
+		if (B) {
+			colXk = &at(B, 0, k);
+			colXi = &at(B, 0, i);
+			for (j = 0; j < B->rows; j++) {
+				t = colXk[j];
+				colXk[j] = colXi[j];
+				colXi[j] = t;
+			}
 		}
 		a = at(A, i, i);
 		for (k = i + 1; k < n; k++) {
@@ -224,7 +244,9 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* B)
 		}
 	}
 	matrixf_transpose(A);
-	matrixf_transpose(B);
+	if (B) {
+		matrixf_transpose(B);
+	}
 	return 0;
 }
 
@@ -284,7 +306,7 @@ int matrixf_unpack_lu_banded(Matrixf* A, Matrixf* B)
 	return 0;
 }
 
-int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
+int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* perm, Matrixf* B)
 {
 	int i, jm = 0, j = 0, k = 0, q = 0;
 	const int m = A->rows;
@@ -300,12 +322,12 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 			return -1;
 		}
 	}
-	if (P) {
-		if ((P->rows != 1 && P->rows != n) || P->cols != n) {
+	if (perm) {
+		if (perm->rows != 1 || perm->cols != n) {
 			return -1;
 		}
 		for (j = 0; j < n; j++) {
-			P->data[j] = (float)j;
+			perm->data[j] = (float)j;
 		}
 	}
 	if (B && B->rows != m) {
@@ -313,7 +335,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 	}
 	for (k = 0; k <= kmax; k++) {
 		colAk = &at(A, 0, k);
-		if (P) {
+		if (perm) {
 			for (cm = 0, jm = 0, j = k; j < n; j++) {
 				colAj = &at(A, 0, j);
 				for (c = 0, i = k; i < m; i++) {
@@ -333,9 +355,9 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 				colAk[j] = colAjm[j];
 				colAjm[j] = t;
 			}
-			t = P->data[k];
-			P->data[k] = P->data[jm];
-			P->data[jm] = t;
+			t = perm->data[k];
+			perm->data[k] = perm->data[jm];
+			perm->data[jm] = t;
 		}
 		v = colAk + k;
 		beta = housef(v, m - k, 1);
@@ -364,16 +386,6 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B)
 					at(A, i, j) = 0;
 				}
 			}
-		}
-	}
-	if (P && P->rows == n) {
-		for (i = n; i < n * n; i++) {
-			P->data[i] = 0;
-		}
-		for (i = n - 1; i >= 0; i--) {
-			j = (int)P->data[i];
-			at(P, i, 0) = 0;
-			at(P, j, i) = 1;
 		}
 	}
 	return 0;
@@ -471,7 +483,7 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 	return 0;
 }
 
-int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* P, float tol)
+int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* perm, float tol)
 {
 	int i, j, rank = 0;
 	const int m = A->rows;
@@ -479,7 +491,7 @@ int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* P, float tol
 	const int p = m < n ? m : n;
 	const int q = m > n ? m : n;
 
-	if (matrixf_decomp_qr(A, U, P, 0)) {
+	if (matrixf_decomp_qr(A, U, perm, 0)) {
 		return -1;
 	}
 	if (!U) {
@@ -1508,7 +1520,7 @@ int matrixf_solve_lu(Matrixf* A, Matrixf* B)
 	float Aij, Aii;
 	float* colBi, * colBj;
 
-	if (matrixf_decomp_lu(A, B)) {
+	if (matrixf_decomp_lu(A, 0, B)) {
 		return -1;
 	}
 	matrixf_transpose(B);

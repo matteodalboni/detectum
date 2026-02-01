@@ -20,14 +20,12 @@ static int inverse_iteration(Matrixf* A, Matrixf* v,
 		at(&C, j + n, j + n) -= eigval_re;
 		at(&C, j + n, j) = -eigval_im;
 		at(&C, j, j + n) = +eigval_im;
-		p.data[j] = (float)j;
-		p.data[j + n] = (float)(j + n);
 		v->data[j] = 1;
 		v->data[j + n] = 0;
 	}
 	v->rows = 2 * n; 
 	v->cols = 1;
-	matrixf_decomp_lu(&C, &p);
+	matrixf_decomp_lu(&C, &p, 0);
 	for (i = 0; i < iter; i++) {
 		matrixf_permute(v, &p, 0, 0);
 		matrixf_solve_tril(&C, v, v, 1);

@@ -120,28 +120,28 @@ static inline Matrixf matrixf(int rows, int cols)
 void matrixf_init(Matrixf* A, int rows, int cols, float* data, int ordmem);
 
 // This function permutes the m-by-n matrix A according to the vector of 
-// permutation indices p, which encodes the permutation matrix P: if p is 
-// m-by-1, the rows of A are permuted, whereas, if p is 1-by-n, the columns of
-// A are permuted. If the flag reverseP is enabled, the multiplication order 
+// permutation indices perm, which encodes the permutation matrix P: if perm is 
+// m-by-1, the rows of A are permuted, whereas, if perm is 1-by-n, the columns
+// of A are permuted. If the flag reverse is enabled, the multiplication order 
 // between A and P is reversed, turning a column permutation into a row 
 // permutation and vice versa (assuming the dimensions are compatible). If the
 // flag transP is enabled, the permutation is applied according to the 
 // transpose of P. The following table summarizes how A is transformed.
-// ----------------------------------------------------------------------
-// Does p encode row or column permutations? | reverseP | transP | Output 
-// ------------------------------------------|----------|--------|-------
-//                    row                    |   no     |  no    |  P*A
-//                    row                    |   no     |  yes   |  P'*A
-//                    row                    |   yes    |  no    |  A*P
-//                    row                    |   yes    |  yes   |  A*P'
-//                   column                  |   no     |  no    |  A*P
-//                   column                  |   no     |  yes   |  A*P'
-//                   column                  |   yes    |  no    |  P*A
-//                   column                  |   yes    |  yes   |  P'*A
-// ----------------------------------------------------------------------
-// In general, the vector p is transformed to encode the new permutation. 
+// ------------------------------------------------------------------------
+// Is perm a row- or column-permutation vector? | reverse | transP | Output 
+// ---------------------------------------------|---------|--------|-------
+//                      row                     |   no    |  no    |  P*A
+//                      row                     |   no    |  yes   |  P'*A
+//                      row                     |   yes   |  no    |  A*P
+//                      row                     |   yes   |  yes   |  A*P'
+//                     column                   |   no    |  no    |  A*P
+//                     column                   |   no    |  yes   |  A*P'
+//                     column                   |   yes   |  no    |  P*A
+//                     column                   |   yes   |  yes   |  P'*A
+// ------------------------------------------------------------------------
+// In general, the vector perm is transformed to encode the new permutation. 
 // On size mismatch, the function returns -1. On success, it returns 0.
-int matrixf_permute(Matrixf* A, Matrixf* p, int reverseP, int transP);
+int matrixf_permute(Matrixf* A, Matrixf* perm, int reverse, int transP);
 
 // This function transposes in place the input matrix.
 void matrixf_transpose(Matrixf* A);
@@ -156,12 +156,14 @@ int matrixf_decomp_chol(Matrixf* A);
 // n-by-n matrix A so that A = P'*L*U. The matrix A is transformed so that 
 // its upper triangular part stores the matrix U, whereas its strictly lower
 // triangular part contains the matrix L, assuming that all the entries of 
-// the main diagonal of L are ones (unit lower triangular matrix). B must 
-// have n rows. At output, the rows of B are permuted so that B is 
-// transformed into P*B: if B is initialized as an n-by-n identity matrix, 
-// it is transformed into P. On size mismatch or non-square matrix, the 
-// function returns -1. On success, it returns 0.
-int matrixf_decomp_lu(Matrixf* A, Matrixf* B);
+// the main diagonal of L are ones (unit lower triangular matrix). If perm 
+// is a non-null pointer, the function returns the vector of permutations 
+// that encodes the permutation matrix P. The vector perm must be initialized
+// as a n-by-1 vector. Additionally, one can provide the matrix B, which is 
+// transformed into P*B; this computation is skipped if B is a null pointer. 
+// On size mismatch or non-square matrix, the function returns -1. On success,
+// it returns 0.
+int matrixf_decomp_lu(Matrixf* A, Matrixf* perm, Matrixf* B);
 
 // This function performs the LU decomposition with partial pivoting of the 
 // banded Hessenberg matrix A. In particular, A must be a Hessenberg matrix 
@@ -187,19 +189,17 @@ int matrixf_unpack_lu_banded(Matrixf* A, Matrixf* B);
 // stores the essential parts of the Householder vectors, which can be used to
 // accumulate Q afterwards. For the sake of clarity, the essential part of a 
 // Householder vector comprises all elements but the first, which is always 1. 
-// If P is a non-null pointer, the decomposition makes use of column pivoting 
-// so that A*P = Q*R and so that the magnitude of the elements of the main 
-// diagonal of R is decreasing. If P is initialized as a 1-by-n vector and n > 1,
-// the permutations are encoded so that (P(i),i) for 0 <= i < n are the unit 
-// elements of the permutation matrix. Else, if P is initialized as an n-by-n 
-// matrix, the full permutation matrix is returned. Additionally, one can provide
-// the matrix B, which is transformed into Q'*B; this computation is skipped if B
-// is a null pointer. If m > n, the function can also produce the economy-size 
-// decomposition such that only the first n columns of Q are computed (thin Q) 
-// and the last m - n rows of R are excluded so that R becomes n-by-n. To enable
-// the economy-size decomposition, Q must be initialized as an m-by-n matrix. On
-// size mismatch, the function returns -1. On success, it returns 0.
-int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* P, Matrixf* B);
+// If perm is a non-null pointer, the decomposition makes use of column pivoting 
+// so that A*P = Q*R, where P is the permutation matrix encoded by the vector
+// perm. The vector perm must be initialized as a 1-by-n vector. Additionally, 
+// one can provide the matrix B, which is transformed into Q'*B; this computation
+// is skipped if B is a null pointer. If m > n, the function can also produce the
+// economy-size decomposition such that only the first n columns of Q are 
+// computed (thin Q) and the last m - n rows of R are excluded so that R becomes 
+// n-by-n. To enable the economy-size decomposition, Q must be initialized as an
+// m-by-n matrix. On size mismatch, the function returns -1. On success, it 
+// returns 0.
+int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* perm, Matrixf* B);
 
 // This function unpacks an orthogonal matrix from its factored representation. 
 // In particular, if flag fwd > 0, the function transforms B into Q'*B by forward
@@ -236,25 +236,23 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V);
 
 // This function performs the complete orthogonal decomposition of the m-by-n matrix
 // A so that A*P = U*T*V'; T = [L, 0; 0; 0], L being a lower triangular square block
-// whose size is r-by-r, where r is the rank of A. The permutation matrix P must be
-// always provided, as the function makes use of QR decomposition with column 
-// pivoting. If P is initialized as a 1-by-n vector and n > 1, the permutations are
-// encoded so that (P(i),i) for 0 <= i < n are the unit elements of the permutation 
-// matrix. Else, if P is initialized as an n-by-n matrix, the full permutation 
-// matrix is returned. If U is a null pointer, the computation of the matrix U is 
-// omitted. If V is a null pointer, the explicit formation of the matrix V is omitted;
-// in this case, the essential parts of the Householder vectors are stored below the 
-// main diagonal of L' and can be used to accumulate V afterwards. If m > n, the 
-// function can also produce the economy-size decomposition such that only the first
-// n columns of U are computed (thin U) and the last m - n rows of T are excluded so
-// that T becomes n-by-n. To enable the economy-size decomposition, U must be 
-// initialized as an m-by-n matrix. tol is the tolerance to determine the rank of A:
-// if the input tolerance is negative, the default value max(m,n)*eps(R(0,0)) is 
-// used instead, where R(0,0) is the on-diagonal element of R with the largest 
-// magnitude, R being the upper triangular matrix obtained by QR decomposition with
-// column pivoting of A. On size mismatch, the function returns -1. On success, it 
-// returns the rank of A.
-int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* P, float tol);
+// whose size is r-by-r, where r is the rank of A. The permutation vector perm, 
+// which encodes the permutation matrix matrix P, must be always provided, as the 
+// function makes use of QR decomposition with column pivoting. The vector perm must
+// be initialized as a 1-by-n vector. If U is a null pointer, the computation of the
+// matrix U is omitted. If V is a null pointer, the explicit formation of the matrix 
+// V is omitted; in this case, the essential parts of the Householder vectors are 
+// stored below the main diagonal of L' and can be used to accumulate V afterwards. 
+// If m > n, the function can also produce the economy-size decomposition such that 
+// only the first n columns of U are computed (thin U) and the last m - n rows of T
+// are excluded so that T becomes n-by-n. To enable the economy-size decomposition, 
+// U must be initialized as an m-by-n matrix. tol is the tolerance to determine the 
+// rank of A: if the input tolerance is negative, the default value 
+// max(m,n)*eps(R(0,0)) is used instead, where R(0,0) is the on-diagonal element of 
+// R with the largest magnitude, R being the upper triangular matrix obtained by QR
+// decomposition with column pivoting of A. On size mismatch, the function returns 
+// -1. On success, it returns the rank of A.
+int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* perm, float tol);
 
 // This function performs the singular value decomposition of the m-by-n matrix A
 // by QR iteration. The decomposition is such that A = U*S*V'. The computation of 

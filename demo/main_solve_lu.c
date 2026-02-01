@@ -41,7 +41,7 @@ int main()
 				at(&P, i, j) = (float)(i == j);
 				at(&L, i, j) = (float)(i == j);
 			}
-		if (matrixf_decomp_lu(&A, &P)) return 1;
+		if (matrixf_decomp_lu(&A, 0, &P)) return 1;
 		for (j = 0; j < n; j++)
 			for (i = j + 1; i < n; i++) {
 				at(&L, i, j) = at(&A, i, j);

@@ -50,17 +50,20 @@ int main()
 	float A_data[] = { 1, 2 };
 #endif
 	int i;
-	float Q_data[M * M] = { 0 }, QR_data[M * N] = { 0 }, P_data[N * N] = { 0 };
-	Matrixf A = { 0 }, Q = { 0 }, QR = { 0 }, P = { 0 };
+	float Q_data[M * M] = { 0 }, QR_data[M * N] = { 0 };
+	float P_data[N * N] = { 0 }, perm_data[N] = { 0 };
+	Matrixf A = { 0 }, Q = { 0 }, QR = { 0 }, P = { 0 }, perm = { 0 };
 
 	for (i = 0; i < N * N; i++) P_data[i] = !(i % (N + 1));
 
 	matrixf_init(&A, M, N, A_data, 1);
 	matrixf_init(&Q, M, M, Q_data, 0);
 	matrixf_init(&P, N, N, P_data, 0);
+	matrixf_init(&perm, 1, N, perm_data, 0);
 	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
 
-	matrixf_decomp_qr(&A, &Q, &P, 0);
+	matrixf_decomp_qr(&A, &Q, &perm, 0);
+	matrixf_permute(&P, &perm, 0, 0);
 	printf("Q = \n"); matrixf_print(&Q, "%9.4f "); printf("\n");
 	printf("R = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
 	printf("P = \n"); matrixf_print(&P, "%5.0f "); printf("\n");
@@ -70,15 +73,9 @@ int main()
 	printf("Q*R = \n"); matrixf_print(&QR, "%9.4f "); printf("\n");
 	A.rows = M;
 	A.cols = N;
-	if (P.rows > 1) {
-		matrixf_multiply(&QR, &P, &A, 1, 0, 0, 1);
-	}
-	else {
-		matrixf_permute(&QR, &P, 0, 1);
-		for (i = 0; i < M * N; i++) {
-			A.data[i] = QR.data[i];
-		}
-	}
+	//matrixf_multiply(&QR, &P, &A, 1, 0, 0, 1);
+	matrixf_permute(&QR, &perm, 0, 1);
+	for (i = 0; i < M * N; i++) A.data[i] = QR.data[i];
 	printf("Q*R*P' = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
 
 	return 0;
