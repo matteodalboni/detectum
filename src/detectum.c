@@ -399,18 +399,19 @@ int matrixf_unpack_house(Matrixf* A, Matrixf* B, int s, int fwd)
 	const int n = A->cols;
 	const int p = B->cols;
 	const int kmax = m - 1 < n ? m - 2 - s : n - 1 - s;
-	float gamma, * v;
+	float beta, gamma, * v;
 
 	if (B->rows != m || s < 0) {
 		return -1;
 	}
 	for (k = f > 0 ? 0 : kmax; f > 0 ? k <= kmax : k >= 0; k += f) {
 		v = &at(A, 0, k);
-		for (gamma = 1.0f, i = k + 1 + s; i < m; i++) {
+		for (gamma = 0, i = k + 1 + s; i < m; i++) {
 			gamma += v[i] * v[i];
 		}
-		if (gamma > 1) {
-			housef_apply_l(B, v + k + s, 2.0f / gamma, k + s, m - 1, 0, p - 1, 1);
+		if (gamma > 0) {
+			beta = 2.0f / (1.0f + gamma);
+			housef_apply_l(B, v + k + s, beta, k + s, m - 1, 0, p - 1, 1);
 		}
 	}
 	return 0;

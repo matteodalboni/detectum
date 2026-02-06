@@ -76,12 +76,17 @@ static inline float housef(float* x, int len, int stride)
 	const float a = x[0];
 	const float nrm = normf(x + stride, len - 1, stride);
 
-	if (nrm > 0) {
+	if (nrm > 1.1920929e-07f) {
 		b = a < 0 ? hypotf(a, nrm) : -hypotf(a, nrm);
 		beta = (b - a) / b;
 		x[0] = b;
 		for (i = 1; i < len; i++) {
 			x[stride * i] /= a - b;
+		}
+	}
+	else {
+		for (i = 1; i < len; i++) {
+			x[stride * i] = 0;
 		}
 	}
 	return beta;
