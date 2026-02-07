@@ -242,9 +242,9 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V);
 // This function performs the complete orthogonal decomposition of the m-by-n matrix
 // A so that A*P = U*T*V'; T = [L, 0; 0; 0], L being a lower triangular square block
 // whose size is r-by-r, where r is the rank of A. The permutation vector perm, 
-// which encodes the permutation matrix matrix P, must be always provided, as the 
-// function makes use of QR decomposition with column pivoting. The vector perm must
-// be initialized as a 1-by-n vector. If U is a null pointer, the computation of the
+// which encodes the permutation matrix P, must be always provided, as the function 
+// makes use of QR decomposition with column pivoting. The vector perm must be 
+// initialized as a 1-by-n vector. If U is a null pointer, the computation of the
 // matrix U is omitted. If V is a null pointer, the explicit formation of the matrix 
 // V is omitted; in this case, the essential parts of the Householder vectors are 
 // stored below the main diagonal of L' and can be used to accumulate V afterwards. 
