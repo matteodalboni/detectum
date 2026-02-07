@@ -22,9 +22,9 @@ static void unpack_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 	matrixf_transpose(A);
 	matrixf_unpack_house(A, V, 1, 0);
 	matrixf_transpose(A);
-	if (U->rows == U->cols) {
+	if (U->rows > U->cols) {
 		matrixf_transpose(A);
-		A->cols = U->rows;
+		A->cols = A->rows;
 		matrixf_transpose(A);
 	}
 	for (j = 0; j < A->cols; j++) {
