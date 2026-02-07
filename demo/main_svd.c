@@ -66,7 +66,7 @@ int main()
 #endif
 #define p (m > n ? m : n)
 
-	int i, j, iter = ITER;
+	int i, j, k, iter = ITER;
 	float s;
 	float A_copy[m * n] = { 0 };
 	float U_data[m * m] = { 0 };
@@ -92,14 +92,15 @@ int main()
 	}
 	for (j = 0; j < 2 * iter; j++) {
 		if (j) matrixf_permute(&A, &P, 1, 0);
-		Q.rows = A.rows; 
-		Q.cols = A.rows;
 		P.rows = 1;
 		P.cols = A.cols;
-		matrixf_decomp_qr(&A, &Q, &P, 0);
 		X = (j % 2) ? &V : &U;
-		copy_matrix(&W, X);
-		matrixf_multiply(&W, &Q, X, 1, 0, 0, 0);
+		matrixf_transpose(X);
+		matrixf_decomp_qr(&A, 0, &P, X);
+		matrixf_transpose(X);
+		for (k = 0; k < A.cols; k++)
+			for (i = k + 1; i < A.rows; i++)
+				at(&A, i, k) = 0;
 		matrixf_transpose(&A);
 	}
 	matrixf_permute(&U, &P, 0, 0);
@@ -122,7 +123,7 @@ int main()
 			for (i = 0; i < m; i++)
 				at(&U, i, j) *= -1.0f;
 		}
-		for (i = 0; i < j; i++) 
+		for (i = 0; i < j; i++)
 			at(&W, i, j) = 0;
 	}
 	copy_matrix(&A, &W);
@@ -144,7 +145,7 @@ int main()
 	printf("||A - U*S*V'||_F = %g\n\n", normf(A_copy, m * n, 1));
 
 	matrixf_init(&P, m, m, P_data, 0);
-	matrixf_multiply(&U, &U, &P, 1, 0, 0, 1); 
+	matrixf_multiply(&U, &U, &P, 1, 0, 0, 1);
 	printf("U*U' = \n"); matrixf_print(&P, "%9.4f "); printf("\n");
 	matrixf_multiply(&U, &U, &P, 1, 0, 1, 0);
 	printf("U'*U = \n"); matrixf_print(&P, "%9.4f "); printf("\n");

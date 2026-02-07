@@ -522,7 +522,7 @@ int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* perm, float 
 #define DETECTUM_SVD_ITER_MAX (100 * n)
 #endif
 #ifndef DETECTUM_SVD_TOL
-#define DETECTUM_SVD_TOL (3e-7f)
+#define DETECTUM_SVD_TOL (1e-6f)
 #endif
 int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 {
@@ -740,7 +740,7 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 #define DETECTUM_SVD_JACOBI_ITER_MAX (10 * n)
 #endif
 #ifndef DETECTUM_SVD_JACOBI_TOL
-#define DETECTUM_SVD_JACOBI_TOL (3e-7f)
+#define DETECTUM_SVD_JACOBI_TOL (1e-6f)
 #endif
 int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 {
@@ -874,7 +874,7 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
 #define DETECTUM_SCHUR_SYMM_ITER_MAX (100 * n)
 #endif
 #ifndef DETECTUM_SCHUR_SYMM_TOL
-#define DETECTUM_SCHUR_SYMM_TOL (3e-7f)
+#define DETECTUM_SCHUR_SYMM_TOL (1e-6f)
 #endif
 int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 {
@@ -959,7 +959,7 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 #define DETECTUM_SCHUR_ITER_MAX (100 * n)
 #endif
 #ifndef DETECTUM_SCHUR_TOL
-#define DETECTUM_SCHUR_TOL (3e-7f)
+#define DETECTUM_SCHUR_TOL (1e-6f)
 #endif
 #ifndef DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT
 #define DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT (5)
