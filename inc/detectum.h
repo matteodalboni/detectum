@@ -409,12 +409,13 @@ int matrixf_solve_lu(Matrixf* A, Matrixf* B);
 // success, it returns 0.
 int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, int ubw);
 
-// This function solves the linear system A*X = B by QR decomposition
-// of the full-rank matrix A. The returned solution is minimum-norm. The 
-// matrices A and B are destroyed. The matrix B can share the data array with X,
-// provided that the array is large enough to accommodate the larger of B or X.
-// If A is rank deficient, the function returns -2. On size mismatch, the 
-// function returns -1. On success, it returns 0.
+// This function solves the linear system A*X = B by QR decomposition of the 
+// full-rank matrix A. If the system is underdetermined, the returned solution 
+// is of minimum norm. The matrices A and B are destroyed. The matrix B can 
+// share the data array with X, provided that the array is large enough to 
+// accommodate the larger of B or X. If A is rank deficient, the function 
+// returns -2. On size mismatch, the function returns -1. On success, it 
+// returns 0.
 int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X);
 
 // This function solves the linear system A*X = B for X by QR decomposition 

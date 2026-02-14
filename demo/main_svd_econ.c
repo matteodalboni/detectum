@@ -32,8 +32,8 @@ int main()
 	matrixf_init(&A, m, n, A_data, 1);
 	printf("\nA =\n"); matrixf_print(&A, "%9.4f");
 	int exitflag = matrixf_decomp_svd(&A, &U, &V);
-	printf("\nS =\n"); matrixf_print(&A, "%9.4f");
 	printf("\nU =\n"); matrixf_print(&U, "%9.4f");
+	printf("\nS =\n"); matrixf_print(&A, "%9.4f");
 	printf("\nV =\n"); matrixf_print(&V, "%9.4f");
 
 	return exitflag;
