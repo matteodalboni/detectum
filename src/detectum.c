@@ -971,7 +971,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 	const int iter_max = DETECTUM_SCHUR_ITER_MAX;
 	const int ahsc = DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT;
 	const float tol = DETECTUM_SCHUR_TOL;
-	const float eps = epsf(1);
+	const float eps = DETECTUM_EPS;
 	float r, s, t, x, y, z, mu, beta, v[3] = { 1, 0, 0 };
 	float sine, cosine, Xk, Xk1;
 	float* colXk, * colXk1;

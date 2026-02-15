@@ -9,6 +9,21 @@ typedef struct {
 	float* data; // pointer to data array
 } Matrixf;
 
+// Machine precision
+#ifndef DETECTUM_EPS 
+#define DETECTUM_EPS (1.1920929e-07f)
+#endif
+
+// Blue's underflow threshold
+#ifndef DETECTUM_TSML
+#define DETECTUM_TSML (1.0842022e-19f) 
+#endif
+
+// Blue's overflow threshold
+#ifndef DETECTUM_TBIG
+#define DETECTUM_TBIG (4.5035996e+15f) 
+#endif
+
 // This macro initializes a rows-by-cols matrix A, allocating its data 
 // memory on the stack; rows and cols must be known at compile time.
 #define Matrixf(A, rows, cols) \
@@ -31,8 +46,8 @@ static inline float normf(const float* v, int len, int stride)
 {
 	int i;
 	float s = 0, h = 0, a;
-	const float tsml = 1.0842022e-19f; // Blue's underflow threshold 
-	const float tbig = 4.5035996e+15f; // Blue's overflow threshold
+	const float tsml = DETECTUM_TSML;
+	const float tbig = DETECTUM_TBIG;
 
 	for (i = 0; i < len; i++) {
 		a = v[i * stride];
@@ -74,9 +89,10 @@ static inline float housef(float* x, int len, int stride)
 	int i;
 	float b, beta = 0;
 	const float a = x[0];
+	const float eps = DETECTUM_EPS;
 	const float nrm = normf(x + stride, len - 1, stride);
 
-	if (nrm > 1.1920929e-07f) {
+	if (nrm > eps) {
 		b = a < 0 ? hypotf(a, nrm) : -hypotf(a, nrm);
 		beta = (b - a) / b;
 		x[0] = b;
