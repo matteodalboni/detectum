@@ -25,7 +25,7 @@ typedef struct {
 #endif
 
 // This macro initializes a rows-by-cols matrix A, allocating its data 
-// memory on the stack; rows and cols must be known at compile time.
+// memory on the stack. rows and cols must be known at compile time.
 #define Matrixf(A, rows, cols) \
 float A##_data[(rows) * (cols)] = { 0 }; \
 Matrixf A = { rows, cols, A##_data }
@@ -125,8 +125,8 @@ static inline void matrixf_print(Matrixf* A, const char* format)
 #endif
 
 #ifdef RAND_MAX // include stdlib.h before detectum.h to enable this section
-// This function initializes a rows-by-cols matrix instance while allocating
-// its data memory on the heap. On allocation failure, the data pointer is null.
+// This function initializes a rows-by-cols matrix, allocating its data 
+// memory on the heap. On allocation failure, the data pointer is null.
 static inline Matrixf matrixf(int rows, int cols)
 {
 	Matrixf A = { rows, cols, calloc(sizeof(float), rows * cols) };
