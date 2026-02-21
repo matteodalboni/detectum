@@ -297,7 +297,7 @@ int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* perm, float 
 // Related macros
 // - DETECTUM_SVD_ITER_MAX: maximum number of iterations. The default value is 
 //   100*min(m,n).  
-// - DETECTUM_SVD_TOL: tolerance. The default value is 1e-6.
+// - DETECTUM_SVD_TOL: tolerance. The default value is 2e-7.
 int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V);
 
 // This function performs the singular value decomposition of the m-by-n matrix A

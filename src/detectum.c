@@ -526,7 +526,7 @@ int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* perm, float 
 #define DETECTUM_SVD_ITER_MAX (100 * n)
 #endif
 #ifndef DETECTUM_SVD_TOL
-#define DETECTUM_SVD_TOL (1e-6f)
+#define DETECTUM_SVD_TOL (2e-7f)
 #endif
 int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 {
