@@ -33,7 +33,7 @@ int main()
 	printf("R = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
 	printf("X = \n"); matrixf_print(&B, "%9.4f "); printf("\n");
 	matrixf_multiply(&A, &A, &C, 1, 0, 1, 0);
-	printf("C = \n"); matrixf_print(&C, "%9.4f "); printf("\n");
+	printf("R'*R = \n"); matrixf_print(&C, "%9.4f "); printf("\n");
 
 	return 0;
 }

@@ -6,19 +6,19 @@ static void housef_apply_l(Matrixf* X, const float* v, float beta,
 	int i0, int iend, int j0, int jend, int stride)
 {
 	int i, j;
-	float h, * colXj;
+	float h, * Xj;
 
 	if (beta != 0) {
 		for (j = j0; j <= jend; j++) {
-			colXj = &at(X, 0, j);
-			h = colXj[i0];
+			Xj = &at(X, 0, j);
+			h = Xj[i0];
 			for (i = i0 + 1; i <= iend; i++) {
-				h += colXj[i] * v[(i - i0) * stride];
+				h += Xj[i] * v[(i - i0) * stride];
 			}
 			h *= beta;
-			colXj[i0] -= h;
+			Xj[i0] -= h;
 			for (i = i0 + 1; i <= iend; i++) {
-				colXj[i] -= h * v[(i - i0) * stride];
+				Xj[i] -= h * v[(i - i0) * stride];
 			}
 		}
 	}
@@ -65,7 +65,7 @@ int matrixf_permute(Matrixf* A, Matrixf* perm, int reverse, int transP)
 {
 	int i, j, k, q;
 	const int len = perm->rows * perm->cols;
-	float t, * x = perm->data, * colAi, * colAj;
+	float t, * x = perm->data, * Ai, * Aj;
 
 	if (reverse) {
 		q = perm->rows;
@@ -106,12 +106,12 @@ int matrixf_permute(Matrixf* A, Matrixf* perm, int reverse, int transP)
 			j = (int)x[j];
 		}
 		if (i != j) {
-			colAi = &at(A, 0, i);
-			colAj = &at(A, 0, j);
+			Ai = &at(A, 0, i);
+			Aj = &at(A, 0, j);
 			for (k = 0; k < q; k++) {
-				t = colAi[k];
-				colAi[k] = colAj[k];
-				colAj[k] = t;
+				t = Ai[k];
+				Ai[k] = Aj[k];
+				Aj[k] = t;
 			}
 		}
 	}
@@ -146,18 +146,18 @@ int matrixf_decomp_chol(Matrixf* A)
 	int i, j, k;
 	const int n = A->rows;
 	float v, r = 0;
-	float* colAi, * colAj;
+	float* Ai, * Aj;
 
 	if (A->cols != n) {
 		return -1;
 	}
 	for (j = 0; j < n; j++) {
 		for (i = j; i < n; i++) {
-			colAi = &at(A, 0, i);
-			colAj = &at(A, 0, j);
-			v = colAi[j];
+			Ai = &at(A, 0, i);
+			Aj = &at(A, 0, j);
+			v = Ai[j];
 			for (k = 0; k < j; k++) {
-				v -= colAi[k] * colAj[k];
+				v -= Ai[k] * Aj[k];
 			}
 			if (i == j) {
 				if (v > 0) {
@@ -167,7 +167,7 @@ int matrixf_decomp_chol(Matrixf* A)
 					return -2;
 				}
 			}
-			colAi[j] = v / r;
+			Ai[j] = v / r;
 		}
 	}
 	return 0;
@@ -178,7 +178,7 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* perm, Matrixf* B)
 	int i, j, k;
 	const int n = A->rows;
 	float a, b, t;
-	float* colXk, * colXi;
+	float* Xi, * Xk;
 
 	if (A->cols != n) {
 		return -1;
@@ -209,12 +209,12 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* perm, Matrixf* B)
 				a = b;
 			}
 		}
-		colXk = &at(A, 0, k);
-		colXi = &at(A, 0, i);
+		Xi = &at(A, 0, i);
+		Xk = &at(A, 0, k);
 		for (j = 0; j < n; j++) {
-			t = colXk[j];
-			colXk[j] = colXi[j];
-			colXi[j] = t;
+			t = Xk[j];
+			Xk[j] = Xi[j];
+			Xi[j] = t;
 		}
 		if (perm) {
 			t = perm->data[k];
@@ -222,12 +222,12 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* perm, Matrixf* B)
 			perm->data[i] = t;
 		}
 		if (B) {
-			colXk = &at(B, 0, k);
-			colXi = &at(B, 0, i);
+			Xi = &at(B, 0, i);
+			Xk = &at(B, 0, k);
 			for (j = 0; j < B->rows; j++) {
-				t = colXk[j];
-				colXk[j] = colXi[j];
-				colXi[j] = t;
+				t = Xk[j];
+				Xk[j] = Xi[j];
+				Xi[j] = t;
 			}
 		}
 		a = at(A, i, i);
@@ -236,10 +236,10 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* perm, Matrixf* B)
 				at(A, i, k) /= a;
 			}
 			b = at(A, i, k);
-			colXk = &at(A, 0, k);
-			colXi = &at(A, 0, i);
+			Xi = &at(A, 0, i);
+			Xk = &at(A, 0, k);
 			for (j = i + 1; j < n; j++) {
-				colXk[j] -= colXi[j] * b;
+				Xk[j] -= Xi[j] * b;
 			}
 		}
 	}
@@ -313,7 +313,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* perm, Matrixf* B)
 	const int n = A->cols;
 	const int kmax = m < n ? m - 1 : n - 1;
 	float beta, t, c, cm, * v;
-	float* colAk, * colAj, * colAjm;
+	float* Ak, * Aj, * Ajm;
 	Matrixf A_econ = { n, n, A->data };
 
 	if (Q) {
@@ -334,12 +334,15 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* perm, Matrixf* B)
 		return -1;
 	}
 	for (k = 0; k <= kmax; k++) {
-		colAk = &at(A, 0, k);
+		Ak = &at(A, 0, k);
 		if (perm) {
-			for (cm = 0, jm = 0, j = k; j < n; j++) {
-				colAj = &at(A, 0, j);
-				for (c = 0, i = k; i < m; i++) {
-					c += colAj[i] * colAj[i];
+			cm = 0;
+			jm = 0;
+			for (j = k; j < n; j++) {
+				Aj = &at(A, 0, j);
+				c = 0;
+				for (i = k; i < m; i++) {
+					c += Aj[i] * Aj[i];
 				}
 				if (c > cm) {
 					cm = c;
@@ -349,17 +352,17 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* perm, Matrixf* B)
 			if (cm == 0) {
 				break;
 			}
-			colAjm = &at(A, 0, jm);
+			Ajm = &at(A, 0, jm);
 			for (j = 0; j < m; j++) {
-				t = colAk[j];
-				colAk[j] = colAjm[j];
-				colAjm[j] = t;
+				t = Ak[j];
+				Ak[j] = Ajm[j];
+				Ajm[j] = t;
 			}
 			t = perm->data[k];
 			perm->data[k] = perm->data[jm];
 			perm->data[jm] = t;
 		}
-		v = colAk + k;
+		v = Ak + k;
 		beta = housef(v, m - k, 1);
 		housef_apply_l(A, v, beta, k, m - 1, k + 1, n - 1, 1);
 		if (B) {
@@ -406,7 +409,8 @@ int matrixf_unpack_house(Matrixf* A, Matrixf* B, int s, int fwd)
 	}
 	for (k = f > 0 ? 0 : kmax; f > 0 ? k <= kmax : k >= 0; k += f) {
 		v = &at(A, 0, k);
-		for (gamma = 0, i = k + 1 + s; i < m; i++) {
+		gamma = 0;
+		for (i = k + 1 + s; i < m; i++) {
 			gamma += v[i] * v[i];
 		}
 		if (gamma > 0) {
@@ -531,10 +535,10 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 	int i, j, k, q, r = n - 1, iter = 0;
 	const int iter_max = DETECTUM_SVD_ITER_MAX;
 	const float tol = DETECTUM_SVD_TOL;
-	float small, norm1, tmp, cosine, sine, Xi, Xj;
+	float small, nrm1, tmp, cosine, sine, a, b;
 	float c00, c01, c11, y, z, mu;
 	float* s = A->data, * p = 0;
-	float* colXi, * colXj;
+	float* Xi, * Xj, * Xj1, * Xr;
 	Matrixf perm = { 1, n, p };
 
 	if (m < n) {
@@ -554,13 +558,13 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 			}
 		}
 	}
-	for (norm1 = fabsf(at(A, 0, 0)), j = 1; j < n; j++) {
+	for (nrm1 = fabsf(at(A, 0, 0)), j = 1; j < n; j++) {
 		tmp = fabsf(at(A, j - 1, j)) + fabsf(at(A, j, j));
-		if (norm1 < tmp) {
-			norm1 = tmp;
+		if (nrm1 < tmp) {
+			nrm1 = tmp;
 		}
 	}
-	small = tol * norm1;
+	small = tol * nrm1;
 	while (r > 0 && iter < iter_max) {
 		while (r > 0 && fabsf(at(A, r - 1, r)) <= small) {
 			r--;
@@ -574,15 +578,16 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 				i--;
 			}
 			if (i == q - 1) {
+				j = r - 1;
+				Xj = &at(A, 0, j);
+				Xr = &at(A, 0, r);
 				c00 = c01 = c11 = 0;
-				colXi = &at(A, 0, r - 1);
-				colXj = &at(A, 0, r);
 				for (k = (r - 2 < 0 ? 0 : r - 2); k <= r; k++) {
-					Xi = colXi[k];
-					Xj = colXj[k];
-					c00 += Xi * Xi;
-					c01 += Xi * Xj;
-					c11 += Xj * Xj;
+					a = Xj[k];
+					b = Xr[k];
+					c00 += a * a;
+					c01 += a * b;
+					c11 += b * b;
 				}
 				y = 0.5f * (c00 - c11);
 				z = sqrtf(y * y + c01 * c01);
@@ -591,41 +596,41 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 				z = at(A, q, q + 1) * at(A, q, q);
 				for (j = q; j < r; j++) {
 					givensf(y, z, &cosine, &sine);
-					colXi = &at(A, 0, j);
-					colXj = &at(A, 0, j + 1);
+					Xj = &at(A, 0, j);
+					Xj1 = &at(A, 0, j + 1);
 					for (k = (j - 1 < 0 ? 0 : j - 1); k <= j + 1; k++) {
-						Xi = colXi[k];
-						Xj = colXj[k];
-						colXi[k] = cosine * Xi - sine * Xj;
-						colXj[k] = sine * Xi + cosine * Xj;
+						a = Xj[k];
+						b = Xj1[k];
+						Xj[k] = cosine * a - sine * b;
+						Xj1[k] = sine * a + cosine * b;
 					}
 					if (V) {
-						colXi = &at(V, 0, j);
-						colXj = &at(V, 0, j + 1);
+						Xj = &at(V, 0, j);
+						Xj1 = &at(V, 0, j + 1);
 						for (k = 0; k < n; k++) {
-							Xi = colXi[k];
-							Xj = colXj[k];
-							colXi[k] = cosine * Xi - sine * Xj;
-							colXj[k] = sine * Xi + cosine * Xj;
+							a = Xj[k];
+							b = Xj1[k];
+							Xj[k] = cosine * a - sine * b;
+							Xj1[k] = sine * a + cosine * b;
 						}
 					}
 					y = at(A, j, j);
 					z = at(A, j + 1, j);
 					givensf(y, z, &cosine, &sine);
 					for (k = j; k <= (j + 2 < r ? j + 2 : r); k++) {
-						Xi = at(A, j, k);
-						Xj = at(A, j + 1, k);
-						at(A, j, k) = cosine * Xi - sine * Xj;
-						at(A, j + 1, k) = sine * Xi + cosine * Xj;
+						a = at(A, j, k);
+						b = at(A, j + 1, k);
+						at(A, j, k) = cosine * a - sine * b;
+						at(A, j + 1, k) = sine * a + cosine * b;
 					}
 					if (U) {
-						colXi = &at(U, 0, j);
-						colXj = &at(U, 0, j + 1);
+						Xj = &at(U, 0, j);
+						Xj1 = &at(U, 0, j + 1);
 						for (k = 0; k < m; k++) {
-							Xi = colXi[k];
-							Xj = colXj[k];
-							colXi[k] = cosine * Xi - sine * Xj;
-							colXj[k] = sine * Xi + cosine * Xj;
+							a = Xj[k];
+							b = Xj1[k];
+							Xj[k] = cosine * a - sine * b;
+							Xj1[k] = sine * a + cosine * b;
 						}
 					}
 					if (j < r - 1) {
@@ -639,19 +644,19 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 				for (j = i + 1; j <= r; j++) {
 					givensf(-at(A, j, j), at(A, i, j), &cosine, &sine);
 					for (k = j; k <= (j + 1 < r ? j + 1 : r); k++) {
-						Xi = at(A, i, k);
-						Xj = at(A, j, k);
-						at(A, i, k) = cosine * Xi - sine * Xj;
-						at(A, j, k) = sine * Xi + cosine * Xj;
+						a = at(A, i, k);
+						b = at(A, j, k);
+						at(A, i, k) = cosine * a - sine * b;
+						at(A, j, k) = sine * a + cosine * b;
 					}
 					if (U) {
-						colXi = &at(U, 0, i);
-						colXj = &at(U, 0, j);
+						Xi = &at(U, 0, i);
+						Xj = &at(U, 0, j);
 						for (k = 0; k < m; k++) {
-							Xi = colXi[k];
-							Xj = colXj[k];
-							colXi[k] = cosine * Xi - sine * Xj;
-							colXj[k] = sine * Xi + cosine * Xj;
+							a = Xi[k];
+							b = Xj[k];
+							Xi[k] = cosine * a - sine * b;
+							Xj[k] = sine * a + cosine * b;
 						}
 					}
 				}
@@ -659,22 +664,22 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 			else {
 				for (j = r - 1; j >= q; j--) {
 					givensf(at(A, j, j), at(A, j, r), &cosine, &sine);
-					colXi = &at(A, 0, j);
-					colXj = &at(A, 0, r);
+					Xj = &at(A, 0, j);
+					Xr = &at(A, 0, r);
 					for (k = (j - 1 > q ? j - 1 : q); k <= j; k++) {
-						Xi = colXi[k];
-						Xj = colXj[k];
-						colXi[k] = cosine * Xi - sine * Xj;
-						colXj[k] = sine * Xi + cosine * Xj;
+						a = Xj[k];
+						b = Xr[k];
+						Xj[k] = cosine * a - sine * b;
+						Xr[k] = sine * a + cosine * b;
 					}
 					if (V) {
-						colXi = &at(V, 0, j);
-						colXj = &at(V, 0, r);
+						Xj = &at(V, 0, j);
+						Xr = &at(V, 0, r);
 						for (k = 0; k < n; k++) {
-							Xi = colXi[k];
-							Xj = colXj[k];
-							colXi[k] = cosine * Xi - sine * Xj;
-							colXj[k] = sine * Xi + cosine * Xj;
+							a = Xj[k];
+							b = Xr[k];
+							Xj[k] = cosine * a - sine * b;
+							Xr[k] = sine * a + cosine * b;
 						}
 					}
 				}
@@ -745,8 +750,8 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 {
 	int i, j, k, count = 1, iter = 0, sorted, orthog;
-	float a, b, p, q, v, Xij, Xik, s, sine, cosine;
-	float* colXj, * colXk;
+	float x, y, p, q, v, a, b, s, sine, cosine;
+	float* Xj, * Xk;
 	const int m = A->rows;
 	const int n = A->cols;
 	const int iter_max = DETECTUM_SVD_JACOBI_ITER_MAX;
@@ -775,21 +780,21 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 		count = n * (n - 1) / 2;
 		for (j = 0; j < n - 1; j++) {
 			for (k = j + 1; k < n; k++) {
-				a = b = p = 0;
-				colXj = &at(A, 0, j);
-				colXk = &at(A, 0, k);
+				x = y = p = 0;
+				Xj = &at(A, 0, j);
+				Xk = &at(A, 0, k);
 				for (i = 0; i < m; i++) {
-					Xij = colXj[i];
-					Xik = colXk[i];
-					a += Xij * Xij;
-					b += Xik * Xik;
-					p += Xij * Xik;
+					a = Xj[i];
+					b = Xk[i];
+					x += a * a;
+					y += b * b;
+					p += a * b;
 				}
 				p *= 2.0f;
-				q = a - b;
+				q = x - y;
 				v = hypotf(p, q);
-				sorted = a >= b;
-				orthog = fabsf(p) <= tol * sqrtf(a * b);
+				sorted = x >= y;
+				orthog = fabsf(p) <= tol * sqrtf(x * y);
 				if (sorted && orthog) {
 					count--;
 				}
@@ -804,19 +809,19 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 						sine = 0.5f * p / (v * cosine);
 					}
 					for (i = 0; i < m; i++) {
-						Xij = colXj[i];
-						Xik = colXk[i];
-						colXj[i] = +Xij * cosine + Xik * sine;
-						colXk[i] = -Xij * sine + Xik * cosine;
+						a = Xj[i];
+						b = Xk[i];
+						Xj[i] = +a * cosine + b * sine;
+						Xk[i] = -a * sine + b * cosine;
 					}
 					if (V) {
-						colXj = &at(V, 0, j);
-						colXk = &at(V, 0, k);
+						Xj = &at(V, 0, j);
+						Xk = &at(V, 0, k);
 						for (i = 0; i < n; i++) {
-							Xij = colXj[i];
-							Xik = colXk[i];
-							colXj[i] = +Xij * cosine + Xik * sine;
-							colXk[i] = -Xij * sine + Xik * cosine;
+							a = Xj[i];
+							b = Xk[i];
+							Xj[i] = +a * cosine + b * sine;
+							Xk[i] = -a * sine + b * cosine;
 						}
 					}
 				}
@@ -882,8 +887,8 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 	int k, i, imin, imax, q, m = n - 1, iter = 0;
 	const int iter_max = DETECTUM_SCHUR_SYMM_ITER_MAX;
 	const float tol = DETECTUM_SCHUR_SYMM_TOL;
-	float d, f, g, x, y, cosine, sine, Xk, Xk1;
-	float* colXk, * colXk1;
+	float a, b, d, f, g, x, y, cosine, sine;
+	float* Uk, * Uk1;
 
 	if (matrixf_decomp_hess(A, U)) {
 		return -1;
@@ -912,25 +917,25 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 				imin = k - 1 < 0 ? 0 : k - 1;
 				imax = k + 2 > n - 1 ? n - 1 : k + 2;
 				for (i = imin; i <= imax; i++) {
-					Xk = at(A, k, i);
-					Xk1 = at(A, k + 1, i);
-					at(A, k, i) = cosine * Xk - sine * Xk1;
-					at(A, k + 1, i) = sine * Xk + cosine * Xk1;
+					a = at(A, k, i);
+					b = at(A, k + 1, i);
+					at(A, k, i) = cosine * a - sine * b;
+					at(A, k + 1, i) = sine * a + cosine * b;
 				}
 				for (i = imin; i <= imax; i++) {
-					Xk = at(A, i, k);
-					Xk1 = at(A, i, k + 1);
-					at(A, i, k) = cosine * Xk - sine * Xk1;
-					at(A, i, k + 1) = sine * Xk + cosine * Xk1;
+					a = at(A, i, k);
+					b = at(A, i, k + 1);
+					at(A, i, k) = cosine * a - sine * b;
+					at(A, i, k + 1) = sine * a + cosine * b;
 				}
 				if (U) {
-					colXk = &at(U, 0, k);
-					colXk1 = &at(U, 0, k + 1);
+					Uk = &at(U, 0, k);
+					Uk1 = &at(U, 0, k + 1);
 					for (i = 0; i < n; i++) {
-						Xk = colXk[i];
-						Xk1 = colXk1[i];
-						colXk[i] = cosine * Xk - sine * Xk1;
-						colXk1[i] = sine * Xk + cosine * Xk1;
+						a = Uk[i];
+						b = Uk1[i];
+						Uk[i] = cosine * a - sine * b;
+						Uk1[i] = sine * a + cosine * b;
 					}
 				}
 				if (k < m - 1) {
@@ -973,8 +978,8 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 	const float tol = DETECTUM_SCHUR_TOL;
 	const float eps = DETECTUM_EPS;
 	float r, s, t, x, y, z, mu, beta, v[3] = { 1, 0, 0 };
-	float sine, cosine, Xk, Xk1;
-	float* colXk, * colXk1;
+	float sine, cosine, a, b;
+	float* Xk, * Xk1;
 
 	if (matrixf_decomp_hess(A, U)) {
 		return -1;
@@ -1097,28 +1102,28 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 				sine = cosine * t;
 			}
 			if (sine != 0) {
-				colXk = &at(A, 0, k);
-				colXk1 = &at(A, 0, k + 1);
+				Xk = &at(A, 0, k);
+				Xk1 = &at(A, 0, k + 1);
 				for (i = 0; i <= k + 1; i++) {
-					Xk = colXk[i];
-					Xk1 = colXk1[i];
-					colXk[i] = Xk * cosine - Xk1 * sine;
-					colXk1[i] = Xk * sine + Xk1 * cosine;
+					a = Xk[i];
+					b = Xk1[i];
+					Xk[i] = a * cosine - b * sine;
+					Xk1[i] = a * sine + b * cosine;
 				}
 				for (j = k; j < n; j++) {
-					Xk = at(A, k, j);
-					Xk1 = at(A, k + 1, j);
-					at(A, k, j) = Xk * cosine - Xk1 * sine;
-					at(A, k + 1, j) = Xk * sine + Xk1 * cosine;
+					a = at(A, k, j);
+					b = at(A, k + 1, j);
+					at(A, k, j) = a * cosine - b * sine;
+					at(A, k + 1, j) = a * sine + b * cosine;
 				}
 				if (U) {
-					colXk = &at(U, 0, k);
-					colXk1 = &at(U, 0, k + 1);
+					Xk = &at(U, 0, k);
+					Xk1 = &at(U, 0, k + 1);
 					for (i = 0; i < n; i++) {
-						Xk = colXk[i];
-						Xk1 = colXk1[i];
-						colXk[i] = Xk * cosine - Xk1 * sine;
-						colXk1[i] = Xk * sine + Xk1 * cosine;
+						a = Xk[i];
+						b = Xk1[i];
+						Xk[i] = a * cosine - b * sine;
+						Xk1[i] = a * sine + b * cosine;
 					}
 				}
 			}
@@ -1126,9 +1131,9 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 				at(A, k + 1, k) = 0;
 			}
 			else {
-				Xk = 0.5f * (at(A, k, k) + at(A, k + 1, k + 1));
-				at(A, k, k) = Xk;
-				at(A, k + 1, k + 1) = Xk;
+				a = 0.5f * (at(A, k, k) + at(A, k + 1, k + 1));
+				at(A, k, k) = a;
+				at(A, k + 1, k + 1) = a;
 			}
 		}
 		for (i = k + 2; i < n; i++) {
@@ -1143,7 +1148,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 {
 	int i, j, k, h;
 	const int n = T->rows;
-	float norm, lamre, lamim, g;
+	float nrm, lamre, lamim, g;
 	Matrixf C = { 0, 0, work }, d = { 0 };
 
 	if (V) {
@@ -1179,9 +1184,9 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 				if (matrixf_solve_lu(&C, &d)) {
 					return -2;
 				}
-				norm = normf(&at(V, 0, k), n, 1);
+				nrm = normf(&at(V, 0, k), n, 1);
 				for (j = 0; j < n; j++) {
-					at(V, j, k) /= norm;
+					at(V, j, k) /= nrm;
 				}
 			}
 			if (W && k < n - 1) { // left eigenvector
@@ -1198,9 +1203,9 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 				if (matrixf_solve_lu(&C, &d)) {
 					return -2;
 				}
-				norm = normf(&at(W, 0, k), n, 1);
+				nrm = normf(&at(W, 0, k), n, 1);
 				for (j = 0; j < n; j++) {
-					at(W, j, k) /= norm;
+					at(W, j, k) /= nrm;
 				}
 			}
 			k += 1;
@@ -1240,10 +1245,10 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 					at(V, k + 1, k) = at(T, k + 1, k);
 					at(V, k, k + 1) = lamim;
 					at(V, k + 1, k + 1) = -g;
-					norm = normf(&at(V, 0, k), 2 * n, 1);
+					nrm = normf(&at(V, 0, k), 2 * n, 1);
 					for (j = 0; j < n; j++) {
-						at(V, j, k) /= norm;
-						at(V, j, k + 1) /= norm;
+						at(V, j, k) /= nrm;
+						at(V, j, k + 1) /= nrm;
 					}
 				}
 				if (W) { // left eigenvectors
@@ -1276,10 +1281,10 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 					at(W, k + 1, k) = lamim;
 					at(W, k, k + 1) = at(T, k + 1, k);
 					at(W, k + 1, k + 1) = 1;
-					norm = normf(&at(W, 0, k), 2 * n, 1);
+					nrm = normf(&at(W, 0, k), 2 * n, 1);
 					for (j = 0; j < n; j++) {
-						at(W, j, k) /= norm;
-						at(W, j, k + 1) /= norm;
+						at(W, j, k) /= nrm;
+						at(W, j, k + 1) /= nrm;
 					}
 				}
 			}
@@ -1311,9 +1316,9 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 					at(V, k, k) = at(V, k + 1, k + 1) = 0;
 					at(V, k + 1, k) = at(T, k + 1, k);
 					at(V, k, k + 1) = lamim;
-					norm = normf(&at(V, 0, k), 2 * n, 1);
+					nrm = normf(&at(V, 0, k), 2 * n, 1);
 					for (j = 0; j < 2 * n; j++) {
-						at(V, j, k) /= norm;
+						at(V, j, k) /= nrm;
 					}
 				}
 				if (W) { // left eigenvectors
@@ -1345,9 +1350,9 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 					at(W, k, k) = at(W, k + 1, k + 1) = 0;
 					at(W, k + 1, k) = at(T, k, k + 1);
 					at(W, k, k + 1) = -lamim;
-					norm = normf(&at(W, 0, k), 2 * n, 1);
+					nrm = normf(&at(W, 0, k), 2 * n, 1);
 					for (j = 0; j < 2 * n; j++) {
-						at(W, j, k) /= norm;
+						at(W, j, k) /= nrm;
 					}
 				}
 			}
@@ -1370,29 +1375,29 @@ int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri)
 	const int n = L->cols;
 	const int h = B->cols;
 	const int q = m < n ? m : n;
-	float Lij, Lii;
-	float* colBi, * colBj;
+	float lij, lii;
+	float* Bi, * Bj;
 
 	if (B->rows != m || X->rows != n || X->cols != h) {
 		return -1;
 	}
 	matrixf_transpose(B);
 	for (i = 0; i < q; i++) {
-		colBi = &at(B, 0, i);
+		Bi = &at(B, 0, i);
 		for (j = 0; j < i; j++) {
-			Lij = at(L, i, j);
-			colBj = &at(B, 0, j);
+			lij = at(L, i, j);
+			Bj = &at(B, 0, j);
 			for (k = 0; k < h; k++) {
-				colBi[k] -= Lij * colBj[k];
+				Bi[k] -= lij * Bj[k];
 			}
 		}
 		if (!unitri) {
-			Lii = at(L, i, i);
-			if (Lii == 0) {
+			lii = at(L, i, i);
+			if (lii == 0) {
 				return -2;
 			}
 			for (k = 0; k < h; k++) {
-				colBi[k] /= Lii;
+				Bi[k] /= lii;
 			}
 		}
 	}
@@ -1421,29 +1426,29 @@ int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri)
 	const int n = U->cols;
 	const int h = B->cols;
 	const int q = m < n ? m : n;
-	float Uij, Uii;
-	float* colBi, * colBj;
+	float uij, uii;
+	float* Bi, * Bj;
 
 	if (B->rows != m || X->rows != n || X->cols != h) {
 		return -1;
 	}
 	matrixf_transpose(B);
 	for (i = q - 1; i >= 0; i--) {
-		colBi = &at(B, 0, i);
+		Bi = &at(B, 0, i);
 		for (j = i + 1; j < q; j++) {
-			Uij = at(U, i, j);
-			colBj = &at(B, 0, j);
+			uij = at(U, i, j);
+			Bj = &at(B, 0, j);
 			for (k = 0; k < h; k++) {
-				colBi[k] -= Uij * colBj[k];
+				Bi[k] -= uij * Bj[k];
 			}
 		}
 		if (!unitri) {
-			Uii = at(U, i, i);
-			if (Uii == 0) {
+			uii = at(U, i, i);
+			if (uii == 0) {
 				return -2;
 			}
 			for (k = 0; k < h; k++) {
-				colBi[k] /= Uii;
+				Bi[k] /= uii;
 			}
 		}
 	}
@@ -1470,8 +1475,8 @@ int matrixf_solve_chol(Matrixf* A, Matrixf* B)
 	int i, j, k;
 	const int n = A->rows;
 	const int p = B->cols;
-	float Aji, Aij, Aii;
-	float* colBi, * colBj;
+	float aji, aij, aii;
+	float* Bi, * Bj;
 
 	if (B->rows != n) {
 		return -1;
@@ -1482,31 +1487,31 @@ int matrixf_solve_chol(Matrixf* A, Matrixf* B)
 	}
 	matrixf_transpose(B);
 	for (i = 0; i < n; i++) {
-		colBi = &at(B, 0, i);
+		Bi = &at(B, 0, i);
 		for (j = 0; j < i; j++) {
-			Aji = at(A, j, i);
-			colBj = &at(B, 0, j);
+			aji = at(A, j, i);
+			Bj = &at(B, 0, j);
 			for (k = 0; k < p; k++) {
-				colBi[k] -= Aji * colBj[k];
+				Bi[k] -= aji * Bj[k];
 			}
 		}
-		Aii = at(A, i, i);
+		aii = at(A, i, i);
 		for (k = 0; k < p; k++) {
-			colBi[k] /= Aii;
+			Bi[k] /= aii;
 		}
 	}
 	for (i = n - 1; i >= 0; i--) {
-		colBi = &at(B, 0, i);
+		Bi = &at(B, 0, i);
 		for (j = i + 1; j < n; j++) {
-			Aij = at(A, i, j);
-			colBj = &at(B, 0, j);
+			aij = at(A, i, j);
+			Bj = &at(B, 0, j);
 			for (k = 0; k < p; k++) {
-				colBi[k] -= Aij * colBj[k];
+				Bi[k] -= aij * Bj[k];
 			}
 		}
-		Aii = at(A, i, i);
+		aii = at(A, i, i);
 		for (k = 0; k < p; k++) {
-			colBi[k] /= Aii;
+			Bi[k] /= aii;
 		}
 	}
 	matrixf_transpose(B);
@@ -1518,38 +1523,38 @@ int matrixf_solve_lu(Matrixf* A, Matrixf* B)
 	int i, j, k;
 	const int n = A->rows;
 	const int p = B->cols;
-	float Aij, Aii;
-	float* colBi, * colBj;
+	float aij, aii;
+	float* Bi, * Bj;
 
 	if (matrixf_decomp_lu(A, 0, B)) {
 		return -1;
 	}
 	matrixf_transpose(B);
 	for (i = 1; i < n; i++) {
-		colBi = &at(B, 0, i);
+		Bi = &at(B, 0, i);
 		for (j = 0; j < i; j++) {
-			Aij = at(A, i, j);
-			colBj = &at(B, 0, j);
+			aij = at(A, i, j);
+			Bj = &at(B, 0, j);
 			for (k = 0; k < p; k++) {
-				colBi[k] -= Aij * colBj[k];
+				Bi[k] -= aij * Bj[k];
 			}
 		}
 	}
 	for (i = n - 1; i >= 0; i--) {
-		colBi = &at(B, 0, i);
+		Bi = &at(B, 0, i);
 		for (j = i + 1; j < n; j++) {
-			Aij = at(A, i, j);
-			colBj = &at(B, 0, j);
+			aij = at(A, i, j);
+			Bj = &at(B, 0, j);
 			for (k = 0; k < p; k++) {
-				colBi[k] -= Aij * colBj[k];
+				Bi[k] -= aij * Bj[k];
 			}
 		}
-		Aii = at(A, i, i);
-		if (Aii == 0) {
+		aii = at(A, i, i);
+		if (aii == 0) {
 			return -2;
 		}
 		for (k = 0; k < p; k++) {
-			colBi[k] /= Aii;
+			Bi[k] /= aii;
 		}
 	}
 	matrixf_transpose(B);
@@ -1561,8 +1566,8 @@ int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, int ubw)
 	int i, j, k, p;
 	const int n = A->rows;
 	const int h = B->cols;
-	float Bik, Aii;
-	float* colBk;
+	float bik, aii;
+	float* Bk;
 
 	if (matrixf_decomp_lu_banded(A, ubw)) {
 		return -1;
@@ -1576,16 +1581,16 @@ int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, int ubw)
 			if (p > n) {
 				p = n;
 			}
-			Bik = at(B, i, k);
-			colBk = &at(B, 0, k);
+			bik = at(B, i, k);
+			Bk = &at(B, 0, k);
 			for (j = i + 1; j < p; j++) {
-				Bik -= at(A, i, j) * colBk[j];
+				bik -= at(A, i, j) * Bk[j];
 			}
-			Aii = at(A, i, i);
-			if (Aii == 0) {
+			aii = at(A, i, i);
+			if (aii == 0) {
 				return -2;
 			}
-			at(B, i, k) = Bik / Aii;
+			at(B, i, k) = bik / aii;
 		}
 	}
 	return 0;
@@ -1626,8 +1631,8 @@ int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 	const int n = A->cols;
 	const int h = B->cols;
 	const int p = m < n ? m : n;
-	float Aij, Aii;
-	float* colBi, * colBj;
+	float aij, aii;
+	float* Bi, * Bj;
 	Matrixf perm = { 1, n, work };
 
 	if (B->rows != m || X->rows != n || X->cols != h) {
@@ -1644,17 +1649,17 @@ int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 	rank = j;
 	matrixf_transpose(B);
 	for (i = rank - 1; i >= 0; i--) {
-		colBi = &at(B, 0, i);
+		Bi = &at(B, 0, i);
 		for (j = i + 1; j < rank; j++) {
-			Aij = at(A, i, j);
-			colBj = &at(B, 0, j);
+			aij = at(A, i, j);
+			Bj = &at(B, 0, j);
 			for (k = 0; k < h; k++) {
-				colBi[k] -= Aij * colBj[k];
+				Bi[k] -= aij * Bj[k];
 			}
 		}
-		Aii = at(A, i, i);
+		aii = at(A, i, i);
 		for (k = 0; k < h; k++) {
-			colBi[k] /= Aii;
+			Bi[k] /= aii;
 		}
 	}
 	matrixf_transpose(B);
@@ -1684,8 +1689,8 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 	const int h = B->cols;
 	const int p = m < n ? m : n;
 	const int q = m > n ? m : n;
-	float Aji, Aii;
-	float* colBi, * colBj;
+	float aji, aii;
+	float* Bi, * Bj;
 	Matrixf perm = { 1, n, work };
 
 	if (B->rows != m || X->rows != n || X->cols != h) {
@@ -1708,17 +1713,17 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 	matrixf_decomp_qr(A, 0, 0, 0);
 	matrixf_transpose(B);
 	for (i = 0; i < rank; i++) {
-		colBi = &at(B, 0, i);
+		Bi = &at(B, 0, i);
 		for (j = 0; j < i; j++) {
-			Aji = at(A, j, i);
-			colBj = &at(B, 0, j);
+			aji = at(A, j, i);
+			Bj = &at(B, 0, j);
 			for (k = 0; k < h; k++) {
-				colBi[k] -= Aji * colBj[k];
+				Bi[k] -= aji * Bj[k];
 			}
 		}
-		Aii = at(A, i, i);
+		aii = at(A, i, i);
 		for (k = 0; k < h; k++) {
-			colBi[k] /= Aii;
+			Bi[k] /= aii;
 		}
 	}
 	matrixf_transpose(B);
@@ -1750,7 +1755,7 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work)
 	const int n = A->cols;
 	const int p = m < n ? m : n;
 	const int q = m > n ? m : n;
-	float sj, rj, * colXj;
+	float sj, rj, * Aj, * Xj;
 	Matrixf V = { p, p, work + p };
 	Matrixf* X = (m < n) ? A : &V;
 
@@ -1762,16 +1767,16 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work)
 		tol = q * epsf(normf(&at(A, 0, 0), q, 1));
 	}
 	for (j = 0; j < p; j++) {
-		colXj = &at(A, 0, j);
-		sj = normf(colXj, q, 1);
+		Aj = &at(A, 0, j);
+		sj = normf(Aj, q, 1);
 		if (sj > 0) {
 			rj = sj > tol ? 1.0f / sj : 0;
 			for (i = 0; i < q; i++) {
-				colXj[i] /= sj;
+				Aj[i] /= sj;
 			}
-			colXj = &at(X, 0, j);
+			Xj = &at(X, 0, j);
 			for (i = 0; i < n; i++) {
-				colXj[i] *= rj;
+				Xj[i] *= rj;
 			}
 		}
 	}
@@ -1855,7 +1860,7 @@ int matrixf_log(Matrixf* A, float* work)
 	const int n = A->rows;
 	const int nterms = DETECTUM_LOG_NTERMS;
 	const float thr = DETECTUM_LOG_ISS_THR;
-	float tmp, norm1;
+	float tmp, nrm1;
 	Matrixf U = { n, n, work + n };
 	Matrixf N = { n, n, work + n + n * n };
 	Matrixf D = { n, n, work + n + n * n * 2 };
@@ -1873,15 +1878,15 @@ int matrixf_log(Matrixf* A, float* work)
 			return -3;
 		}
 		s <<= 1;
-		for (norm1 = 0, k = 0; k < n; k++) {
+		for (nrm1 = 0, k = 0; k < n; k++) {
 			for (tmp = 0, i = 0; i < n; i++) {
 				tmp += fabsf(at(A, i, k) - (i == k));
 			}
-			if (tmp > norm1) {
-				norm1 = tmp;
+			if (tmp > nrm1) {
+				nrm1 = tmp;
 			}
 		}
-	} while (norm1 > thr);
+	} while (nrm1 > thr);
 	matrixf_transpose(A);
 	for (k = 0; k < n * n; k++) {
 		f = !(k % (n + 1));
@@ -2071,7 +2076,7 @@ int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 	const int q = transB ? B->cols : B->rows;
 	const int r = transB ? B->rows : B->cols;
 	const int f = transA && (A == B) ? !transB : transB;
-	float b, * colAk, * colCj;
+	float b, * Ak, * Cj;
 
 	for (i = 0; i < m * n; i++) {
 		C->data[i] *= beta;
@@ -2086,13 +2091,13 @@ int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 		return -1;
 	}
 	for (j = 0; j < n; j++) {
-		colCj = &at(C, 0, j);
+		Cj = &at(C, 0, j);
 		for (k = 0; k < p; k++) {
 			b = f ? at(B, j, k) : at(B, k, j);
 			b *= alpha;
-			colAk = &at(A, 0, k);
+			Ak = &at(A, 0, k);
 			for (i = 0; i < m; i++) {
-				colCj[i] += colAk[i] * b;
+				Cj[i] += Ak[i] * b;
 			}
 		}
 	}
@@ -2108,7 +2113,7 @@ int matrixf_multiply_inplace(Matrixf* A, Matrixf* L, Matrixf* R,
 	int i, j, k;
 	const int m = A->rows;
 	const int n = A->cols;
-	float* colA, * colX;
+	float* Aj, * Xi, * Xk;
 
 	if (L) {
 		if (m != L->rows || m != L->cols) {
@@ -2116,30 +2121,30 @@ int matrixf_multiply_inplace(Matrixf* A, Matrixf* L, Matrixf* R,
 		}
 		if (transL) { // A = L' * A
 			for (j = 0; j < n; j++) {
-				colA = &at(A, 0, j);
+				Aj = &at(A, 0, j);
 				for (i = 0; i < m; i++) {
-					work[i] = colA[i];
-					colA[i] = 0;
+					work[i] = Aj[i];
+					Aj[i] = 0;
 				}
 				for (i = 0; i < m; i++) {
-					colX = &at(L, 0, i);
+					Xi = &at(L, 0, i);
 					for (k = 0; k < m; k++) {
-						colA[i] += work[k] * colX[k];
+						Aj[i] += work[k] * Xi[k];
 					}
 				}
 			}
 		}
 		else { // A = L * A
 			for (j = 0; j < n; j++) {
-				colA = &at(A, 0, j);
+				Aj = &at(A, 0, j);
 				for (i = 0; i < m; i++) {
-					work[i] = colA[i];
-					colA[i] = 0;
+					work[i] = Aj[i];
+					Aj[i] = 0;
 				}
 				for (k = 0; k < m; k++) {
-					colX = &at(L, 0, k);
+					Xk = &at(L, 0, k);
 					for (i = 0; i < m; i++) {
-						colA[i] += work[k] * colX[i];
+						Aj[i] += work[k] * Xk[i];
 					}
 				}
 			}
@@ -2152,30 +2157,30 @@ int matrixf_multiply_inplace(Matrixf* A, Matrixf* L, Matrixf* R,
 		matrixf_transpose(A);
 		if (transR) { // A = A * R'
 			for (j = 0; j < m; j++) {
-				colA = &at(A, 0, j);
+				Aj = &at(A, 0, j);
 				for (i = 0; i < n; i++) {
-					work[i] = colA[i];
-					colA[i] = 0;
+					work[i] = Aj[i];
+					Aj[i] = 0;
 				}
 				for (k = 0; k < n; k++) {
-					colX = &at(R, 0, k);
+					Xk = &at(R, 0, k);
 					for (i = 0; i < n; i++) {
-						colA[i] += work[k] * colX[i];
+						Aj[i] += work[k] * Xk[i];
 					}
 				}
 			}
 		}
 		else { // A = A * R
 			for (j = 0; j < m; j++) {
-				colA = &at(A, 0, j);
+				Aj = &at(A, 0, j);
 				for (i = 0; i < n; i++) {
-					work[i] = colA[i];
-					colA[i] = 0;
+					work[i] = Aj[i];
+					Aj[i] = 0;
 				}
 				for (i = 0; i < n; i++) {
-					colX = &at(R, 0, i);
+					Xi = &at(R, 0, i);
 					for (k = 0; k < n; k++) {
-						colA[i] += work[k] * colX[k];
+						Aj[i] += work[k] * Xi[k];
 					}
 				}
 			}

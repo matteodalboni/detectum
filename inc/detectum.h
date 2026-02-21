@@ -130,6 +130,7 @@ static inline void matrixf_print(Matrixf* A, const char* format)
 static inline Matrixf matrixf(int rows, int cols)
 {
 	Matrixf A = { rows, cols, calloc(sizeof(float), rows * cols) };
+
 	return A;
 }
 #endif
