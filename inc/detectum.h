@@ -200,17 +200,17 @@ int matrixf_decomp_lu_banded(Matrixf* A, int ubw);
 // This function unpacks the compact form of LU decomposition of the banded 
 // Hessenberg matrix A. In particular, the function accumulates the inverse of
 // the permuted lower triangular matrix L onto B, transforming B into inv(L)*B.
-// Matrix A remains the same. For instance, this function enables the solution
-// to the linear system U*x = inv(L)*B, determining its right-hand side. On 
-// size mismatch, the function returns -1. On success, it returns 0.
+// The matrix A remains the same. For instance, this function enables the 
+// solution to the linear system U*x = inv(L)*B, determining its right-hand 
+// side. On size mismatch, the function returns -1. On success, it returns 0.
 int matrixf_unpack_lu_banded(Matrixf* A, Matrixf* B);
 
 // This function performs the QR decomposition of the m-by-n matrix A, which is
 // transformed into matrix R. If Q is a null pointer, the explicit formation of 
-// the orthogonal matrix is omitted, and the strictly lower triangular part of A 
-// stores the essential parts of the Householder vectors, which can be used to
-// accumulate Q afterwards. For the sake of clarity, the essential part of a 
-// Householder vector comprises all elements but the first, which is always 1. 
+// the orthogonal matrix is omitted and, on output, the strictly lower triangular
+// part of A stores the essential parts of the Householder vectors, which can be 
+// used to accumulate Q afterwards. For the sake of clarity, the essential part of 
+// a Householder vector comprises all elements but the first, which is always 1. 
 // If perm is a non-null pointer, the decomposition makes use of column pivoting 
 // so that A*P = Q*R, where P is the permutation matrix encoded by the vector
 // perm. The vector perm must be initialized as a 1-by-n vector. Additionally, 
@@ -241,10 +241,10 @@ int matrixf_unpack_house(Matrixf* A, Matrixf* B, int s, int fwd);
 // pointers. If U (V) is a null pointer, the essential parts of the Householder
 // vectors are stored off the bidiagonal band and can be used to accumulate U 
 // (V) afterwards. In particular: 
-// - if m >= n, U is encoded below the main diagonal of A, while V is encoded 
+// - if m >= n, U is encoded below the main diagonal of A, whereas V is encoded 
 //   below the first subdiagonal of A';
-// - if m < n, U is encoded below the first subdiagonal of A, while V is encoded 
-//   below the main diagonal of A'.
+// - if m < n, U is encoded below the first subdiagonal of A, whereas V is 
+//   encoded below the main diagonal of A'.
 // The function can also produce the economy-size decomposition such that:
 // - if m > n, only the first n columns of U are computed (thin U) and the last 
 //   m - n rows of B are excluded so that B becomes n-by-n; to enable the 
@@ -328,11 +328,11 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V);
 
 // This function performs the Hessenberg decomposition of the square matrix A, 
 // which is transformed into the Hessenberg matrix H so that A = P*H*P'. If P 
-// is a null pointer, the explicit formation of the orthogonal matrix is omitted,
-// and the triangular part of A below the first subdiagonal stores the essential 
-// parts of the Householder vectors, which can be used to accumulate P afterwards. 
-// The function returns -1 if the matrices are not square or on size mismatch.
-// On success, it returns 0.
+// is a null pointer, the explicit formation of the orthogonal matrix is omitted
+// and, on output, the triangular part of A below the first subdiagonal stores the
+// essential parts of the Householder vectors, which can be used to accumulate P 
+// afterwards. The function returns -1 if the matrices are not square or on size 
+// mismatch. On success, it returns 0.
 int matrixf_decomp_hess(Matrixf* A, Matrixf* P);
 
 // This function performs the Schur decomposition of the symmetric matrix A so that
@@ -387,7 +387,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 // This function performs the forward substitution on the lower-triangular
 // matrix L to solve the the system L*X = B for X. The flag unitri indicates
 // whether L is unitriangular: if the flag is enabled, the elements on the main
-// diagonal are ignored. Matrix L remains the same while B is destroyed. Also, 
+// diagonal are ignored. Matrix L remains the same, whereas B is destroyed. Also, 
 // the matrix B can share the data array with X, provided that the array is 
 // large enough to accommodate the larger of B or X. If L is rank deficient, 
 // it returns -2. On size mismatch, it returns -1. On success, it returns 0.
@@ -396,7 +396,7 @@ int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri);
 // This function performs the backward substitution on the upper-triangular
 // matrix U to solve the the system U*X = B for X. The flag unitri indicates
 // whether U is unitriangular: if the flag is enabled, the elements on the main
-// diagonal are ignored. Matrix U remains the same while B is destroyed. Also,
+// diagonal are ignored. Matrix U remains the same, whereas B is destroyed. Also,
 // the matrix B can share the data array with X, provided that the array is 
 // large enough to accommodate the larger of B or X. If U is rank deficient, 
 // it returns -2. On size mismatch, it returns -1. On success, it returns 0.
@@ -404,26 +404,27 @@ int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri);
 
 // This function solves in place the linear system A*X = B for X by Cholesky
 // decomposition of the square symmetric positive definite matrix A. The upper 
-// triangular part of A is transformed according to Cholesky decomposition
-// while B is overwritten with the matrix X. If A is not positive definite, the 
+// triangular part of A is transformed according to Cholesky decomposition,
+// whereas B is overwritten with the matrix X. If A is not positive definite, the 
 // function returns -2. On size mismatch or non-square system, the function 
 // returns -1. On success, it returns 0.
 int matrixf_solve_chol(Matrixf* A, Matrixf* B);
 
 // This function solves in place the linear system A*X = B for X by LU
 // decomposition with partial pivoting of the square matrix A. The matrix A
-// is transformed according to LU decomposition while B is overwritten with the 
-// matrix X. If A is singular, the function returns -2. On size mismatch or 
+// is transformed according to LU decomposition, whereas B is overwritten with 
+// the matrix X. If A is singular, the function returns -2. On size mismatch or 
 // non-square system, the function returns -1. On success, it returns 0.
 int matrixf_solve_lu(Matrixf* A, Matrixf* B);
 
 // This function solves in place the linear system A*X = B for X by LU
 // decomposition with partial pivoting of the banded Hessenberg matrix A. In 
 // particular, A must be a Hessenberg matrix with upper bandwidth ubw >= 0. For
-// instance, if ubw = 1, A is tridiagonal. Matrix A is destroyed, whereas B is 
-// overwritten with the matrix X. If A is singular, the function returns -2. On
-// size mismatch, non-square system or ubw < 0, the function returns -1. On 
-// success, it returns 0.
+// instance, if ubw = 1, A is tridiagonal. The upper triangular part of matrix 
+// A and its first subdiagonal are destroyed, whereas B is overwritten with the
+// matrix X. If A is singular, the function returns -2. On size mismatch, 
+// non-square system or ubw < 0, the function returns -1. On success, it 
+// returns 0.
 int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, int ubw);
 
 // This function solves the linear system A*X = B by QR decomposition of the 

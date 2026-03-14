@@ -24,11 +24,11 @@ int main()
     
     matrixf_init(&A, m, n, A_data, 1);
     matrixf_init(&b, m, 1, b_data, 0);
-    printf("A = \n"); matrixf_print(&A, "%9.0f"); printf("\n");
+    printf("\nA = \n"); matrixf_print(&A, "%9.0f");
     matrixf_pseudoinv(&A, -1, work);
-    printf("pinv(A) = \n"); matrixf_print(&A, "%9.4f"); printf("\n");
+    printf("\npinv(A) = \n"); matrixf_print(&A, "%9.4f");
     matrixf_multiply(&A, &b, &x, 1, 0, 0, 0);
-    printf("x = \n"); matrixf_print(&x, "%9.4f"); printf("\n");
+    printf("\nx = \n"); matrixf_print(&x, "%9.4f");
 
 	return 0;
 }

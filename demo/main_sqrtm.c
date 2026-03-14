@@ -28,11 +28,11 @@ int main()
 	};
 	matrixf_init(&A, n, n, A_data, 1);
 #endif
-	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
+	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
 	exitflag = matrixf_sqrt(&A, work);
-	printf("X = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
+	printf("\nX = \n"); matrixf_print(&A, "%9.4f ");
 	matrixf_multiply(&A, &A, &XX, 1, 0, 0, 0);
-	printf("X*X = \n"); matrixf_print(&XX, "%9.4f "); printf("\n");
+	printf("\nX*X = \n"); matrixf_print(&XX, "%9.4f ");
 
 	return exitflag;
 }

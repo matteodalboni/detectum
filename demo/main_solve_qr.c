@@ -25,10 +25,10 @@ int main()
 	for (j = 0; j < B.cols; j++)
 		for (i = 0; i < B.rows; i++)
 			at(&B, i, j) = j + 1.0f;
-	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
-	printf("B = \n"); matrixf_print(&B, "%9.4f "); printf("\n");
+	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
+	printf("\nB = \n"); matrixf_print(&B, "%9.4f ");
 	matrixf_solve_qrp(&A, &B, &X, -1, work);
-	printf("X = \n"); matrixf_print(&X, "%9.4f "); printf("\n");
+	printf("\nX = \n"); matrixf_print(&X, "%9.4f ");
 
 	free(A.data);
 	free(B.data);

@@ -62,8 +62,8 @@ int main()
 	matrixf_init(&A, n, n, A_data, 1);
 	for (i = 0; i < n * n; i++) T.data[i] = A_data[i];
 	matrixf_decomp_schur(&T, 0);
-	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
-	printf("T = \n"); matrixf_print(&T, "%9.4f "); printf("\n");
+	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
+	printf("\nT = \n"); matrixf_print(&T, "%9.4f ");
 
 	for (k = 0; k < n; k++) {
 		eigval_re = at(&T, k, k);

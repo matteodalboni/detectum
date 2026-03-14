@@ -49,14 +49,14 @@ int main()
 		}
 	}
 #endif
-	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
-	printf("B = \n"); matrixf_print(&B, "%9.4f "); printf("\n");
+	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
+	printf("\nB = \n"); matrixf_print(&B, "%9.4f ");
 	for (i = 0; i < n * p; i++) X.data[i] = B.data[i];
 	for (i = 0; i < n * n; i++) C.data[i] = A.data[i];
 	if (matrixf_solve_lu_banded(&A, &X, ubw)) return -1;
-	printf("X = \n"); matrixf_print(&X, "%9.4f "); printf("\n");
+	printf("\nX = \n"); matrixf_print(&X, "%9.4f ");
 	matrixf_multiply(&C, &X, &B, 1, -1, 0, 0);
-	printf("||A*X - B||_F = %g\n", normf(B.data, n * p, 1));
+	printf("\n||A*X - B||_F = %g\n", normf(B.data, n * p, 1));
 
 	return 0;
 }

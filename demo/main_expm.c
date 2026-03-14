@@ -34,7 +34,7 @@ int main()
 	Matrixf A = { 0 };
 
 	matrixf_init(&A, N, N, A_data, 1);
-	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
+	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
 #if METHOD // using dedicated function (more accurate)
 	float work[N * (3 * N + 1)] = { 0 };
 
@@ -92,7 +92,7 @@ int main()
 	free(U.data);
 	free(V.data);
 #endif
-	printf("exp(A) = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
+	printf("\nexp(A) = \n"); matrixf_print(&A, "%9.4f ");
 
 	return 0;
 }

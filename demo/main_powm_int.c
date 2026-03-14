@@ -64,9 +64,9 @@ int main()
 	unsigned int p = 15;
 
 	matrixf_init(&A, 3, 3, A_data, 1);
-	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
+	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
 	powmi(&A, p, work);
-	printf("A^%d = \n", p); matrixf_print(&A, "%9.4f "); printf("\n");
+	printf("\nA^%d = \n", p); matrixf_print(&A, "%9.4f ");
 
 	return 0;
 }

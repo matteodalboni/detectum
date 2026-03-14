@@ -39,8 +39,8 @@ int main()
 	Matrixf A;
 
 	matrixf_init(&A, n, n, A_data, 1);
-	printf("A = \n"); matrixf_print(&A, "%5.4g "); printf("\n");
+	printf("\nA = \n"); matrixf_print(&A, "%5.4g ");
 	exitflag = powm(&A, p, work);
-	printf("A^(%g) = \n", p); matrixf_print(&A, "%9.4f "); printf("\n");
+	printf("\nA^(%g) = \n", p); matrixf_print(&A, "%9.4f ");
 	return exitflag;
 }

@@ -167,7 +167,7 @@ int main()
 	Matrixf R = { n, n, R_data };
 
 	matrixf_transpose(&A);
-	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
+	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
 
 	matrixf_decomp_hess(&A, &U);
 	matrixf_transpose(&U);
@@ -189,18 +189,18 @@ int main()
 	}
 	matrixf_transpose(&U);
 
-	printf("# iterations: %d\n\n", ITER - iter);
+	printf("\n# iterations: %d\n", ITER - iter);
 
 	for (i = 0; i < n * n; i++) R.data[i] = A.data[i];
-	printf("T = \n"); matrixf_print(&R, "%9.4f "); printf("\n");
-	printf("U = \n"); matrixf_print(&U, "%9.4f "); printf("\n");
+	printf("\nT = \n"); matrixf_print(&R, "%9.4f ");
+	printf("\nU = \n"); matrixf_print(&U, "%9.4f ");
 	get_eigvals(&R, lambda, lambda + n);
 
 	matrixf_multiply(&U, &R, &Q, 1, 0, 0, 0);
 	matrixf_multiply(&Q, &U, &A, 1, 0, 0, 1);
-	printf("U*T*U' = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
+	printf("\nU*T*U' = \n"); matrixf_print(&A, "%9.4f ");
 
-	printf("Eigenvalues\n");
+	printf("\nEigenvalues\n");
 	for (i = 0; i < n; i++) {
 		printf("%4d: %+.4f", i + 1, lambda[i]);
 		if (lambda[i + n]) printf("%+.4fi", lambda[i + n]);
@@ -225,15 +225,15 @@ int main()
 	Matrixf T = { n, n, T_data };
 
 	matrixf_transpose(&A);
-	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
+	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
 
 	matrixf_decomp_hess(&A, &P);
-	printf("H = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
-	printf("P = \n"); matrixf_print(&P, "%9.4f "); printf("\n");
+	printf("\nH = \n"); matrixf_print(&A, "%9.4f ");
+	printf("\nP = \n"); matrixf_print(&P, "%9.4f ");
 
 	//matrixf_multiply(&P, &A, &T, 1, 0, 0, 0);
 	//matrixf_multiply(&T, &P, &A, 1, 0, 0, 1);
-	//printf("P*H*P' = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
+	//printf("\nP*H*P' = \n"); matrixf_print(&A, "%9.4f ");
 
 	for (i = 0; i < n * n; i++) T.data[i] = A.data[i];
 
@@ -250,15 +250,15 @@ int main()
 	for (i = 0; i < n - 1; i++)
 		if (fabsf(at(&T, i + 1, i)) < TOL) at(&T, i + 1, i) = 0;
 
-	printf("T = \n"); matrixf_print(&T, "%9.4f "); printf("\n");
-	printf("U = \n"); matrixf_print(&U, "%9.4f "); printf("\n");
+	printf("\nT = \n"); matrixf_print(&T, "%9.4f ");
+	printf("\nU = \n"); matrixf_print(&U, "%9.4f ");
 	get_eigvals(&T, lambda, lambda + n);
 
 	matrixf_multiply(&U, &T, &A, 1, 0, 0, 0);
 	matrixf_multiply(&A, &U, &T, 1, 0, 0, 1);
-	printf("U*T*U' = \n"); matrixf_print(&T, "%9.4f "); printf("\n");
+	printf("\nU*T*U' = \n"); matrixf_print(&T, "%9.4f ");
 
-	printf("Eigenvalues\n");
+	printf("\nEigenvalues\n");
 	for (i = 0; i < n; i++) {
 		printf("%4d: %+.4f", i + 1, lambda[i]);
 		if (lambda[i + n]) printf("%+.4fi", lambda[i + n]);
@@ -280,21 +280,21 @@ int main()
 	Matrixf B = { n, n, B_data };
 
 	matrixf_transpose(&A);
-	printf("A = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
+	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
 
 	iter = matrixf_decomp_schur(&A, &U);
 
-	printf("# iterations: %d\n\n", iter);
+	printf("\n# iterations: %d\n", iter);
 
-	printf("T = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
-	printf("U = \n"); matrixf_print(&U, "%9.4f "); printf("\n");
+	printf("\nT = \n"); matrixf_print(&A, "%9.4f ");
+	printf("\nU = \n"); matrixf_print(&U, "%9.4f ");
 	get_eigvals(&A, lambda, lambda + n);
 
 	matrixf_multiply(&U, &A, &B, 1, 0, 0, 0);
 	matrixf_multiply(&B, &U, &A, 1, 0, 0, 1);
-	printf("U*T*U' = \n"); matrixf_print(&A, "%9.4f "); printf("\n");
+	printf("\nU*T*U' = \n"); matrixf_print(&A, "%9.4f ");
 
-	printf("Eigenvalues\n");
+	printf("\nEigenvalues\n");
 	for (i = 0; i < n; i++) {
 		printf("%4d: %+.5f", i + 1, lambda[i]);
 		if (lambda[i + n]) printf("%+.5fi", lambda[i + n]);

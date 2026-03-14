@@ -2,9 +2,6 @@
 #include <stdio.h>
 #include "detectum.h"
 
-#define disp(A, format) \
-do{ printf(#A" = \n"); matrixf_print(&A, format); printf("\n");} while (0)
-
 static void print_complex_eigenvectors(Matrixf* T, Matrixf* V)
 {
 	int i, j;
@@ -23,7 +20,6 @@ static void print_complex_eigenvectors(Matrixf* T, Matrixf* V)
 		}
 		printf("\n");
 	}
-	printf("\n");
 }
 
 #define n 4
@@ -58,37 +54,37 @@ int main()
 	matrixf_decomp_schur(&T, &U);
 	matrixf_multiply(&U, &T, &V, 1, 0, 0, 0);
 	matrixf_multiply(&V, &U, &A, 1, 0, 0, 1);
-	disp(A, "%9.4f ");
-	disp(T, "%9.4f ");
-	disp(U, "%9.4f ");
+	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
+	printf("\nT = \n"); matrixf_print(&T, "%9.4f ");
+	printf("\nU = \n"); matrixf_print(&U, "%9.4f ");
 
-	printf("Eigenvectors (compact form):\n\n");
+	printf("\n\nEigenvectors (compact form):\n");
 	if (matrixf_get_eigenvectors(&T, &U, &V, &W, 0, work)) return 1;
-	disp(V, "%9.4f ");
-	disp(W, "%9.4f ");
+	printf("\nV = \n"); matrixf_print(&V, "%9.4f ");
+	printf("\nW = \n"); matrixf_print(&W, "%9.4f ");
 
-	printf("Eigenvectors (full form):\n\n");
-	printf("V = \n"); print_complex_eigenvectors(&T, &V);
-	printf("W = \n"); print_complex_eigenvectors(&T, &W);
+	printf("\n\nEigenvectors (full form):\n");
+	printf("\nV = \n"); print_complex_eigenvectors(&T, &V);
+	printf("\nW = \n"); print_complex_eigenvectors(&T, &W);
 
-	printf("Pseudo-eigenvectors:\n\n");
+	printf("\n\nPseudo-eigenvectors:\n");
 	if (matrixf_get_eigenvectors(&T, &U, &V, &W, 1, work)) return 1;
-	disp(V, "%9.4f ");
-	disp(W, "%9.4f ");
+	printf("\nV = \n"); matrixf_print(&V, "%9.4f ");
+	printf("\nW = \n"); matrixf_print(&W, "%9.4f ");
 	
-	printf("If V is invertible, block-diagonalize A:\n\n");
+	printf("\nIf V is invertible, block-diagonalize A:\n");
 	matrixf_multiply(&A, &V, &D, 1, 0, 0, 0);
 	matrixf_solve_lu(&V, &D);
 	for (i = 0; i < n * n; i++)
 		if (fabsf(D.data[i]) < TOL) D.data[i] = 0;
-	printf("inv(V)*A*V = "); disp(D, "%9.4g ");
+	printf("\ninv(V)*A*V = \n"); matrixf_print(&D, "%9.4g ");
 	
-	printf("If W is invertible, block-diagonalize A:\n\n");
+	printf("\nIf W is invertible, block-diagonalize A:\n");
 	matrixf_multiply(&A, &W, &D, 1, 0, 1, 0);
 	matrixf_solve_lu(&W, &D); matrixf_transpose(&D);
 	for (i = 0; i < n * n; i++)
 		if (fabsf(D.data[i]) < TOL) D.data[i] = 0;
-	printf("W'*A*inv(W') = "); disp(D, "%9.4g ");
+	printf("\nW'*A*inv(W') = \n"); matrixf_print(&D, "%9.4g ");
 
 	free(A.data);
 	free(T.data);
