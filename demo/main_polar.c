@@ -16,7 +16,6 @@ int main()
 	float work[n];
 	Matrixf(U, m, n);
 	Matrixf(V, n, n);
-	Matrixf(R, m, n);
 	Matrixf A;
 
 	matrixf_init(&A, m, n, A_data, 1);
