@@ -460,6 +460,18 @@ int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 // On size mismatch, the function returns -1. On success, it returns 0.
 int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work);
 
+// This function solves the linear system C*x = d for x subject to lb <= x <= ub.
+// If C is m-by-n, d must be specified as an m-by-1 vector and x must be specified
+// as an n-by-1 vector. The initial x is the starting point. x is replaced by the
+// solution vector. Conversely, C and d remain the same. lb and ub are the lower
+// and upper bounds, respectively: they must be specified as arrays with length n.
+// tol is the termination tolerance: if the input value is negative, the default 
+// 10*max(m,n)*eps(norm(C,1)) is used instead, where norm(C,1) is the 1-norm of C.
+// The array work is the additional workspace memory: its minimum length is 
+// 2*n+m*n+min(m,n).
+int matrixf_solve_bounded(Matrixf* C, Matrixf* d, Matrixf* x,
+	float* lb, float* ub, float tol, float* work);
+
 // This function substitutes the m-by-n input matrix A with its Moore-Penrose
 // pseudoinverse obtained by Jacobi SVD. tol is the tolerance to treat singular
 // values as zero: if the input tolerance is negative, the default value 

@@ -1748,6 +1748,196 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 	return 0;
 }
 
+int matrixf_solve_bounded(Matrixf* C, Matrixf* d, Matrixf* x,
+	float* lb, float* ub, float tol, float* work)
+{
+	int i, j, k, t;
+	int ito = 0, iti = 0;
+	int converged, exit;
+	const int m = C->rows;
+	const int n = C->cols;
+	const int itimax = 3 * n;
+	float nrm1, tmp, alpha;
+	float* xset = work;
+	float* w_data = work + n;
+	float* Cf_data = work + 2 * n;
+	float* df_data = work + 2 * n + m * n;
+	Matrixf Cf = { m, 0, Cf_data };
+	Matrixf df = { m, 1, df_data };
+	Matrixf z = { n, 1, df_data };
+	Matrixf w = { n, 1, w_data };
+
+	if (d->rows != m || d->cols != 1 ||
+		x->rows != n || x->cols != 1) {
+		return -1;
+	}
+	if (tol < 0) {
+		for (nrm1 = 0, j = 0; j < n; j++) {
+			for (tmp = 0, i = 0; i < m; i++) {
+				tmp += fabsf(at(C, i, j));
+			}
+			if (nrm1 < tmp) {
+				nrm1 = tmp;
+			}
+		}
+		tol = 10.0f * (m > n ? m : n) * epsf(nrm1);
+	}
+	for (j = 0; j < n; j++) {
+		xset[j] = 0;
+		z.data[j] = x->data[j];
+		if (z.data[j] <= lb[j]) {
+			z.data[j] = lb[j];
+			xset[j] = -1;
+		}
+		else if (z.data[j] >= ub[j]) {
+			z.data[j] = ub[j];
+			xset[j] = 1;
+		}
+	}
+	while (1) {
+		for (j = 0; j < n; j++) {
+			x->data[j] = z.data[j];
+		}
+		for (i = 0; i < m; i++) {
+			df_data[i] = d->data[i];
+		}
+		matrixf_multiply(C, x, &df, -1.0f, 1.0f, 0, 0);
+		matrixf_multiply(C, &df, &w, 1, 0, 1, 0);
+		for (j = 0; j < n; j++) {
+			if (xset[j] > 0) {
+				w.data[j] *= -1.0f;
+			}
+		}
+		if (ito) {
+			converged = 1;
+			for (j = 0; j < n; j++) {
+				if (xset[j] && w.data[j] >= tol) {
+					converged = 0;
+					break;
+				}
+			}
+			if (converged) {
+				return ito;
+			}
+		}
+		ito++;
+		tmp = -INFINITY;
+		for (t = 0, j = 0; j < n; j++) {
+			if (xset[j] && w.data[j] > tmp) {
+				tmp = w.data[j];
+				t = j;
+			}
+		}
+		xset[t] = 0;
+		for (k = 0, j = 0; j < n; j++) {
+			if (xset[j] == 0) {
+				for (i = 0; i < m; i++) {
+					Cf_data[i + k * m] = at(C, i, j);
+				}
+				k++;
+			}
+		}
+		Cf.cols = k;
+		for (i = 0; i < m; i++) {
+			df_data[i] = d->data[i];
+			for (j = 0; j < n; j++) {
+				if (xset[j]) {
+					df_data[i] -= at(C, i, j) * x->data[j];
+				}
+			}
+		}
+		z.rows = k;
+		matrixf_solve_qrp(&Cf, &df, &z, -1, w_data);
+		z.rows = n;
+		for (j = n - 1; j >= 0; j--) {
+			if (xset[j] < 0) {
+				z.data[j] = lb[j];
+			}
+			else if (xset[j] > 0) {
+				z.data[j] = ub[j];
+			}
+			else {
+				z.data[j] = z.data[--k];
+			}
+		}
+		while (1) {
+			for (exit = 1, j = 0; j < n; j++) {
+				if (xset[j] == 0 && (z.data[j] <= lb[j] || z.data[j] >= ub[j])) {
+					exit = 0;
+					break;
+				}
+			}
+			if (exit) {
+				break;
+			}
+			iti++;
+			if (iti > itimax) {
+				for (j = 0; j < n; j++) {
+					x->data[j] = z.data[j];
+				}
+				return 0;
+			}
+			alpha = INFINITY;
+			for (j = 0; j < n; j++) {
+				if (z.data[j] <= lb[j] && xset[j] == 0) {
+					tmp = fabsf((lb[j] - x->data[j]) / (z.data[j] - x->data[j]));
+					if (tmp < alpha) {
+						alpha = tmp;
+					}
+				}
+				if (z.data[j] >= ub[j] && xset[j] == 0) {
+					tmp = fabsf((ub[j] - x->data[j]) / (z.data[j] - x->data[j]));
+					if (tmp < alpha) {
+						alpha = tmp;
+					}
+				}
+			}
+			for (j = 0; j < n; j++) {
+				x->data[j] += alpha * (z.data[j] - x->data[j]);
+				if (xset[j] == 0) {
+					if (x->data[j] - lb[j] < tol) {
+						xset[j] = -1;
+					}
+					else if (ub[j] - x->data[j] < tol) {
+						xset[j] = 1;
+					}
+				}
+			}
+			for (k = 0, j = 0; j < n; j++) {
+				if (xset[j] == 0) {
+					for (i = 0; i < m; i++) {
+						Cf_data[i + k * m] = at(C, i, j);
+					}
+					k++;
+				}
+			}
+			Cf.cols = k;
+			for (i = 0; i < m; i++) {
+				df_data[i] = d->data[i];
+				for (j = 0; j < n; j++) {
+					if (xset[j]) {
+						df_data[i] -= at(C, i, j) * x->data[j];
+					}
+				}
+			}
+			z.rows = k;
+			matrixf_solve_qrp(&Cf, &df, &z, -1, w_data);
+			z.rows = n;
+			for (j = n - 1; j >= 0; j--) {
+				if (xset[j] < 0) {
+					z.data[j] = lb[j];
+				}
+				else if (xset[j] > 0) {
+					z.data[j] = ub[j];
+				}
+				else {
+					z.data[j] = z.data[--k];
+				}
+			}
+		}
+	}
+}
+
 int matrixf_pseudoinv(Matrixf* A, float tol, float* work)
 {
 	int i, j, iter;
