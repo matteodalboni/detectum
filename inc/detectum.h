@@ -461,6 +461,9 @@ int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work);
 
 // This function solves the linear system C*x = d for x subject to lb <= x <= ub.
+// The algorithm is a variant of the classic bounded-variable least-squares solver
+// by Stark and Parker, which is in turn the natural genralization of the seminal
+// active-set method for nonnegative least squares by Lawson and Hanson.
 // If C is m-by-n, d must be specified as an m-by-1 vector and x must be specified
 // as an n-by-1 vector. The initial x is the starting point. x is replaced by the
 // solution vector. Conversely, C and d remain the same. lb and ub are the lower
@@ -468,7 +471,9 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 // tol is the termination tolerance: if the input value is negative, the default 
 // 10*max(m,n)*eps(norm(C,1)) is used instead, where norm(C,1) is the 1-norm of C.
 // The array work is the additional workspace memory: its minimum length is 
-// 2*n+m*n+min(m,n).
+// (m+2)*n+max(m,n). The function returns -1 on size mismatch. It returns -2 if 
+// the maximum number of iterations is reached. On success, it returns the number
+// of iterations taken.
 int matrixf_solve_bounded(Matrixf* C, Matrixf* d, Matrixf* x,
 	float* lb, float* ub, float tol, float* work);
 

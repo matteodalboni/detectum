@@ -1875,7 +1875,7 @@ int matrixf_solve_bounded(Matrixf* C, Matrixf* d, Matrixf* x,
 				for (j = 0; j < n; j++) {
 					x->data[j] = z.data[j];
 				}
-				return 0;
+				return -2;
 			}
 			alpha = INFINITY;
 			for (j = 0; j < n; j++) {
