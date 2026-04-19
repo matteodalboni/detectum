@@ -269,11 +269,11 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V);
 // only the first n columns of U are computed (thin U) and the last m - n rows of T
 // are excluded so that T becomes n-by-n. To enable the economy-size decomposition, 
 // U must be initialized as an m-by-n matrix. tol is the tolerance to determine the 
-// rank of A: if the input tolerance is negative, the default value 
-// max(m,n)*eps(R(0,0)) is used instead, where R(0,0) is the on-diagonal element of 
-// R with the largest magnitude, R being the upper triangular matrix obtained by QR
-// decomposition with column pivoting of A. On size mismatch, the function returns 
-// -1. On success, it returns the rank of A.
+// rank of A: if the input tolerance is negative, the default value 10*eps(R(0,0)) 
+// is used instead, where R(0,0) is the on-diagonal element of R with the largest 
+// magnitude, R being the upper triangular matrix obtained by QR decomposition with
+// column pivoting of A. On size mismatch, the function returns -1. On success, it 
+// returns the rank of A.
 int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* perm, float tol);
 
 // This function performs the singular value decomposition of the m-by-n matrix A
@@ -441,7 +441,7 @@ int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X);
 // destroyed. The matrix B can share the data array with X, provided that the 
 // array is large enough to accommodate the larger of B or X. tol is the 
 // tolerance to determine the rank of A: if the input tolerance is negative,
-// the default value max(m,n)*eps(R(0,0)) is used instead, where R(0,0) is the 
+// the default value 10*eps(R(0,0)) is used instead, where R(0,0) is the 
 // on-diagonal element of R with the largest magnitude, R being the upper 
 // triangular matrix obtained by the QR decomposition with column pivoting of A.
 // The array work is the additional workspace memory: its minimum length is n. 
@@ -453,8 +453,8 @@ int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 // solution. The matrices A and B are destroyed. The matrix B can share the data
 // array with X, provided that the array is large enough to accommodate the larger
 // of B or X. tol is the tolerance to determine the rank of A: if the input 
-// tolerance is negative, the default value max(m,n)*eps(R(0,0)) is used instead, 
-// where R(0,0) is the on-diagonal element of R with the largest magnitude, R being
+// tolerance is negative, the default value 10*eps(R(0,0)) is used instead, where 
+// R(0,0) is the on-diagonal element of R with the largest magnitude, R being
 // the upper triangular matrix obtained by QR decomposition with column pivoting
 // of A. The array work is the additional workspace memory: its minimum length is n.
 // On size mismatch, the function returns -1. On success, it returns 0.
@@ -469,7 +469,7 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 // solution vector. Conversely, C and d remain the same. lb and ub are the lower
 // and upper bounds, respectively: they must be specified as arrays with length n.
 // tol is the termination tolerance: if the input value is negative, the default 
-// 10*max(m,n)*eps(norm(C,1)) is used instead, where norm(C,1) is the 1-norm of C.
+// value 10*eps(norm(C,1)) is used instead, where norm(C,1) is the 1-norm of C.
 // The array work is the additional workspace memory: its minimum length is 
 // (m+2)*n+max(m,n). The function returns -1 on size mismatch. It returns -2 if 
 // the maximum number of iterations is reached. On success, it returns the number
@@ -480,10 +480,10 @@ int matrixf_solve_bounded(Matrixf* C, Matrixf* d, Matrixf* x,
 // This function substitutes the m-by-n input matrix A with its Moore-Penrose
 // pseudoinverse obtained by Jacobi SVD. tol is the tolerance to treat singular
 // values as zero: if the input tolerance is negative, the default value 
-// max(m,n)*eps(S(0,0)) is used instead, where S(0,0) is the maximum singular 
-// value of A. The array work is the additional workspace memory: its minimum 
-// length is min(m,n)*(min(m,n)+1). The function returns -2 if the maximum number
-// of iterations is reached: results may be inaccurate. On success, it returns 
+// 10*eps(S(0,0)) is used instead, where S(0,0) is the maximum singular value of
+// A. The array work is the additional workspace memory: its minimum length is 
+// min(m,n)*(min(m,n)+1). The function returns -2 if the maximum number of 
+// iterations is reached: results may be inaccurate. On success, it returns 
 // the number of iterations performed.
 int matrixf_pseudoinv(Matrixf* A, float tol, float* work);
 

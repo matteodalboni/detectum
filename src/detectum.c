@@ -507,7 +507,7 @@ int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* perm, float 
 		}
 	}
 	if (tol < 0) {
-		tol = q * epsf(at(A, 0, 0));
+		tol = 10.0f * epsf(at(A, 0, 0));
 	}
 	while (rank < p && fabsf(at(A, rank, rank)) > tol) {
 		rank++;
@@ -1642,7 +1642,7 @@ int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 	}
 	matrixf_decomp_qr(A, 0, &perm, B);
 	if (tol < 0) {
-		tol = (m > n ? m : n) * epsf(at(A, 0, 0));
+		tol = 10.0f * epsf(at(A, 0, 0));
 	}
 	j = 0;
 	while (j < p && fabsf(at(A, j, j)) > tol) {
@@ -1700,7 +1700,7 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 	}
 	matrixf_decomp_qr(A, 0, &perm, B);
 	if (tol < 0) {
-		tol = q * epsf(at(A, 0, 0));
+		tol = 10.0f * epsf(at(A, 0, 0));
 	}
 	j = 0;
 	while (j < p && fabsf(at(A, j, j)) > tol) {
@@ -1782,7 +1782,7 @@ int matrixf_solve_bounded(Matrixf* C, Matrixf* d, Matrixf* x,
 				nrm1 = tmp;
 			}
 		}
-		tol = 10.0f * (m > n ? m : n) * epsf(nrm1);
+		tol = 10.0f * epsf(nrm1);
 	}
 	for (j = 0; j < n; j++) {
 		xset[j] = 0;
@@ -1956,7 +1956,7 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work)
 	}
 	iter = matrixf_decomp_svd_jacobi(A, 0, &V);
 	if (tol < 0) {
-		tol = q * epsf(normf(&at(A, 0, 0), q, 1));
+		tol = 10.0f * epsf(normf(&at(A, 0, 0), q, 1));
 	}
 	for (j = 0; j < p; j++) {
 		Aj = &at(A, 0, j);
