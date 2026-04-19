@@ -1614,6 +1614,8 @@ int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X)
 		}
 		matrixf_transpose(A);
 		matrixf_unpack_house(A, X, 0, 0);
+		A->rows = m;
+		A->cols = n;
 	}
 	else {
 		matrixf_decomp_qr(A, 0, 0, B);
