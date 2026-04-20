@@ -28,7 +28,7 @@ int main()
 		lb[j] = -0.1f;
 		ub[j] = +0.1f;
 	}
-	exitflag = matrixf_solve_bounded(&C, &d, &x, lb, ub, -1, work);
+	exitflag = matrixf_solve_bvls(&C, &d, &x, lb, ub, -1, work);
 	printf("\n exitflag = %d\n", exitflag);
 	fwrite(x.data, sizeof(float), n, x_file); fclose(x_file);
 	free(lb);
@@ -74,7 +74,7 @@ int main()
 		lb[j] = -0.1f;
 		ub[j] = +0.1f;
 	}
-	exitflag = matrixf_solve_bounded(&C, &d, &x, lb, ub, -1, work);
+	exitflag = matrixf_solve_bvls(&C, &d, &x, lb, ub, -1, work);
 	printf("\nBounded-variable solution");
 	printf("\nx = \n"); matrixf_print(&x, " %9.4f");
 	printf("\n exitflag = %d\n", exitflag);
@@ -83,7 +83,7 @@ int main()
 		lb[j] = 0;
 		ub[j] = INFINITY;
 	}
-	exitflag = matrixf_solve_bounded(&C, &d, &x, lb, ub, -1, work);
+	exitflag = matrixf_solve_bvls(&C, &d, &x, lb, ub, -1, work);
 	printf("\nNonnegative solution");
 	printf("\nx = \n"); matrixf_print(&x, " %9.4f");
 	printf("\n exitflag = %d\n", exitflag);

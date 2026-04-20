@@ -1750,7 +1750,7 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 	return 0;
 }
 
-int matrixf_solve_bounded(Matrixf* C, Matrixf* d, Matrixf* x,
+int matrixf_solve_bvls(Matrixf* C, Matrixf* d, Matrixf* x,
 	float* lb, float* ub, float tol, float* work)
 {
 	int i, j, k, t;
@@ -1804,7 +1804,7 @@ int matrixf_solve_bounded(Matrixf* C, Matrixf* d, Matrixf* x,
 			df_data[i] = d->data[i];
 		}
 		matrixf_multiply(C, x, &df, -1.0f, 1.0f, 0, 0);
-		matrixf_multiply(C, &df, &w, 1, 0, 1, 0);
+		matrixf_multiply(C, &df, &w, 1.0f, 0.0f, 1, 0);
 		for (j = 0; j < n; j++) {
 			if (xset[j] > 0) {
 				w.data[j] *= -1.0f;

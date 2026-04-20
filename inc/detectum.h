@@ -474,7 +474,7 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 // (m+2)*n+max(m,n). The function returns -1 on size mismatch. It returns -2 if 
 // the maximum number of iterations is reached. On success, it returns the number
 // of iterations taken.
-int matrixf_solve_bounded(Matrixf* C, Matrixf* d, Matrixf* x,
+int matrixf_solve_bvls(Matrixf* C, Matrixf* d, Matrixf* x,
 	float* lb, float* ub, float tol, float* work);
 
 // This function substitutes the m-by-n input matrix A with its Moore-Penrose
