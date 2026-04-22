@@ -20,7 +20,6 @@ int main()
 	Matrixf d = matrixf(m, 1);
 	Matrixf x = matrixf(n, 1);
 
-	if (!lb || !ub) return -10;
 	fread(C.data, sizeof(float), m * n, C_file); fclose(C_file);
 	fread(d.data, sizeof(float), m * 1, d_file); fclose(d_file);
 	for (j = 0; j < n; j++) {

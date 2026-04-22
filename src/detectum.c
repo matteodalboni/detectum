@@ -1849,7 +1849,7 @@ int matrixf_solve_bvls(Matrixf* C, Matrixf* d, Matrixf* x,
 			}
 		}
 		z.rows = k;
-		matrixf_solve_qrp(&Cf, &df, &z, -1, w_data);
+		matrixf_solve_qrp(&Cf, &df, &z, tol, w_data);
 		z.rows = n;
 		for (j = n - 1; j >= 0; j--) {
 			if (xset[j] < 0) {
@@ -1923,7 +1923,7 @@ int matrixf_solve_bvls(Matrixf* C, Matrixf* d, Matrixf* x,
 				}
 			}
 			z.rows = k;
-			matrixf_solve_qrp(&Cf, &df, &z, -1, w_data);
+			matrixf_solve_qrp(&Cf, &df, &z, tol, w_data);
 			z.rows = n;
 			for (j = n - 1; j >= 0; j--) {
 				if (xset[j] < 0) {

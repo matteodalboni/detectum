@@ -462,7 +462,7 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 
 // This function solves the linear system C*x = d for x subject to lb <= x <= ub.
 // The algorithm is a variant of the classic bounded-variable least-squares solver
-// by Stark and Parker, which is in turn the natural genralization of the seminal
+// by Stark and Parker, which is in turn the natural generalization of the seminal
 // active-set method for nonnegative least squares by Lawson and Hanson.
 // If C is m-by-n, d must be specified as an m-by-1 vector and x must be specified
 // as an n-by-1 vector. The initial x is the starting point. x is replaced by the
