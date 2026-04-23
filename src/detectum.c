@@ -1753,9 +1753,8 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 int matrixf_solve_bvls(Matrixf* C, Matrixf* d, Matrixf* x,
 	float* lb, float* ub, float tol, float* work)
 {
-	int i, j, k, t;
+	int i, j, k, t, done;
 	int ito = 0, iti = 0;
-	int converged, exit;
 	const int m = C->rows;
 	const int n = C->cols;
 	const int itimax = 3 * n;
@@ -1811,14 +1810,13 @@ int matrixf_solve_bvls(Matrixf* C, Matrixf* d, Matrixf* x,
 			}
 		}
 		if (ito) {
-			converged = 1;
-			for (j = 0; j < n; j++) {
+			for (done = 1, j = 0; j < n; j++) {
 				if (xset[j] && w.data[j] >= tol) {
-					converged = 0;
+					done = 0;
 					break;
 				}
 			}
-			if (converged) {
+			if (done) {
 				return ito;
 			}
 		}
@@ -1863,13 +1861,13 @@ int matrixf_solve_bvls(Matrixf* C, Matrixf* d, Matrixf* x,
 			}
 		}
 		while (1) {
-			for (exit = 1, j = 0; j < n; j++) {
+			for (done = 1, j = 0; j < n; j++) {
 				if (xset[j] == 0 && (z.data[j] <= lb[j] || z.data[j] >= ub[j])) {
-					exit = 0;
+					done = 0;
 					break;
 				}
 			}
-			if (exit) {
+			if (done) {
 				break;
 			}
 			iti++;
