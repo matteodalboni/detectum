@@ -1,4 +1,4 @@
-// Solve for x the QP problem
+// Solve for x the convex QP problem
 //  minimize   1/2 x'Qx + c'x 
 //    s.t.     rl <= Ax <= ru
 // by regularized Alternating Direction Method of Multipliers (ADMM).
@@ -71,7 +71,7 @@ int main()
 	Matrixf(v, m, 1);
 
 	// Initialize
-	matrixf_init(&Q, n, n, Q_data, 1);
+	matrixf_init(&Q, n, n, Q_data, 0);
 	matrixf_init(&c, n, 1, c_data, 0);
 	matrixf_init(&A, m, n, A_data, 1);
 	matrixf_multiply(&A, &A, &Q, rho, 1.0f, 1, 0);
