@@ -1781,7 +1781,7 @@ int matrixf_solve_bvls(Matrixf* C, Matrixf* d, Matrixf* x,
 				nrm1 = tmp;
 			}
 		}
-		tol = 10.0f * epsf(nrm1);
+		tol = 100.0f * epsf(nrm1);
 	}
 	for (j = 0; j < n; j++) {
 		xset[j] = 0;

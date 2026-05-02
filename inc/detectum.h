@@ -469,7 +469,7 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 // solution vector. Conversely, C and d remain the same. lb and ub are the lower
 // and upper bounds, respectively: they must be specified as arrays with length n.
 // tol is the termination tolerance: if the input value is negative, the default 
-// value 10*eps(norm(C,1)) is used instead, where norm(C,1) is the 1-norm of C.
+// value 100*eps(norm(C,1)) is used instead, where norm(C,1) is the 1-norm of C.
 // The array work is the additional workspace memory: its minimum length is 
 // (m+2)*n+max(m,n). The function returns -1 on size mismatch. It returns -2 if 
 // the maximum number of iterations is reached. On success, it returns the number
