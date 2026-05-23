@@ -1,19 +1,18 @@
 /* Computing the solution to the linear system "A*x = b" without
-* explicitly forming the matrix Q (Q-less QR decomposition). In
-* particular: A'*A*x = A'*b --> R'*Q'*Q*R*x = A'*b --> R'*R*x = A'*b.
-* 
-* Matlab code:
-* rng default;
-* A = gallery('randsvd', [5, 3], 1000);
-* b = ones(size(A,1),1);
-* bb = A'*b;
-* R = qr(A);
-* x = R\(R'\bb)
-* y = A\b;
-* norm(x - y)
-* fileID = fopen("./A.bin",'w');
-* fwrite(fileID, A, 'single');
-* fclose(fileID);
+explicitly forming the matrix Q (Q-less QR decomposition). In
+particular: A'*A*x = A'*b --> R'*Q'*Q*R*x = A'*b --> R'*R*x = A'*b.
+
+rng default;
+A = gallery('randsvd', [5, 3], 1000);
+b = ones(size(A,1),1);
+bb = A'*b;
+R = qr(A);
+x = R\(R'\bb)
+y = A\b;
+norm(x - y)
+fileID = fopen("./A.bin",'w');
+fwrite(fileID, A, 'single');
+fclose(fileID);
 */
 
 #include <stdio.h>

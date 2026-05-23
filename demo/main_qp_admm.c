@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include "detectum.h"
 
-#define PROBLEM (2)
+#define PROBLEM (3)
 
 #if (PROBLEM == 0)
 #define m 3 // number of constraints
@@ -56,6 +56,29 @@ float A_data[m * n] = {
 };
 float rl[m] = { -0.1f, -0.1f, -0.1f, -0.1f, -0.1f };
 float ru[m] = { +0.1f, +0.1f, +0.1f, +0.1f, +0.1f };
+
+#elif (PROBLEM == 3)
+#define m 3 // number of constraints
+#define n 4 // number of variables
+float Q_data[n * n] = {
+	2.3546f, 1.6361f, 1.8427f, 2.1537f,
+	1.6361f, 1.6617f, 1.5320f, 1.4873f,
+	1.8427f, 1.5320f, 2.4314f, 2.2958f,
+	2.1537f, 1.4873f, 2.2958f, 2.8471f
+};
+float c_data[n] = {
+	-0.7583f,
+	-0.2899f,
+	-1.0962f,
+	-1.2270f
+};
+float A_data[m * n] = {
+	0.2027f, 0.2721f, 0.7467f, 0.4659f,
+	0.1987f, 0.1988f, 0.4450f, 0.4186f,
+	0.6037f, 0.0152f, 0.9318f, 0.8462f
+};
+float rl[m] = { -1e38f, -1e38f, -1e38f };
+float ru[m] = { 0.5251f, 0.2026f, 0.6721f };
 #endif
 
 int main()

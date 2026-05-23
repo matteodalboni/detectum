@@ -29,27 +29,6 @@ int main()
 		lb[j] = 0.0f;
 		ub[j] = INFINITY;
 	}
-#if 0 // preconditioner for ill-conditioned systems
-	// If U*S*V is the SVD of C, solve D*S*V'*x = D*U'*d, where D is
-	// a suitable diagonal matrix.
-	const int q = m < n ? m : n;
-	float s;
-	const float cond_max = 1e3f; // maximum condition number allowed
-	Matrixf U = matrixf(m, m);
-	Matrixf V = matrixf(n, n);
-	matrixf_decomp_svd(&C, &U, &V);
-	matrixf_multiply_inplace(&d, &U, 0, 1, 0, work); // d <-- U'*d
-	for (j = 0; j < q; j++) { // implicit multiplication by D
-		s = cond_max / (at(&C, j, j) / at(&C, q - 1, q - 1) - 1.0f);
-		if (s < 1.0f) {
-			at(&C, j, j) *= s;
-			at(&d, j, 0) *= s;
-		}
-	}
-	matrixf_multiply_inplace(&C, 0, &V, 0, 1, work); // C <-- C*V'
-	free(U.data);
-	free(V.data);
-#endif
 	exitflag = matrixf_solve_bvls(&C, &d, &x, lb, ub, -1, work);
 	printf("\n exitflag = %d\n", exitflag);
 	fwrite(x.data, sizeof(float), n, x_file); fclose(x_file);
