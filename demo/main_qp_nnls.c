@@ -44,50 +44,57 @@ int main()
 	float* lb = malloc(sizeof(float) * m);
 	float* ub = malloc(sizeof(float) * m);
 	float* work = malloc(sizeof(float) * WORKLEN(n + 1, m));
-	float g = 0.0f;
+	float nrm, alpha;
 	int i, j, info;
 	Matrixf Q, c, A, b;
 	Matrixf C = matrixf(n + 1, m);
 	Matrixf d = matrixf(n + 1, 1);
 	Matrixf y = matrixf(m, 1);
 
+	// Initialize
 	matrixf_init(&Q, n, n, Q_data, 1);
 	matrixf_init(&c, n, 1, c_data, 0);
 	matrixf_init(&A, m, n, A_data, 1);
 	matrixf_init(&b, m, 1, b_data, 0);
+	// Assemble matrices for NNLS solver
 	matrixf_solve_chol(&Q, &c);
 	matrixf_multiply(&A, &c, &b, 1.0f, 1.0f, 0, 0);
-	matrixf_transpose(&Q);
 	matrixf_transpose(&A);
+	matrixf_transpose(&Q);
 	matrixf_solve_tril(&Q, &A, &A, 0);
-	for (j = 0; j < m; j++) {
+	matrixf_transpose(&Q);
+	for (nrm = 0.0f, j = 0; j < m; j++) {
 		for (i = 0; i < n; i++) {
 			at(&C, i, j) = -at(&A, i, j);
 		}
 		at(&C, n, j) = -at(&b, j, 0);
-		if (fabsf(at(&b, j, 0)) > g) {
-			g = fabsf(at(&b, j, 0));
+		if (fabsf(at(&b, j, 0)) > nrm) {
+			nrm = fabsf(at(&b, j, 0));
 		}
 		lb[j] = 0.0f;
 		ub[j] = INFINITY;
 	}
-	g += 1.0f;
-	at(&d, n, 0) = g;
+	for (i = 0; i < n; i++) {
+		at(&d, i, 0) = 0.0f;
+	}
+	at(&d, n, 0) = 1.0f + nrm;
+	// Solve NNLS problem
 	info = matrixf_solve_bvls(&C, &d, &y, lb, ub, -1, work);
 	if (info < 0) {
 		return info;
 	}
-	for (j = 0; j < m; j++) {
-		g += at(&b, j, 0) * at(&y, j, 0);
-	}
+	// Assemble QP solution
 	d.rows = n;
 	matrixf_multiply(&A, &y, &d, 1.0f, 0.0f, 0, 0);
-	matrixf_transpose(&Q);
 	matrixf_solve_triu(&Q, &d, &d, 0);
+	for (alpha = 1.0f + nrm, j = 0; j < m; j++) {
+		alpha += at(&b, j, 0) * at(&y, j, 0);
+	}
 	for (i = 0; i < n; i++) {
-		at(&c, i, 0) = -at(&c, i, 0) - at(&d, i, 0) / g;
+		at(&c, i, 0) = -at(&c, i, 0) - at(&d, i, 0) / alpha;
 	}
 	printf("x = \n"); matrixf_print(&c, "%9.4f");
+	// Free memory
 	free(lb);
 	free(ub);
 	free(work);
