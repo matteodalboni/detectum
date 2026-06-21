@@ -387,19 +387,21 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 // This function performs the forward substitution on the lower-triangular
 // matrix L to solve the the system L*X = B for X. The flag unitri indicates
 // whether L is unitriangular: if the flag is enabled, the elements on the main
-// diagonal are ignored. Matrix L remains the same, whereas B is destroyed. Also, 
-// the matrix B can share the data array with X, provided that the array is 
-// large enough to accommodate the larger of B or X. If L is rank deficient, 
-// it returns -2. On size mismatch, it returns -1. On success, it returns 0.
+// diagonal are ignored. The matrix B can share the data array with X, provided
+// that the array is large enough to accommodate the larger of B or X. Matrix L
+// remains the same, whereas B remains the same only if it does not share the
+// data array with X. If L is rank deficient, it returns -2. On size mismatch,
+// it returns -1. On success, it returns 0.
 int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri);
 
 // This function performs the backward substitution on the upper-triangular
 // matrix U to solve the the system U*X = B for X. The flag unitri indicates
 // whether U is unitriangular: if the flag is enabled, the elements on the main
-// diagonal are ignored. Matrix U remains the same, whereas B is destroyed. Also,
-// the matrix B can share the data array with X, provided that the array is 
-// large enough to accommodate the larger of B or X. If U is rank deficient, 
-// it returns -2. On size mismatch, it returns -1. On success, it returns 0.
+// diagonal are ignored. The matrix B can share the data array with X, provided
+// that the array is large enough to accommodate the larger of B or X. Matrix U
+// remains the same, whereas B remains the same only if it does not share the
+// data array with X. If U is rank deficient, it returns -2. On size mismatch,
+// it returns -1. On success, it returns 0.
 int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri);
 
 // This function solves in place the linear system A*X = B for X by Cholesky
@@ -429,11 +431,12 @@ int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, int ubw);
 
 // This function solves the linear system A*X = B by QR decomposition of the 
 // full-rank matrix A. If the system is underdetermined, the returned solution 
-// is of minimum norm. The matrices A and B are destroyed. The matrix B can 
-// share the data array with X, provided that the array is large enough to 
-// accommodate the larger of B or X. If A is rank deficient, the function 
-// returns -2. On size mismatch, the function returns -1. On success, it 
-// returns 0.
+// is of minimum norm. The matrix B can share the data array with X, provided 
+// that the array is large enough to accommodate the larger of B or X. The 
+// matrix A is always destroyed, whereas the matrix B remains the same if the
+// system is underdetermined and B does not share the data array with X. If A
+// is rank deficient, the function returns -2. On size mismatch, the function
+// returns -1. On success, it returns 0.
 int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X);
 
 // This function solves the linear system A*X = B for X by QR decomposition 

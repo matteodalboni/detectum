@@ -1381,27 +1381,6 @@ int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri)
 	if (B->rows != m || X->rows != n || X->cols != h) {
 		return -1;
 	}
-	matrixf_transpose(B);
-	for (i = 0; i < q; i++) {
-		Bi = &at(B, 0, i);
-		for (j = 0; j < i; j++) {
-			lij = at(L, i, j);
-			Bj = &at(B, 0, j);
-			for (k = 0; k < h; k++) {
-				Bi[k] -= lij * Bj[k];
-			}
-		}
-		if (!unitri) {
-			lii = at(L, i, i);
-			if (lii == 0) {
-				return -2;
-			}
-			for (k = 0; k < h; k++) {
-				Bi[k] /= lii;
-			}
-		}
-	}
-	matrixf_transpose(B);
 	if (m < n) {
 		for (k = h - 1; k >= 0; k--) {
 			for (i = n - 1; i >= 0; i--) {
@@ -1416,6 +1395,27 @@ int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri)
 			}
 		}
 	}
+	matrixf_transpose(X);
+	for (i = 0; i < q; i++) {
+		Bi = &at(X, 0, i);
+		for (j = 0; j < i; j++) {
+			lij = at(L, i, j);
+			Bj = &at(X, 0, j);
+			for (k = 0; k < h; k++) {
+				Bi[k] -= lij * Bj[k];
+			}
+		}
+		if (!unitri) {
+			lii = at(L, i, i);
+			if (lii == 0) {
+				return -2;
+			}
+			for (k = 0; k < h; k++) {
+				Bi[k] /= lii;
+			}
+		}
+	}
+	matrixf_transpose(X);
 	return 0;
 }
 
@@ -1432,27 +1432,6 @@ int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri)
 	if (B->rows != m || X->rows != n || X->cols != h) {
 		return -1;
 	}
-	matrixf_transpose(B);
-	for (i = q - 1; i >= 0; i--) {
-		Bi = &at(B, 0, i);
-		for (j = i + 1; j < q; j++) {
-			uij = at(U, i, j);
-			Bj = &at(B, 0, j);
-			for (k = 0; k < h; k++) {
-				Bi[k] -= uij * Bj[k];
-			}
-		}
-		if (!unitri) {
-			uii = at(U, i, i);
-			if (uii == 0) {
-				return -2;
-			}
-			for (k = 0; k < h; k++) {
-				Bi[k] /= uii;
-			}
-		}
-	}
-	matrixf_transpose(B);
 	if (m < n) {
 		for (k = h - 1; k >= 0; k--) {
 			for (i = n - 1; i >= 0; i--) {
@@ -1467,6 +1446,27 @@ int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri)
 			}
 		}
 	}
+	matrixf_transpose(X);
+	for (i = q - 1; i >= 0; i--) {
+		Bi = &at(X, 0, i);
+		for (j = i + 1; j < q; j++) {
+			uij = at(U, i, j);
+			Bj = &at(X, 0, j);
+			for (k = 0; k < h; k++) {
+				Bi[k] -= uij * Bj[k];
+			}
+		}
+		if (!unitri) {
+			uii = at(U, i, i);
+			if (uii == 0) {
+				return -2;
+			}
+			for (k = 0; k < h; k++) {
+				Bi[k] /= uii;
+			}
+		}
+	}
+	matrixf_transpose(X);
 	return 0;
 }
 
