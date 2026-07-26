@@ -149,18 +149,18 @@ void matrixf_init(Matrixf* A, int rows, int cols, float* data, int ordmem);
 // permutation and vice versa (assuming the dimensions are compatible). If the
 // flag transP is enabled, the permutation is applied according to the 
 // transpose of P. The following table summarizes how A is transformed.
-// ------------------------------------------------------------------------
-// Is perm a row- or column-permutation vector? | reverse | transP | Output 
-// ---------------------------------------------|---------|--------|-------
-//                      row                     |   no    |  no    |  P*A
-//                      row                     |   no    |  yes   |  P'*A
-//                      row                     |   yes   |  no    |  A*P
-//                      row                     |   yes   |  yes   |  A*P'
-//                     column                   |   no    |  no    |  A*P
-//                     column                   |   no    |  yes   |  A*P'
-//                     column                   |   yes   |  no    |  P*A
-//                     column                   |   yes   |  yes   |  P'*A
-// ------------------------------------------------------------------------
+//               -------------------------------------
+//               perm size | reverse | transP | Output 
+//               ----------|---------|--------|-------
+//                 m-by-1  |   no    |  no    |  P*A
+//                 m-by-1  |   no    |  yes   |  P'*A
+//                 m-by-1  |   yes   |  no    |  A*P
+//                 m-by-1  |   yes   |  yes   |  A*P'
+//                 1-by-n  |   no    |  no    |  A*P
+//                 1-by-n  |   no    |  yes   |  A*P'
+//                 1-by-n  |   yes   |  no    |  P*A
+//                 1-by-n  |   yes   |  yes   |  P'*A
+//               -------------------------------------
 // In general, the vector perm is transformed to encode the new permutation. 
 // On size mismatch, the function returns -1. On success, it returns 0.
 int matrixf_permute(Matrixf* A, Matrixf* perm, int reverse, int transP);
@@ -174,6 +174,21 @@ void matrixf_transpose(Matrixf* A);
 // not positive definite. On success, it returns 0.
 int matrixf_decomp_chol(Matrixf* A);
 
+// This function performs the LTL' decomposition with pivoting using the method
+// of Aasen. The n-by-n symmetric indefinite matrix A is decomposed so that  
+// P*A*P' = L*T*L', where L is unit lower triangular, T is symmetric tridiagonal,
+// and P is a permutation matrix. The matrix A is transformed so that:
+// 1) its diagonal contains the main diagonal of T;
+// 2) its superdiagonal stores the superdiagonal (and subdiagonal) of T;
+// 3) its strictly lower part holds the strictly lower part of L, assuming also
+//    L(i,0) = 0 for 0 < i < n;
+// 4) the permutation matrix P is encoded in the first column of A, such that 
+//    P(0,0) = 1, P(i,A(i,0)) = 1 for 0 < i < n, and all other entries are 0.
+//    Alternatively, P can be represented by an n-by-1 permutation vector,
+//    such that perm(0) = 0 and perm(i) = A(i,0) for 0 < i < n.
+// The function returns -1 if A is not square. On success, it returns 0.
+int matrixf_decomp_ltl(Matrixf* A);
+
 // This function performs the LU decomposition with partial pivoting of the 
 // n-by-n matrix A so that A = P'*L*U. The matrix A is transformed so that 
 // its upper triangular part stores the matrix U, whereas its strictly lower
@@ -181,7 +196,7 @@ int matrixf_decomp_chol(Matrixf* A);
 // the main diagonal of L are ones (unit lower triangular matrix). If perm 
 // is a non-null pointer, the function returns the vector of permutations 
 // that encodes the permutation matrix P. The vector perm must be initialized
-// as a n-by-1 vector. Additionally, one can provide the matrix B, which is 
+// as an n-by-1 vector. Additionally, one can provide the matrix B, which is 
 // transformed into P*B; this computation is skipped if B is a null pointer. 
 // On size mismatch or non-square matrix, the function returns -1. On success,
 // it returns 0.

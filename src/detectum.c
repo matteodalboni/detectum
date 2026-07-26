@@ -173,6 +173,107 @@ int matrixf_decomp_chol(Matrixf* A)
 	return 0;
 }
 
+int matrixf_decomp_ltl(Matrixf* A)
+{
+	int i, j, jp, k;
+	const int n = A->rows;
+	float tmp, a00 = A->data[0], a01, * h = A->data;
+	float* Ajp, * Aj1;
+
+	if (A->cols != n) {
+		return -1;
+	}
+	for (j = 1; j < n; j++) {
+		at(A, 0, j) = (float)j;
+	}
+	for (j = 0; j < n; j++) {
+		if (j > 0) {
+			h[0] = at(A, 0, 1);
+			if (j > 1) {
+				h[0] *= at(A, j, 1);
+				if (j == 2) {
+					h[1] = at(A, 1, 1) * at(A, 2, 1) + at(A, 1, 2);
+				}
+				else {
+					h[1] = at(A, 1, 1) * at(A, j, 1)
+						+ at(A, 1, 2) * at(A, j, 2);
+					for (k = 2; k < j - 1; k++) {
+						h[k] = at(A, k, k) * at(A, j, k)
+							+ at(A, k - 1, k) * at(A, j, k - 1)
+							+ at(A, k, k + 1) * at(A, j, k + 1);
+					}
+					h[j - 1] = at(A, j - 1, j - 1) * at(A, j, j - 1)
+						+ at(A, j - 2, j - 1) * at(A, j, j - 2)
+						+ at(A, j - 1, j);
+				}
+			}
+			for (tmp = 0, k = 1; k < j; k++) {
+				tmp += at(A, j, k) * h[k];
+			}
+			h[j] = at(A, j, j) - tmp;
+			at(A, j, j) = h[j];
+			if (j > 1) {
+				at(A, j, j) -= at(A, j - 1, j) * at(A, j, j - 1);
+			}
+			for (i = j + 1; i < n; i++) {
+				for (tmp = 0, k = 1; k <= j; k++) {
+					tmp += at(A, i, k) * h[k];
+				}
+				h[i] = at(A, j, i) - tmp;
+			}
+		}
+		if (j < n - 1) {
+			for (jp = j + 1, k = j + 1; k < n; k++) {
+				if (fabsf(h[k]) > fabsf(h[jp])) {
+					jp = k;
+				}
+			}
+			for (k = 0; k < n; k++) {
+				tmp = at(A, jp, k);
+				at(A, jp, k) = at(A, j + 1, k);
+				at(A, j + 1, k) = tmp;
+			}
+			Ajp = &at(A, 0, jp);
+			Aj1 = &at(A, 0, j + 1);
+			tmp = Ajp[0];
+			Ajp[0] = Aj1[0];
+			Aj1[0] = tmp;
+			for (k = j + 1; k < n; k++) {
+				tmp = Ajp[k];
+				Ajp[k] = Aj1[k];
+				Aj1[k] = tmp;
+			}
+			if (j == 0) {
+				a01 = at(A, 0, 1);
+			}
+			at(A, j, j + 1) = h[j + 1];
+			if (j < n - 2) {
+				if (h[jp] != 0) {
+					for (i = j + 2; i < n; i++) {
+						at(A, i, j + 1) = h[i] / h[j + 1];
+					}
+				}
+				else {
+					for (i = j + 2; i < n; i++) {
+						at(A, i, j + 1) = 0;
+					}
+				}
+			}
+		}
+	}
+	A->data[0] = a00;
+	if (n > 1) {
+		A->data[1] = a01;
+	}
+	for (j = 2; j < n; j++) {
+		at(A, j, 0) = at(A, 0, j);
+		for (i = 0; i < j - 1; i++) {
+			at(A, i, j) = 0;
+		}
+	}
+	return 0;
+}
+
 int matrixf_decomp_lu(Matrixf* A, Matrixf* perm, Matrixf* B)
 {
 	int i, j, k;
