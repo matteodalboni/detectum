@@ -4,29 +4,30 @@ A lightweight linear algebra library offering a wide selection of matrix decompo
 One of the distinctive traits of DeTecTUM is that all the algorithms are built around in-place operations, ensuring a minimal memory footprint. Fully implemented in plain C, the library adopts single-precision arithmetic and avoids dynamic memory allocation. All of these features also make DeTecTUM ideal for most embedded systems.
 
 The library includes:
-* Cholesky decomposition;
-* LU decomposition;
-* QR decomposition;
-* bidiagonal decomposition;
-* complete orthogonal decomposition (COD);
-* singular value decomposition (SVD);
-* Hessenberg decomposition;
-* Schur decomposition;
-* eigenvector computation;
-* pseudo-eigenvector computation;
-* solver for lower-triangular systems;
-* solver for upper-triangular systems;
-* solver for symmetric positive definite systems;
-* solver for banded Hessenberg systems;
-* solver for square full-rank systems;
-* solver for general full-rank systems;
-* solver for general rank-deficient systems;
-* bounded-variable least-squares solver;
-* minimum-norm solver;
-* Moore-Penrose pseudoinverse;
-* matrix exponential;
-* principal matrix logarithm;
-* principal matrix square root.
+* Cholesky decomposition
+* Aasen decomposition
+* LU decomposition
+* QR decomposition
+* Bidiagonal decomposition
+* Complete orthogonal decomposition (COD)
+* Singular value decomposition (SVD)
+* Hessenberg decomposition
+* Schur decomposition
+* Eigenvector computation
+* Pseudo-eigenvector computation
+* Solver for lower-triangular systems
+* Solver for upper-triangular systems
+* Solver for symmetric positive definite systems
+* Solver for banded Hessenberg systems
+* Solver for square full-rank systems
+* Solver for general full-rank systems
+* Solver for general rank-deficient systems
+* Bounded-variable least-squares solver
+* Minimum-norm solver
+* Moore-Penrose pseudoinverse
+* Matrix exponential
+* Principal matrix logarithm
+* Principal matrix square root
 
 ## Testing on Linux
 gcc -o mydemo demo/main_linsolve.c src/detectum.c -lm -I inc
