@@ -129,13 +129,25 @@ void matrixf_transpose(Matrixf* A)
 	const int c = A->cols;
 	const int n = r * c - 1;
 
-	for (j = i = 1; i < n; j = ++i) {
-		do {
-			j = j * r - n * (j / c);
-		} while (j < i);
-		t = d[i];
-		d[i] = d[j];
-		d[j] = t;
+	if (r == c) {
+		for (j = 0; j < c - 1; j++) {
+			d = &at(A, 0, j);
+			for (i = j + 1; i < r; i++) {
+				t = d[i];
+				d[i] = at(A, j, i);
+				at(A, j, i) = t;
+			}
+		}
+	}
+	else if (r > 1 && c > 1) {
+		for (j = i = 1; i < n; j = ++i) {
+			do {
+				j = j * r - n * (j / c);
+			} while (j < i);
+			t = d[i];
+			d[i] = d[j];
+			d[j] = t;
+		}
 	}
 	A->rows = c;
 	A->cols = r;
