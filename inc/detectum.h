@@ -68,8 +68,8 @@ static inline float givensf(float a, float b, float* c, float* s)
 	float r = a;
 
 	if (b == 0) {
-		*c = 1;
-		*s = 0;
+		*c = 1.0f;
+		*s = 0.0f;
 	}
 	else {
 		r = hypotf(a, b);
@@ -100,7 +100,7 @@ static inline float housef(float* x, int len, int stride)
 			x[stride * i] /= a - b;
 		}
 	}
-	else {
+	else if (nrm > 0) {
 		for (i = 1; i < len; i++) {
 			x[stride * i] = 0;
 		}
