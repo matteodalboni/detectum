@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include "detectum.h"
 
 static int inverse_iteration(Matrixf* A, Matrixf* v,
@@ -8,13 +7,15 @@ static int inverse_iteration(Matrixf* A, Matrixf* v,
 	int i, j;
 	const int n = A->rows;
 	float norm;
-	Matrixf p = { 2 * n, 1, work };
+	Matrixf perm = { 2 * n, 1, work };
 	Matrixf C = { 2 * n, 2 * n, work + 2 * n };
 
 	for (j = 0; j < n; j++) {
 		for (i = 0; i < n; i++) {
-			at(&C, i, j) = at(&C, i + n, j + n) = at(A, i, j);
-			at(&C, i + n, j) = at(&C, i, j + n) = 0;
+			at(&C, i, j) = at(A, i, j);
+			at(&C, i + n, j + n) = at(A, i, j);
+			at(&C, i + n, j) = 0;
+			at(&C, i, j + n) = 0;
 		}
 		at(&C, j, j) -= eigval_re;
 		at(&C, j + n, j + n) -= eigval_re;
@@ -23,11 +24,11 @@ static int inverse_iteration(Matrixf* A, Matrixf* v,
 		v->data[j] = 1;
 		v->data[j + n] = 0;
 	}
-	v->rows = 2 * n; 
+	v->rows = 2 * n;
 	v->cols = 1;
-	matrixf_decomp_lu(&C, &p, 0);
+	matrixf_decomp_lu(&C, &perm, 0);
 	for (i = 0; i < iter; i++) {
-		matrixf_permute(v, &p, 0, 0);
+		matrixf_permute(v, &perm, 0, 0);
 		matrixf_solve_tril(&C, v, v, 1);
 		matrixf_solve_triu(&C, v, v, 0);
 		norm = normf(v->data, 2 * n, 1);
@@ -54,16 +55,14 @@ int main()
 		-2, 1, 1, 4
 	};
 	Matrixf A;
-	Matrixf T = matrixf(n, n);
-	Matrixf v = matrixf(n, 2);
-
-	if (!T.data || !v.data) return -1;
+	Matrixf(T, n, n);
+	Matrixf(v, n, 2);
 
 	matrixf_init(&A, n, n, A_data, 1);
 	for (i = 0; i < n * n; i++) T.data[i] = A_data[i];
 	matrixf_decomp_schur(&T, 0);
-	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
-	printf("\nT = \n"); matrixf_print(&T, "%9.4f ");
+	printf("\nA = [\n"); matrixf_print(&A, "%9.4f "); printf("];\n");
+	printf("\nT = [\n"); matrixf_print(&T, "%9.4f "); printf("];\n");
 
 	for (k = 0; k < n; k++) {
 		eigval_re = at(&T, k, k);
@@ -73,14 +72,12 @@ int main()
 		if (k < n - 1 && at(&T, k + 1, k) != 0)
 			eigval_im = +sqrtf(-at(&T, k + 1, k) * at(&T, k, k + 1));
 		inverse_iteration(&A, &v, eigval_re, eigval_im, work, 2);
-		printf("\n%d) eigval = %0.4f%+.4fi\n   eigvec = \n",
-			k + 1, eigval_re, eigval_im);
+		printf("\neigval(:,%d) = %0.4f%+.4fi;\neigvec(:,%d) = [\n",
+			k + 1, eigval_re, eigval_im, k + 1);
 		for (i = 0; i < n; i++)
 			printf("   %9.4f%+.4fi\n", v.data[i], v.data[i + n]);
+		printf("];\n");
 	}
-
-	free(T.data);
-	free(v.data);
 
 	return 0;
 }

@@ -40,8 +40,8 @@ static inline float epsf(float x)
 	return powf(2.0f, floorf(log2f(fabsf(x))) - 23.0f);
 }
 
-// This function computes 2-norm of vector v without under/overflow. 
-// The length of the vector is len, and stride is its increment. 
+// This function computes the 2-norm of vector v without underflow or 
+// overflow. The length of v is len, and stride is its increment. 
 static inline float normf(const float* v, int len, int stride)
 {
 	int i;
