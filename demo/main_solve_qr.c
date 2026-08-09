@@ -30,9 +30,9 @@ int main()
 	for (j = 0; j < B.cols; j++)
 		for (i = 0; i < B.rows; i++)
 			at(&B, i, j) = j + 1.0f;
-	printf("\nA = \n"); matrixf_print(&A, "%10.7f ");
-	printf("\nB = \n"); matrixf_print(&B, "%10.7f ");
+	printf("\nA = \n"); matrixf_print(&A, "%11.7f ");
+	printf("\nB = \n"); matrixf_print(&B, "%11.4f ");
 	matrixf_solve_qrp(&A, &B, &X, -1, work);
-	printf("\nX = \n"); matrixf_print(&X, "%10.4f ");
+	printf("\nX = \n"); matrixf_print(&X, "%11.4f ");
 	return 0;
 }

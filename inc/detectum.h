@@ -50,11 +50,11 @@ static inline float normf(const float* v, int len, int stride)
 	const float tbig = DETECTUM_TBIG;
 
 	for (i = 0; i < len; i++) {
-		a = v[i * stride];
-		if ((fabsf(a) > tsml) && (fabsf(a) < tbig)) {
+		a = fabsf(v[i * stride]);
+		if (a > tsml && a < tbig) {
 			s += a * a;
 		}
-		else {
+		else if (a > 0) {
 			h = hypotf(h, a);
 		}
 	}
