@@ -2,57 +2,6 @@
 #include <stdlib.h>
 #include "detectum.h"
 
-int matrixf_get_eigenvector_it(Matrixf* A, Matrixf* v,
-	float lamre, float lamim, int iter, float* work)
-{
-	int i, j;
-	const int n = A->rows;
-	const int p = lamim == 0 ? 1 : 2;
-	const int q = v->cols;
-	float norm, eps = epsf(lamre);
-	Matrixf perm = { p * n, 1, work };
-	Matrixf C = { p * n, p * n, work + p * n };
-
-	if (A->cols != n || q > 2 ||
-		v->rows != n || q < p) {
-		return -1;
-	}
-	for (j = 0; j < n; j++) {
-		for (i = 0; i < n; i++) {
-			at(&C, i, j) = at(A, i, j);
-			if (lamim != 0) {
-				at(&C, i + n, j + n) = at(A, i, j);
-				at(&C, i + n, j) = 0;
-				at(&C, i, j + n) = 0;
-			}
-		}
-		at(&C, j, j) -= lamre + eps;
-		if (lamim != 0) {
-			at(&C, j + n, j + n) -= lamre + eps;
-			at(&C, j + n, j) = -lamim;
-			at(&C, j, j + n) = +lamim;
-		}
-		else if (q == 2) {
-			v->data[j + n] = 0;
-		}
-	}
-	v->rows = p * n;
-	v->cols = 1;
-	matrixf_decomp_lu(&C, &perm, 0);
-	for (i = 0; i < iter; i++) {
-		matrixf_permute(v, &perm, 0, 0);
-		matrixf_solve_tril(&C, v, v, 1);
-		matrixf_solve_triu(&C, v, v, 0);
-		norm = normf(v->data, p * n, 1);
-		for (j = 0; j < p * n; j++) {
-			v->data[j] /= norm;
-		}
-	}
-	v->rows = n;
-	v->cols = q;
-	return 0;
-}
-
 #define n 4
 
 int main()
@@ -92,7 +41,7 @@ int main()
 		for (i = 0; i < 2 * n; i++) {
 			v.data[i] = (float)rand() / (float)RAND_MAX;
 		}
-		matrixf_get_eigenvector_it(&A, &v, eigval_re, eigval_im, 2, work);
+		matrixf_get_eigenvector(&A, &v, eigval_re, eigval_im, 2, work);
 		printf("\neigval(:,%d) = %0.4f%+.4fi;\neigvec(:,%d) = [\n",
 			k + 1, eigval_re, eigval_im, k + 1);
 		for (i = 0; i < n; i++)

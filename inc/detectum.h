@@ -215,7 +215,7 @@ int matrixf_decomp_lu_banded(Matrixf* A, int ubw);
 // This function unpacks the compact form of LU decomposition of the banded 
 // Hessenberg matrix A. In particular, the function accumulates the inverse of
 // the permuted lower triangular matrix L onto B, transforming B into inv(L)*B.
-// The matrix A remains the same. For instance, this function enables the 
+// Matrix A remains unchanged. For instance, this function enables the 
 // solution to the linear system U*x = inv(L)*B, determining its right-hand 
 // side. On size mismatch, the function returns -1. On success, it returns 0.
 int matrixf_unpack_lu_banded(Matrixf* A, Matrixf* B);
@@ -242,7 +242,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* perm, Matrixf* B);
 // In particular, if flag fwd > 0, the function transforms B into Q'*B by forward
 // accumulation of Householder matrices. Otherwise, if fwd <= 0, the function 
 // transforms B into Q*B by backward accumulation of Householder matrices. Matrix
-// A remains the same. The lower triangular part of A below the s-th subdiagonal
+// A remains unchanged. The lower triangular part of A below the s-th subdiagonal
 // must store the essential parts of the Householder vectors. For instance, if 
 // s = 0, the Householder vectors are below the main diagonal of A; whereas, if 
 // s = 1, the Householder vectors are below the first subdiagonal of A. On size
@@ -381,9 +381,25 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U);
 //   application of ad hoc shifts. The default value is 5.
 int matrixf_decomp_schur(Matrixf* A, Matrixf* U);
 
+// This function computes the right eigenvector v of a square matrix A corresponding
+// to the eigenvalue eigval_re+eigval_im*i using the inverse iteration method. 
+// Typically, 2-3 iterations are sufficient to obtain a good approximation. 
+// The input vector v must be initialized to a nonzero vector to enable convergence.
+// If eigval_im is zero, v must be an n-by-1 or n-by-2 matrix, where n is the number
+// of rows of A. If eigval_im is nonzero, v must be an n-by-2 matrix. On output, the
+// first column of v contains the real parts, and, if present, the second column 
+// contains the imaginary parts. Also, on output, matrix A remains unchanged.
+// iter specifies the number of iterations to perform.
+// The array work is the additional workspace memory: if eigval_im is zero, its 
+// minimum length is n*n+n; otherwise, its minimum length is 4*n*n+2*n. 
+// On size mismatch or non-square matrix, the function returns -1. On success, it 
+// returns 0.
+int matrixf_get_eigenvector(Matrixf* A, Matrixf* v,
+	float eigval_re, float eigval_im, int iter, float* work);
+
 // This function computes the matrices of right (V) and left (W) eigenvectors
 // from the quasitriangular matrix T and orthogonal matrix U obtained by Schur 
-// decomposition. Matrices T and U remain the same. If the flag pseudo is enabled,
+// decomposition. Matrices T and U remain unchanged. If the flag pseudo is enabled,
 // the function calculates the pseudo-eigenvectors; else, it calculates the 
 // eigenvectors. If the k-th and (k+1)-th eigenvalues are a complex conjugate pair,
 // since a complex conjugate pair of eigenvalues has complex conjugate eigenvectors, 
@@ -404,7 +420,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 // whether L is unitriangular: if the flag is enabled, the elements on the main
 // diagonal are ignored. The matrix B can share the data array with X, provided
 // that the array is large enough to accommodate the larger of B or X. Matrix L
-// remains the same, whereas B remains the same only if it does not share the
+// remains unchanged, whereas B remains unchanged only if it does not share the
 // data array with X. If L is rank deficient, it returns -2. On size mismatch,
 // it returns -1. On success, it returns 0.
 int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri);
@@ -414,7 +430,7 @@ int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri);
 // whether U is unitriangular: if the flag is enabled, the elements on the main
 // diagonal are ignored. The matrix B can share the data array with X, provided
 // that the array is large enough to accommodate the larger of B or X. Matrix U
-// remains the same, whereas B remains the same only if it does not share the
+// remains unchanged, whereas B remains unchanged only if it does not share the
 // data array with X. If U is rank deficient, it returns -2. On size mismatch,
 // it returns -1. On success, it returns 0.
 int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri);
@@ -448,7 +464,7 @@ int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, int ubw);
 // full-rank matrix A. If the system is underdetermined, the returned solution 
 // is of minimum norm. The matrix B can share the data array with X, provided 
 // that the array is large enough to accommodate the larger of B or X. The 
-// matrix A is always destroyed, whereas the matrix B remains the same if the
+// matrix A is always destroyed, whereas matrix B remains unchanged if the
 // system is underdetermined and B does not share the data array with X. If A
 // is rank deficient, the function returns -2. On size mismatch, the function
 // returns -1. On success, it returns 0.
@@ -484,7 +500,7 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 // active-set method for nonnegative least squares by Lawson and Hanson.
 // If C is m-by-n, d must be specified as an m-by-1 vector and x must be specified
 // as an n-by-1 vector. The initial x is the starting point. x is replaced by the
-// solution vector. Conversely, C and d remain the same. lb and ub are the lower
+// solution vector. Conversely, C and d remain unchanged. lb and ub are the lower
 // and upper bounds, respectively: they must be specified as arrays with length n.
 // tol is the termination tolerance: if the input value is negative, the default 
 // value 10*eps(norm(C,1)) is used instead, where norm(C,1) is the 1-norm of C.
@@ -557,7 +573,7 @@ int matrixf_sqrt(Matrixf* A, float* work);
 // matrices, alpha and beta are scalars, and op(X) is one of X or its
 // transpose. Therefore, if transX = 0, op(X) = X, else op(X) = X', X' being 
 // the transpose of X. C must be a distinct instance with respect to A and B.
-// Matrices A and B remain the same. On size mismatch, the function returns -1.
+// Matrices A and B remain unchanged. On size mismatch, the function returns -1.
 // On success, it returns 0.
 int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 	float alpha, float beta, int transA, int transB);
@@ -566,7 +582,7 @@ int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 // and A = A*op(R), where A is m-by-n, L and R are square, and op(X) is one of
 // X or its transpose. Therefore, if transX = 0, op(X) = X, else op(X) = X', X' 
 // being the transpose of X. A must be a distinct instance with respect to L 
-// and R. Matrices L and R remain the same, whereas A in transformed in place.
+// and R. Matrices L and R remain unchanged, whereas A in transformed in place.
 // If L (R) is a null pointer, the left (right) multiplication is omitted. The
 // array work is the additional workspace memory: if only L is provided, its
 // minimum length is m; if only R is provided, its minimum length is n; if both
