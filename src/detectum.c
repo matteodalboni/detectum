@@ -1263,7 +1263,7 @@ int matrixf_get_eigenvector(Matrixf* A, Matrixf* v,
 	const int n = A->rows;
 	const int q = v->cols;
 	const int p = eigval_im == 0 ? 1 : 2;
-	float norm, eps = epsf(eigval_re);
+	float norm;
 	Matrixf perm = { p * n, 1, work };
 	Matrixf C = { p * n, p * n, work + p * n };
 
@@ -1271,18 +1271,20 @@ int matrixf_get_eigenvector(Matrixf* A, Matrixf* v,
 		v->rows != n || q < p) {
 		return -1;
 	}
+	eigval_re += epsf(eigval_re);
+	eigval_im += epsf(eigval_im);
 	for (j = 0; j < n; j++) {
 		for (i = 0; i < n; i++) {
 			at(&C, i, j) = at(A, i, j);
-			if (eigval_im != 0) {
+			if (p == 2) {
 				at(&C, i + n, j + n) = at(A, i, j);
 				at(&C, i + n, j) = 0;
 				at(&C, i, j + n) = 0;
 			}
 		}
-		at(&C, j, j) -= eigval_re + eps;
-		if (eigval_im != 0) {
-			at(&C, j + n, j + n) -= eigval_re + eps;
+		at(&C, j, j) -= eigval_re;
+		if (p == 2) {
+			at(&C, j + n, j + n) -= eigval_re;
 			at(&C, j + n, j) = -eigval_im;
 			at(&C, j, j + n) = +eigval_im;
 		}
@@ -1349,8 +1351,8 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 				if (matrixf_solve_lu(&C, &d)) {
 					return -2;
 				}
-				nrm = normf(&at(V, 0, k), n, 1);
-				for (j = 0; j < n; j++) {
+				nrm = normf(&at(V, 0, k), k + 1, 1);
+				for (j = 0; j < k + 1; j++) {
 					at(V, j, k) /= nrm;
 				}
 			}
@@ -1368,8 +1370,8 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 				if (matrixf_solve_lu(&C, &d)) {
 					return -2;
 				}
-				nrm = normf(&at(W, 0, k), n, 1);
-				for (j = 0; j < n; j++) {
+				nrm = normf(&at(W, k, k), n - k, 1);
+				for (j = k; j < n; j++) {
 					at(W, j, k) /= nrm;
 				}
 			}
