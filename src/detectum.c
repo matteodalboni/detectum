@@ -1089,7 +1089,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 	const int iter_max = DETECTUM_SCHUR_ITER_MAX;
 	const int ahsc = DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT;
 	const float tol = DETECTUM_SCHUR_TOL;
-	const float eps = DETECTUM_EPS;
+	const float eps = DETECTUM_FLT_EPS;
 	float r, s, t, x, y, z, mu, beta, v[3] = { 1, 0, 0 };
 	float sine, cosine, a, b;
 	float* Xk, * Xk1;
@@ -1334,13 +1334,14 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 	k = 0;
 	while (k < n) {
 		if (k == n - 1 || at(T, k + 1, k) == 0) { // real eigenvalue
-			lamre = at(T, k, k) + epsf(at(T, k, k));
+			lamre = at(T, k, k);
+			lamre += epsf(lamre);
 			if (V && k > 0) { // right eigenvector
 				C.rows = C.cols = k;
 				matrixf_init(&d, k, 1, &at(V, 0, k), 0);
 				for (j = 0; j < k; j++) {
 					for (i = 0; i < k; i++) {
-						at(&C, i, j) = at(T, i, j);
+						at(&C, i, j) = at(T, i, j) + DETECTUM_FLT_MIN;
 					}
 					at(&C, j, j) -= lamre;
 					at(&d, j, 0) = -at(T, j, k);
@@ -1359,7 +1360,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 				matrixf_init(&d, h, 1, &at(W, k + 1, k), 0);
 				for (j = 0; j < h; j++) {
 					for (i = 0; i < h; i++) {
-						at(&C, j, i) = at(T, k + 1 + i, k + 1 + j);
+						at(&C, j, i) = at(T, k + 1 + i, k + 1 + j) + DETECTUM_FLT_MIN;
 					}
 					at(&C, j, j) -= lamre;
 					at(&d, j, 0) = -at(T, k, k + 1 + j);
@@ -1379,6 +1380,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 			// that the real part of the eigenvalues appears on the diagonal
 			lamre = at(T, k, k);
 			lamim = sqrtf(-at(T, k + 1, k) * at(T, k, k + 1));
+			lamim += epsf(lamim);
 			if (pseudo) { // pseudo-eigenvectors
 				g = at(T, k + 1, k) / lamim;
 				if (V) { // right eigenvectors
@@ -1390,8 +1392,8 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 								at(&C, i, j) = at(&C, k + i, k + j) = at(T, i, j);
 								at(&C, i, k + j) = at(&C, k + i, j) = 0;
 							}
-							at(&C, j, j) -= at(T, k, k);
-							at(&C, k + j, k + j) -= at(T, k + 1, k + 1);
+							at(&C, j, j) -= lamre;
+							at(&C, k + j, k + j) -= lamre;
 							at(&C, j, k + j) = +lamim;
 							at(&C, k + j, j) = -lamim;
 							at(&d, j, 0) = -at(T, j, k) - at(T, k + 1, k) * at(T, j, k + 1);
@@ -1426,8 +1428,8 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 									at(T, k + 2 + i, k + 2 + j);
 								at(&C, i, h + j) = at(&C, h + i, j) = 0;
 							}
-							at(&C, j, j) -= at(T, k, k);
-							at(&C, h + j, h + j) -= at(T, k + 1, k + 1);
+							at(&C, j, j) -= lamre;
+							at(&C, h + j, h + j) -= lamre;
 							at(&C, h + j, j) = +lamim;
 							at(&C, j, h + j) = -lamim;
 							at(&d, j, 0) = g * at(T, k, k + 2 + j) - lamim * at(T, k + 1, k + 2 + j);

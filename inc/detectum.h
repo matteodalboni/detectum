@@ -9,19 +9,29 @@ typedef struct {
 	float* data; // pointer to data array
 } Matrixf;
 
+// Minimum positive value
+#ifndef DETECTUM_FLT_MIN 
+#define DETECTUM_FLT_MIN (1.1754944e-38f)
+#endif
+
+// Maximum representable number
+#ifndef DETECTUM_FLT_MAX 
+#define DETECTUM_FLT_MAX (3.4028235e+38f)
+#endif
+
 // Machine precision
-#ifndef DETECTUM_EPS 
-#define DETECTUM_EPS (1.1920929e-07f)
+#ifndef DETECTUM_FLT_EPS 
+#define DETECTUM_FLT_EPS (1.1920929e-07f)
 #endif
 
 // Blue's underflow threshold
-#ifndef DETECTUM_TSML
-#define DETECTUM_TSML (1.0842022e-19f) 
+#ifndef DETECTUM_FLT_TSML
+#define DETECTUM_FLT_TSML (1.0842022e-19f) 
 #endif
 
 // Blue's overflow threshold
-#ifndef DETECTUM_TBIG
-#define DETECTUM_TBIG (4.5035996e+15f) 
+#ifndef DETECTUM_FLT_TBIG
+#define DETECTUM_FLT_TBIG (4.5035996e+15f) 
 #endif
 
 // This macro initializes a rows-by-cols matrix A, allocating its data 
@@ -46,8 +56,8 @@ static inline float normf(const float* v, int len, int stride)
 {
 	int i;
 	float s = 0, h = 0, a;
-	const float tsml = DETECTUM_TSML;
-	const float tbig = DETECTUM_TBIG;
+	const float tsml = DETECTUM_FLT_TSML;
+	const float tbig = DETECTUM_FLT_TBIG;
 
 	for (i = 0; i < len; i++) {
 		a = fabsf(v[i * stride]);
@@ -89,7 +99,7 @@ static inline float housef(float* x, int len, int stride)
 	int i;
 	float b, beta = 0;
 	const float a = x[0];
-	const float eps = DETECTUM_EPS;
+	const float eps = DETECTUM_FLT_EPS;
 	const float nrm = normf(x + stride, len - 1, stride);
 
 	if (nrm > eps) {
