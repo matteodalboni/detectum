@@ -393,7 +393,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U);
 
 // This function computes the right eigenvector v of a square matrix A corresponding
 // to the eigenvalue eigval_re+eigval_im*i using the inverse iteration method. 
-// Typically, 2-3 iterations are sufficient to obtain a good approximation. 
+// Typically, if A is not defective, 2-3 iterations produce a good approximation. 
 // The input vector v must be initialized to a nonzero vector to enable convergence.
 // If eigval_im is zero, v must be an n-by-1 or n-by-2 matrix, where n is the number
 // of rows of A. If eigval_im is nonzero, v must be an n-by-2 matrix. On output, the

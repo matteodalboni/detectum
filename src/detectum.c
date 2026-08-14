@@ -1276,6 +1276,9 @@ int matrixf_get_eigenvector(Matrixf* A, Matrixf* v,
 	for (j = 0; j < n; j++) {
 		for (i = 0; i < n; i++) {
 			at(&C, i, j) = at(A, i, j);
+			if (at(&C, i, j) == 0) {
+				at(&C, i, j) = DETECTUM_FLT_MIN;
+			}
 			if (p == 2) {
 				at(&C, i + n, j + n) = at(A, i, j);
 				at(&C, i + n, j) = 0;

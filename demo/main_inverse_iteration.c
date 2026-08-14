@@ -2,26 +2,48 @@
 #include <stdlib.h>
 #include "detectum.h"
 
+#define TEST 0
+#define ITER 2
+
+#if TEST == 1 // defective matrix
+#define n 8
+float A_data[] = {
+	3, 1, 0, 0, 0, 0, 0, 0,
+	0, 3, 1, 0, 0, 0, 0, 0,
+	0, 0, 3, 1, 0, 0, 0, 0,
+	0, 0, 0, 3, 1, 0, 0, 0,
+	0, 0, 0, 0, 3, 1, 0, 0,
+	0, 0, 0, 0, 0, 3, 1, 0,
+	0, 0, 0, 0, 0, 0, 3, 1,
+	0, 0, 0, 0, 0, 0, 0, 3
+};
+#elif TEST == 2
+#define n 8
+float A_data[] = {
+	0, -1,  1,  0,  0,  0,  0,  0,
+	1,  0,  0,  1,  0,  0,  0,  0,
+	0,  0,  0, -1,  0,  0,  0,  0,
+	0,  0,  1,  0,  0,  0,  0,  0,
+	0,  0,  0,  0,  0, -1,  1,  0,
+	0,  0,  0,  0,  1,  0,  0,  1,
+	0,  0,  0,  0,  0,  0,  0, -1,
+	0,  0,  0,  0,  0,  0,  1,  0
+};
+#else
 #define n 4
+float A_data[] = {
+	 1, 1, 1, 3,
+	 1, 2, 1, 1,
+	 1, 1, 3, 1,
+	-2, 1, 1, 4
+};
+#endif
 
 int main()
 {
 	int i, k = 0;
 	float eigval_re = 0, eigval_im = 0;
 	float work[4 * n * n + 2 * n] = { 0 };
-	float A_data[] = {
-#if 1
-		 1, 1, 1, 3,
-		 1, 2, 1, 1,
-		 1, 1, 3, 1,
-		-2, 1, 1, 4
-#else // defective matrix
-		3, 1, 0, 0,
-		0, 3, 1, 0,
-		0, 0, 3, 1,
-		0, 0, 0, 3
-#endif
-	};
 	Matrixf A;
 	Matrixf(T, n, n);
 	Matrixf(v, n, 2);
@@ -39,9 +61,9 @@ int main()
 		if (k < n - 1 && at(&T, k + 1, k) != 0)
 			eigval_im = +sqrtf(-at(&T, k + 1, k) * at(&T, k, k + 1));
 		for (i = 0; i < 2 * n; i++) {
-			v.data[i] = (float)rand() / (float)RAND_MAX;
+			v.data[i] = 2.0f * (float)rand() / (float)RAND_MAX - 1.0f;
 		}
-		matrixf_get_eigenvector(&A, &v, eigval_re, eigval_im, 2, work);
+		matrixf_get_eigenvector(&A, &v, eigval_re, eigval_im, ITER, work);
 		printf("\neigval(:,%d) = %0.4f%+.4fi;\neigvec(:,%d) = [\n",
 			k + 1, eigval_re, eigval_im, k + 1);
 		for (i = 0; i < n; i++)
