@@ -1263,7 +1263,7 @@ int matrixf_get_eigenvector(Matrixf* A, Matrixf* v,
 	const int n = A->rows;
 	const int q = v->cols;
 	const int p = eigval_im == 0 ? 1 : 2;
-	float nrm, nrmA = normf(A->data, n * n, 1);
+	float nrm_inv, nrmA = normf(A->data, n * n, 1);
 	float del = nrmA * DETECTUM_FLT_MIN;
 	float tol = nrmA * DETECTUM_FLT_EPS;
 	Matrixf perm = { p * n, 1, work };
@@ -1307,9 +1307,9 @@ int matrixf_get_eigenvector(Matrixf* A, Matrixf* v,
 		matrixf_permute(v, &perm, 0, 0);
 		matrixf_solve_tril(&C, v, v, 1);
 		matrixf_solve_triu(&C, v, v, 0);
-		nrm = normf(v->data, p * n, 1);
+		nrm_inv = 1.0f / normf(v->data, p * n, 1);
 		for (j = 0; j < p * n; j++) {
-			v->data[j] /= nrm;
+			v->data[j] *= nrm_inv;
 		}
 	}
 	v->rows = n;
@@ -1322,7 +1322,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 {
 	int i, j, k, h;
 	const int n = T->rows;
-	float nrm, eigval_re, eigval_im, g;
+	float nrm_inv, eigval_re, eigval_im, g;
 	float nrmT = normf(T->data, n * n, 1);
 	float del = nrmT * DETECTUM_FLT_MIN;
 	float tol = nrmT * DETECTUM_FLT_EPS;
@@ -1365,9 +1365,9 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 				if (matrixf_solve_lu(&C, &d)) {
 					return -2;
 				}
-				nrm = normf(&at(V, 0, k), k + 1, 1);
+				nrm_inv = 1.0f / normf(&at(V, 0, k), k + 1, 1);
 				for (j = 0; j < k + 1; j++) {
-					at(V, j, k) /= nrm;
+					at(V, j, k) *= nrm_inv;
 				}
 			}
 			if (W && k < n - 1) { // left eigenvector
@@ -1384,9 +1384,9 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 				if (matrixf_solve_lu(&C, &d)) {
 					return -2;
 				}
-				nrm = normf(&at(W, k, k), n - k, 1);
+				nrm_inv = 1.0f / normf(&at(W, k, k), n - k, 1);
 				for (j = k; j < n; j++) {
-					at(W, j, k) /= nrm;
+					at(W, j, k) *= nrm_inv;
 				}
 			}
 			k += 1;
@@ -1430,10 +1430,9 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 					at(V, k + 1, k) = at(T, k + 1, k);
 					at(V, k, k + 1) = eigval_im;
 					at(V, k + 1, k + 1) = -g;
-					nrm = normf(&at(V, 0, k), 2 * n, 1);
-					for (j = 0; j < n; j++) {
-						at(V, j, k) /= nrm;
-						at(V, j, k + 1) /= nrm;
+					nrm_inv = 1.0f / normf(&at(V, 0, k), 2 * n, 1);
+					for (j = 0; j < 2 * n; j++) {
+						at(V, j, k) *= nrm_inv;
 					}
 				}
 				if (W) { // left eigenvectors
@@ -1466,10 +1465,9 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 					at(W, k + 1, k) = eigval_im;
 					at(W, k, k + 1) = at(T, k + 1, k);
 					at(W, k + 1, k + 1) = 1;
-					nrm = normf(&at(W, 0, k), 2 * n, 1);
-					for (j = 0; j < n; j++) {
-						at(W, j, k) /= nrm;
-						at(W, j, k + 1) /= nrm;
+					nrm_inv = 1.0f / normf(&at(W, 0, k), 2 * n, 1);
+					for (j = 0; j < 2 * n; j++) {
+						at(W, j, k) *= nrm_inv;
 					}
 				}
 			}
@@ -1501,9 +1499,9 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 					at(V, k, k) = at(V, k + 1, k + 1) = 0;
 					at(V, k + 1, k) = at(T, k + 1, k);
 					at(V, k, k + 1) = eigval_im;
-					nrm = normf(&at(V, 0, k), 2 * n, 1);
+					nrm_inv = 1.0f / normf(&at(V, 0, k), 2 * n, 1);
 					for (j = 0; j < 2 * n; j++) {
-						at(V, j, k) /= nrm;
+						at(V, j, k) *= nrm_inv;
 					}
 				}
 				if (W) { // left eigenvectors
@@ -1535,9 +1533,9 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 					at(W, k, k) = at(W, k + 1, k + 1) = 0;
 					at(W, k + 1, k) = at(T, k, k + 1);
 					at(W, k, k + 1) = -eigval_im;
-					nrm = normf(&at(W, 0, k), 2 * n, 1);
+					nrm_inv = 1.0f / normf(&at(W, 0, k), 2 * n, 1);
 					for (j = 0; j < 2 * n; j++) {
-						at(W, j, k) /= nrm;
+						at(W, j, k) *= nrm_inv;
 					}
 				}
 			}
