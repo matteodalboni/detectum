@@ -3,7 +3,7 @@
 #include "detectum.h"
 
 #define TEST 0
-#define ITER 2
+#define ITER 5
 
 #if TEST == 1 // defective matrix
 #define n 8
@@ -28,6 +28,20 @@ float A_data[] = {
 	0,  0,  0,  0,  1,  0,  0,  1,
 	0,  0,  0,  0,  0,  0,  0, -1,
 	0,  0,  0,  0,  0,  0,  1,  0
+};
+#elif TEST == 3
+#define n 3
+float A_data[] = {
+	 1,  1,  1,
+	 1,  1,  1,
+	-1, -1, -1
+};
+#elif TEST == 4
+#define n 3
+float A_data[] = {
+	 1,  1,  1,
+	 0,  1,  0,
+	 0,  0,  1
 };
 #else
 #define n 4

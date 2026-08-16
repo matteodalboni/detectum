@@ -1263,7 +1263,9 @@ int matrixf_get_eigenvector(Matrixf* A, Matrixf* v,
 	const int n = A->rows;
 	const int q = v->cols;
 	const int p = eigval_im == 0 ? 1 : 2;
-	float norm;
+	float nrm, nrmA = normf(A->data, n * n, 1);
+	float del = nrmA * DETECTUM_FLT_MIN;
+	float tol = nrmA * DETECTUM_FLT_EPS;
 	Matrixf perm = { p * n, 1, work };
 	Matrixf C = { p * n, p * n, work + p * n };
 
@@ -1273,11 +1275,14 @@ int matrixf_get_eigenvector(Matrixf* A, Matrixf* v,
 	}
 	eigval_re += epsf(eigval_re);
 	eigval_im += epsf(eigval_im);
+	if (fabsf(eigval_re) < tol) {
+		eigval_re = eigval_re < 0 ? -tol : tol;
+	}
 	for (j = 0; j < n; j++) {
 		for (i = 0; i < n; i++) {
 			at(&C, i, j) = at(A, i, j);
 			if (at(&C, i, j) == 0) {
-				at(&C, i, j) = DETECTUM_FLT_MIN;
+				at(&C, i, j) = del;
 			}
 			if (p == 2) {
 				at(&C, i + n, j + n) = at(A, i, j);
@@ -1302,9 +1307,9 @@ int matrixf_get_eigenvector(Matrixf* A, Matrixf* v,
 		matrixf_permute(v, &perm, 0, 0);
 		matrixf_solve_tril(&C, v, v, 1);
 		matrixf_solve_triu(&C, v, v, 0);
-		norm = normf(v->data, p * n, 1);
+		nrm = normf(v->data, p * n, 1);
 		for (j = 0; j < p * n; j++) {
-			v->data[j] /= norm;
+			v->data[j] /= nrm;
 		}
 	}
 	v->rows = n;
@@ -1317,7 +1322,10 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 {
 	int i, j, k, h;
 	const int n = T->rows;
-	float nrm, lamre, lamim, g;
+	float nrm, eigval_re, eigval_im, g;
+	float nrmT = normf(T->data, n * n, 1);
+	float del = nrmT * DETECTUM_FLT_MIN;
+	float tol = nrmT * DETECTUM_FLT_EPS;
 	Matrixf C = { 0, 0, work }, d = { 0 };
 
 	if (V) {
@@ -1339,16 +1347,19 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 	k = 0;
 	while (k < n) {
 		if (k == n - 1 || at(T, k + 1, k) == 0) { // real eigenvalue
-			lamre = at(T, k, k);
-			lamre += epsf(lamre);
+			eigval_re = at(T, k, k);
+			eigval_re += epsf(eigval_re);
+			if (fabsf(eigval_re) < tol) {
+				eigval_re = eigval_re < 0 ? -tol : tol;
+			}
 			if (V && k > 0) { // right eigenvector
 				C.rows = C.cols = k;
 				matrixf_init(&d, k, 1, &at(V, 0, k), 0);
 				for (j = 0; j < k; j++) {
 					for (i = 0; i < k; i++) {
-						at(&C, i, j) = at(T, i, j) + DETECTUM_FLT_MIN;
+						at(&C, i, j) = at(T, i, j) + del;
 					}
-					at(&C, j, j) -= lamre;
+					at(&C, j, j) -= eigval_re;
 					at(&d, j, 0) = -at(T, j, k);
 				}
 				if (matrixf_solve_lu(&C, &d)) {
@@ -1365,9 +1376,9 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 				matrixf_init(&d, h, 1, &at(W, k + 1, k), 0);
 				for (j = 0; j < h; j++) {
 					for (i = 0; i < h; i++) {
-						at(&C, j, i) = at(T, k + 1 + i, k + 1 + j) + DETECTUM_FLT_MIN;
+						at(&C, j, i) = at(T, k + 1 + i, k + 1 + j) + del;
 					}
-					at(&C, j, j) -= lamre;
+					at(&C, j, j) -= eigval_re;
 					at(&d, j, 0) = -at(T, k, k + 1 + j);
 				}
 				if (matrixf_solve_lu(&C, &d)) {
@@ -1383,11 +1394,14 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 		else { // complex conjugate pair of eigenvalues
 			// It is assumed that the 2-by-2 blocks have been transformed so 
 			// that the real part of the eigenvalues appears on the diagonal
-			lamre = at(T, k, k);
-			lamim = sqrtf(-at(T, k + 1, k) * at(T, k, k + 1));
-			lamim += epsf(lamim);
+			eigval_re = at(T, k, k);
+			eigval_im = sqrtf(-at(T, k + 1, k) * at(T, k, k + 1));
+			eigval_im += epsf(eigval_im);
+			if (fabsf(eigval_im) < tol) {
+				eigval_im = eigval_im < 0 ? -tol : tol;
+			}
 			if (pseudo) { // pseudo-eigenvectors
-				g = at(T, k + 1, k) / lamim;
+				g = at(T, k + 1, k) / eigval_im;
 				if (V) { // right eigenvectors
 					if (k > 0) {
 						C.rows = C.cols = 2 * k;
@@ -1397,12 +1411,12 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 								at(&C, i, j) = at(&C, k + i, k + j) = at(T, i, j);
 								at(&C, i, k + j) = at(&C, k + i, j) = 0;
 							}
-							at(&C, j, j) -= lamre;
-							at(&C, k + j, k + j) -= lamre;
-							at(&C, j, k + j) = +lamim;
-							at(&C, k + j, j) = -lamim;
+							at(&C, j, j) -= eigval_re;
+							at(&C, k + j, k + j) -= eigval_re;
+							at(&C, j, k + j) = +eigval_im;
+							at(&C, k + j, j) = -eigval_im;
 							at(&d, j, 0) = -at(T, j, k) - at(T, k + 1, k) * at(T, j, k + 1);
-							at(&d, k + j, 0) = -lamim * at(T, j, k) + g * at(T, j, k + 1);
+							at(&d, k + j, 0) = -eigval_im * at(T, j, k) + g * at(T, j, k + 1);
 						}
 						if (matrixf_solve_lu(&C, &d)) {
 							return -2;
@@ -1414,7 +1428,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 					}
 					at(V, k, k) = 1;
 					at(V, k + 1, k) = at(T, k + 1, k);
-					at(V, k, k + 1) = lamim;
+					at(V, k, k + 1) = eigval_im;
 					at(V, k + 1, k + 1) = -g;
 					nrm = normf(&at(V, 0, k), 2 * n, 1);
 					for (j = 0; j < n; j++) {
@@ -1433,11 +1447,11 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 									at(T, k + 2 + i, k + 2 + j);
 								at(&C, i, h + j) = at(&C, h + i, j) = 0;
 							}
-							at(&C, j, j) -= lamre;
-							at(&C, h + j, h + j) -= lamre;
-							at(&C, h + j, j) = +lamim;
-							at(&C, j, h + j) = -lamim;
-							at(&d, j, 0) = g * at(T, k, k + 2 + j) - lamim * at(T, k + 1, k + 2 + j);
+							at(&C, j, j) -= eigval_re;
+							at(&C, h + j, h + j) -= eigval_re;
+							at(&C, h + j, j) = +eigval_im;
+							at(&C, j, h + j) = -eigval_im;
+							at(&d, j, 0) = g * at(T, k, k + 2 + j) - eigval_im * at(T, k + 1, k + 2 + j);
 							at(&d, h + j, 0) = -at(T, k + 1, k) * at(T, k, k + 2 + j) - at(T, k + 1, k + 2 + j);
 						}
 						if (matrixf_solve_lu(&C, &d)) {
@@ -1449,7 +1463,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 						}
 					}
 					at(W, k, k) = -g;
-					at(W, k + 1, k) = lamim;
+					at(W, k + 1, k) = eigval_im;
 					at(W, k, k + 1) = at(T, k + 1, k);
 					at(W, k + 1, k + 1) = 1;
 					nrm = normf(&at(W, 0, k), 2 * n, 1);
@@ -1469,12 +1483,12 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 								at(&C, i, j) = at(&C, k + i, k + j) = at(T, i, j);
 								at(&C, i, k + j) = at(&C, k + i, j) = 0;
 							}
-							at(&C, j, j) -= lamre;
-							at(&C, k + j, k + j) -= lamre;
-							at(&C, k + j, j) = -lamim;
-							at(&C, j, k + j) = +lamim;
+							at(&C, j, j) -= eigval_re;
+							at(&C, k + j, k + j) -= eigval_re;
+							at(&C, k + j, j) = -eigval_im;
+							at(&C, j, k + j) = +eigval_im;
 							at(&d, j, 0) = -at(T, j, k + 1) * at(T, k + 1, k);
-							at(&d, k + j, 0) = -at(T, j, k) * lamim;
+							at(&d, k + j, 0) = -at(T, j, k) * eigval_im;
 						}
 						if (matrixf_solve_lu(&C, &d)) {
 							return -2;
@@ -1486,7 +1500,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 					}
 					at(V, k, k) = at(V, k + 1, k + 1) = 0;
 					at(V, k + 1, k) = at(T, k + 1, k);
-					at(V, k, k + 1) = lamim;
+					at(V, k, k + 1) = eigval_im;
 					nrm = normf(&at(V, 0, k), 2 * n, 1);
 					for (j = 0; j < 2 * n; j++) {
 						at(V, j, k) /= nrm;
@@ -1503,12 +1517,12 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 									at(T, k + 2 + i, k + 2 + j);
 								at(&C, i, h + j) = at(&C, h + i, j) = 0;
 							}
-							at(&C, j, j) -= lamre;
-							at(&C, h + j, h + j) -= lamre;
-							at(&C, h + j, j) = +lamim;
-							at(&C, j, h + j) = -lamim;
+							at(&C, j, j) -= eigval_re;
+							at(&C, h + j, h + j) -= eigval_re;
+							at(&C, h + j, j) = +eigval_im;
+							at(&C, j, h + j) = -eigval_im;
 							at(&d, j, 0) = -at(T, k + 1, k + 2 + j) * at(T, k, k + 1);
-							at(&d, h + j, 0) = at(T, k, k + 2 + j) * lamim;
+							at(&d, h + j, 0) = at(T, k, k + 2 + j) * eigval_im;
 						}
 						if (matrixf_solve_lu(&C, &d)) {
 							return -2;
@@ -1520,7 +1534,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 					}
 					at(W, k, k) = at(W, k + 1, k + 1) = 0;
 					at(W, k + 1, k) = at(T, k, k + 1);
-					at(W, k, k + 1) = -lamim;
+					at(W, k, k + 1) = -eigval_im;
 					nrm = normf(&at(W, 0, k), 2 * n, 1);
 					for (j = 0; j < 2 * n; j++) {
 						at(W, j, k) /= nrm;
