@@ -1317,15 +1317,62 @@ int matrixf_get_eigenvector(Matrixf* A, Matrixf* v,
 	return 0;
 }
 
+static inline float solve_lu_robust(Matrixf* A, Matrixf* b)
+{
+	int i, j;
+	const int n = A->rows;
+	float aii, scale = 1.0f;
+	float scale0 = DETECTUM_FLT_MIN, scale0_inv;
+	float* b0 = b->data;
+
+	for (i = 0; i < n * n; i++) {
+		if (fabsf(A->data[i]) > scale0) {
+			scale0 = fabsf(A->data[i]);
+		}
+	}
+	for (i = 0; i < n; i++) {
+		if (fabsf(b->data[i]) > scale0) {
+			scale0 = fabsf(b->data[i]);
+		}
+	}
+	scale0_inv = 1.0f / scale0;
+	for (i = 0; i < n * n; i++) {
+		A->data[i] *= scale0_inv;
+	}
+	for (i = 0; i < n; i++) {
+		b->data[i] *= scale0_inv;
+	}
+	matrixf_decomp_lu(A, 0, b);
+	for (i = 1; i < n; i++) {
+		for (j = 0; j < i; j++) {
+			b0[i] -= at(A, i, j) * b0[j];
+		}
+	}
+	for (i = n - 1; i >= 0; i--) {
+		for (j = i + 1; j < n; j++) {
+			b0[i] -= at(A, i, j) * b0[j];
+		}
+		aii = at(A, i, i);
+		if (aii == 0) {
+			aii = DETECTUM_FLT_EPS;
+		}
+		if (n * fabsf(b0[i] / aii) > DETECTUM_FLT_MAX) {
+			for (j = i; j < n; j++) {
+				b0[j] *= aii;
+			}
+			scale *= aii;
+		}
+		b0[i] /= aii;
+	}
+	return scale;
+}
+
 int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 	Matrixf* V, Matrixf* W, int pseudo, float* work)
 {
 	int i, j, k, h;
 	const int n = T->rows;
-	float nrm_inv, eigval_re, eigval_im, g;
-	float nrmT = normf(T->data, n * n, 1);
-	float del = nrmT * DETECTUM_FLT_MIN;
-	float tol = nrmT * DETECTUM_FLT_EPS;
+	float nrm_inv, eigval_re, eigval_im, g, s;
 	Matrixf C = { 0, 0, work }, d = { 0 };
 
 	if (V) {
@@ -1348,23 +1395,17 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 	while (k < n) {
 		if (k == n - 1 || at(T, k + 1, k) == 0) { // real eigenvalue
 			eigval_re = at(T, k, k);
-			eigval_re += epsf(eigval_re);
-			if (fabsf(eigval_re) < tol) {
-				eigval_re = eigval_re < 0 ? -tol : tol;
-			}
 			if (V && k > 0) { // right eigenvector
 				C.rows = C.cols = k;
 				matrixf_init(&d, k, 1, &at(V, 0, k), 0);
 				for (j = 0; j < k; j++) {
 					for (i = 0; i < k; i++) {
-						at(&C, i, j) = at(T, i, j) + del;
+						at(&C, i, j) = at(T, i, j);
 					}
 					at(&C, j, j) -= eigval_re;
 					at(&d, j, 0) = -at(T, j, k);
 				}
-				if (matrixf_solve_lu(&C, &d)) {
-					return -2;
-				}
+				at(V, k, k) *= solve_lu_robust(&C, &d);
 				nrm_inv = 1.0f / normf(&at(V, 0, k), k + 1, 1);
 				for (j = 0; j < k + 1; j++) {
 					at(V, j, k) *= nrm_inv;
@@ -1376,14 +1417,12 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 				matrixf_init(&d, h, 1, &at(W, k + 1, k), 0);
 				for (j = 0; j < h; j++) {
 					for (i = 0; i < h; i++) {
-						at(&C, j, i) = at(T, k + 1 + i, k + 1 + j) + del;
+						at(&C, j, i) = at(T, k + 1 + i, k + 1 + j);
 					}
 					at(&C, j, j) -= eigval_re;
 					at(&d, j, 0) = -at(T, k, k + 1 + j);
 				}
-				if (matrixf_solve_lu(&C, &d)) {
-					return -2;
-				}
+				at(W, k, k) *= solve_lu_robust(&C, &d);
 				nrm_inv = 1.0f / normf(&at(W, k, k), n - k, 1);
 				for (j = k; j < n; j++) {
 					at(W, j, k) *= nrm_inv;
@@ -1396,13 +1435,10 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 			// that the real part of the eigenvalues appears on the diagonal
 			eigval_re = at(T, k, k);
 			eigval_im = sqrtf(-at(T, k + 1, k) * at(T, k, k + 1));
-			eigval_im += epsf(eigval_im);
-			if (fabsf(eigval_im) < tol) {
-				eigval_im = eigval_im < 0 ? -tol : tol;
-			}
 			if (pseudo) { // pseudo-eigenvectors
 				g = at(T, k + 1, k) / eigval_im;
 				if (V) { // right eigenvectors
+					s = 1.0f;
 					if (k > 0) {
 						C.rows = C.cols = 2 * k;
 						matrixf_init(&d, 2 * k, 1, &at(V, 0, k), 0);
@@ -1418,24 +1454,23 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 							at(&d, j, 0) = -at(T, j, k) - at(T, k + 1, k) * at(T, j, k + 1);
 							at(&d, k + j, 0) = -eigval_im * at(T, j, k) + g * at(T, j, k + 1);
 						}
-						if (matrixf_solve_lu(&C, &d)) {
-							return -2;
-						}
+						s = solve_lu_robust(&C, &d);
 						for (j = k - 1; j >= 0; j--) {
 							at(V, j, k + 1) = d.data[k + j];
 							d.data[k + j] = 0;
 						}
 					}
-					at(V, k, k) = 1;
-					at(V, k + 1, k) = at(T, k + 1, k);
-					at(V, k, k + 1) = eigval_im;
-					at(V, k + 1, k + 1) = -g;
+					at(V, k, k) = s;
+					at(V, k + 1, k) = at(T, k + 1, k) * s;
+					at(V, k, k + 1) = eigval_im * s;
+					at(V, k + 1, k + 1) = -g * s;
 					nrm_inv = 1.0f / normf(&at(V, 0, k), 2 * n, 1);
 					for (j = 0; j < 2 * n; j++) {
 						at(V, j, k) *= nrm_inv;
 					}
 				}
 				if (W) { // left eigenvectors
+					s = 1.0f;
 					if (k < n - 2) {
 						h = n - 2 - k;
 						C.rows = C.cols = 2 * h;
@@ -1453,18 +1488,16 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 							at(&d, j, 0) = g * at(T, k, k + 2 + j) - eigval_im * at(T, k + 1, k + 2 + j);
 							at(&d, h + j, 0) = -at(T, k + 1, k) * at(T, k, k + 2 + j) - at(T, k + 1, k + 2 + j);
 						}
-						if (matrixf_solve_lu(&C, &d)) {
-							return -2;
-						}
+						s = solve_lu_robust(&C, &d);
 						for (j = h - 1; j >= 0; j--) {
 							at(W, k + 2 + j, k + 1) = at(W, j, k + 1);
 							at(W, j, k + 1) = 0;
 						}
 					}
-					at(W, k, k) = -g;
-					at(W, k + 1, k) = eigval_im;
-					at(W, k, k + 1) = at(T, k + 1, k);
-					at(W, k + 1, k + 1) = 1;
+					at(W, k, k) = -g * s;
+					at(W, k + 1, k) = eigval_im * s;
+					at(W, k, k + 1) = at(T, k + 1, k) * s;
+					at(W, k + 1, k + 1) = s;
 					nrm_inv = 1.0f / normf(&at(W, 0, k), 2 * n, 1);
 					for (j = 0; j < 2 * n; j++) {
 						at(W, j, k) *= nrm_inv;
@@ -1473,6 +1506,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 			}
 			else { // complex eigenvectors
 				if (V) { // right eigenvectors
+					s = 1.0f;
 					if (k > 0) {
 						C.rows = C.cols = 2 * k;
 						matrixf_init(&d, 2 * k, 1, &at(V, 0, k), 0);
@@ -1488,23 +1522,22 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 							at(&d, j, 0) = -at(T, j, k + 1) * at(T, k + 1, k);
 							at(&d, k + j, 0) = -at(T, j, k) * eigval_im;
 						}
-						if (matrixf_solve_lu(&C, &d)) {
-							return -2;
-						}
+						s = solve_lu_robust(&C, &d);
 						for (j = k - 1; j >= 0; j--) {
 							at(V, j, k + 1) = d.data[k + j];
 							d.data[k + j] = 0;
 						}
 					}
 					at(V, k, k) = at(V, k + 1, k + 1) = 0;
-					at(V, k + 1, k) = at(T, k + 1, k);
-					at(V, k, k + 1) = eigval_im;
+					at(V, k + 1, k) = at(T, k + 1, k) * s;
+					at(V, k, k + 1) = eigval_im * s;
 					nrm_inv = 1.0f / normf(&at(V, 0, k), 2 * n, 1);
 					for (j = 0; j < 2 * n; j++) {
 						at(V, j, k) *= nrm_inv;
 					}
 				}
 				if (W) { // left eigenvectors
+					s = 1.0f;
 					if (k < n - 2) {
 						h = n - 2 - k;
 						C.rows = C.cols = 2 * h;
@@ -1522,17 +1555,15 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 							at(&d, j, 0) = -at(T, k + 1, k + 2 + j) * at(T, k, k + 1);
 							at(&d, h + j, 0) = at(T, k, k + 2 + j) * eigval_im;
 						}
-						if (matrixf_solve_lu(&C, &d)) {
-							return -2;
-						}
+						s = solve_lu_robust(&C, &d);
 						for (j = h - 1; j >= 0; j--) {
 							at(W, k + 2 + j, k + 1) = at(W, j, k + 1);
 							at(W, j, k + 1) = 0;
 						}
 					}
 					at(W, k, k) = at(W, k + 1, k + 1) = 0;
-					at(W, k + 1, k) = at(T, k, k + 1);
-					at(W, k, k + 1) = -eigval_im;
+					at(W, k + 1, k) = at(T, k, k + 1) * s;
+					at(W, k, k + 1) = -eigval_im * s;
 					nrm_inv = 1.0f / normf(&at(W, 0, k), 2 * n, 1);
 					for (j = 0; j < 2 * n; j++) {
 						at(W, j, k) *= nrm_inv;

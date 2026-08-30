@@ -420,8 +420,7 @@ int matrixf_get_eigenvector(Matrixf* A, Matrixf* v,
 // array work is the additional workspace memory: in general, if T is n-by-n, its 
 // minimum length is max(2,4*(n-2)^2); if all the eigenvalues are real, the 
 // minimum length of work is max(2,(n-1)^2). If the matrices of eigenvectors are
-// not n-by-n, the function returns -1; if an eigenvector cannot be computed due to
-// a singularity, it returns -2. On success, it returns 0.
+// not n-by-n, the function returns -1. On success, it returns 0.
 int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 	Matrixf* V, Matrixf* W, int pseudo, float* work);
 
