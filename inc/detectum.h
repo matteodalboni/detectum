@@ -391,22 +391,6 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U);
 //   application of ad hoc shifts. The default value is 5.
 int matrixf_decomp_schur(Matrixf* A, Matrixf* U);
 
-// This function computes the right eigenvector v of a square matrix A corresponding
-// to the eigenvalue eigval_re+eigval_im*i using the inverse iteration method. 
-// Typically, if A is not defective, 2-3 iterations produce a good approximation. 
-// The input vector v must be initialized to a nonzero vector to enable convergence.
-// If eigval_im is zero, v must be an n-by-1 or n-by-2 matrix, where n is the number
-// of rows of A. If eigval_im is nonzero, v must be an n-by-2 matrix. On output, the
-// first column of v contains the real parts, and, if present, the second column 
-// contains the imaginary parts. Also, on output, matrix A remains unchanged.
-// iter specifies the number of iterations to perform.
-// The array work is the additional workspace memory: if eigval_im is zero, its 
-// minimum length is n*n+n; otherwise, its minimum length is 4*n*n+2*n. 
-// On size mismatch or non-square matrix, the function returns -1. On success, it 
-// returns 0.
-int matrixf_get_eigenvector(Matrixf* A, Matrixf* v,
-	float eigval_re, float eigval_im, int iter, float* work);
-
 // This function computes the matrices of right (V) and left (W) eigenvectors
 // from the quasitriangular matrix T and orthogonal matrix U obtained by Schur 
 // decomposition. Matrices T and U remain unchanged. If the flag pseudo is enabled,

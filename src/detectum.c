@@ -1256,91 +1256,30 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 	return iter == iter_max ? -2 : iter;
 }
 
-int matrixf_get_eigenvector(Matrixf* A, Matrixf* v,
-	float eigval_re, float eigval_im, int iter, float* work)
+static inline float solve_eigvec(Matrixf* A, Matrixf* b, float eigval_re, float eigval_im)
 {
 	int i, j;
 	const int n = A->rows;
-	const int q = v->cols;
-	const int p = eigval_im == 0 ? 1 : 2;
-	float nrm_inv, nrmA = normf(A->data, n * n, 1);
-	float del = nrmA * DETECTUM_FLT_MIN;
-	float tol = nrmA * DETECTUM_FLT_EPS;
-	Matrixf perm = { p * n, 1, work };
-	Matrixf C = { p * n, p * n, work + p * n };
-
-	if (A->cols != n || q > 2 ||
-		v->rows != n || q < p) {
-		return -1;
-	}
-	eigval_re += epsf(eigval_re);
-	eigval_im += epsf(eigval_im);
-	if (fabsf(eigval_re) < tol) {
-		eigval_re = eigval_re < 0 ? -tol : tol;
-	}
-	for (j = 0; j < n; j++) {
-		for (i = 0; i < n; i++) {
-			at(&C, i, j) = at(A, i, j);
-			if (at(&C, i, j) == 0) {
-				at(&C, i, j) = del;
-			}
-			if (p == 2) {
-				at(&C, i + n, j + n) = at(A, i, j);
-				at(&C, i + n, j) = 0;
-				at(&C, i, j + n) = 0;
-			}
-		}
-		at(&C, j, j) -= eigval_re;
-		if (p == 2) {
-			at(&C, j + n, j + n) -= eigval_re;
-			at(&C, j + n, j) = -eigval_im;
-			at(&C, j, j + n) = +eigval_im;
-		}
-		else if (q == 2) {
-			v->data[j + n] = 0;
-		}
-	}
-	v->rows = p * n;
-	v->cols = 1;
-	matrixf_decomp_lu(&C, &perm, 0);
-	for (i = 0; i < iter; i++) {
-		matrixf_permute(v, &perm, 0, 0);
-		matrixf_solve_tril(&C, v, v, 1);
-		matrixf_solve_triu(&C, v, v, 0);
-		nrm_inv = 1.0f / normf(v->data, p * n, 1);
-		for (j = 0; j < p * n; j++) {
-			v->data[j] *= nrm_inv;
-		}
-	}
-	v->rows = n;
-	v->cols = q;
-	return 0;
-}
-
-static inline float solve_lu_robust(Matrixf* A, Matrixf* b)
-{
-	int i, j;
-	const int n = A->rows;
-	float aii, scale = 1.0f;
-	float scale0 = DETECTUM_FLT_MIN, scale0_inv;
+	float aii, scale_out = 1.0f;
+	float scale = DETECTUM_FLT_MIN, scale_inv;
 	float* b0 = b->data;
 
 	for (i = 0; i < n * n; i++) {
-		if (fabsf(A->data[i]) > scale0) {
-			scale0 = fabsf(A->data[i]);
+		if (fabsf(A->data[i]) > scale) {
+			scale = fabsf(A->data[i]);
 		}
 	}
 	for (i = 0; i < n; i++) {
-		if (fabsf(b->data[i]) > scale0) {
-			scale0 = fabsf(b->data[i]);
+		if (fabsf(b->data[i]) > scale) {
+			scale = fabsf(b->data[i]);
 		}
 	}
-	scale0_inv = 1.0f / scale0;
+	scale_inv = 1.0f / scale;
 	for (i = 0; i < n * n; i++) {
-		A->data[i] *= scale0_inv;
+		A->data[i] *= scale_inv;
 	}
 	for (i = 0; i < n; i++) {
-		b->data[i] *= scale0_inv;
+		b->data[i] *= scale_inv;
 	}
 	matrixf_decomp_lu(A, 0, b);
 	for (i = 1; i < n; i++) {
@@ -1354,17 +1293,25 @@ static inline float solve_lu_robust(Matrixf* A, Matrixf* b)
 		}
 		aii = at(A, i, i);
 		if (aii == 0) {
-			aii = DETECTUM_FLT_EPS;
+			aii = DETECTUM_FLT_EPS * scale_inv;
+			if (eigval_im != 0) {
+				aii *= hypotf(eigval_re, eigval_im);
+			}
+			else if (eigval_re != 0) {
+				aii *= fabsf(eigval_re);
+			}
 		}
 		if (n * fabsf(b0[i] / aii) > DETECTUM_FLT_MAX) {
-			for (j = i; j < n; j++) {
+			for (j = i + 1; j < n; j++) {
 				b0[j] *= aii;
 			}
-			scale *= aii;
+			scale_out *= aii;
 		}
-		b0[i] /= aii;
+		else {
+			b0[i] /= aii;
+		}
 	}
-	return scale;
+	return scale_out;
 }
 
 int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
@@ -1395,6 +1342,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 	while (k < n) {
 		if (k == n - 1 || at(T, k + 1, k) == 0) { // real eigenvalue
 			eigval_re = at(T, k, k);
+			eigval_im = 0.0f;
 			if (V && k > 0) { // right eigenvector
 				C.rows = C.cols = k;
 				matrixf_init(&d, k, 1, &at(V, 0, k), 0);
@@ -1405,7 +1353,8 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 					at(&C, j, j) -= eigval_re;
 					at(&d, j, 0) = -at(T, j, k);
 				}
-				at(V, k, k) *= solve_lu_robust(&C, &d);
+				s = solve_eigvec(&C, &d, eigval_re, eigval_im);
+				at(V, k, k) *= s;
 				nrm_inv = 1.0f / normf(&at(V, 0, k), k + 1, 1);
 				for (j = 0; j < k + 1; j++) {
 					at(V, j, k) *= nrm_inv;
@@ -1422,7 +1371,8 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 					at(&C, j, j) -= eigval_re;
 					at(&d, j, 0) = -at(T, k, k + 1 + j);
 				}
-				at(W, k, k) *= solve_lu_robust(&C, &d);
+				s = solve_eigvec(&C, &d, eigval_re, eigval_im);
+				at(W, k, k) *= s;
 				nrm_inv = 1.0f / normf(&at(W, k, k), n - k, 1);
 				for (j = k; j < n; j++) {
 					at(W, j, k) *= nrm_inv;
@@ -1454,7 +1404,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 							at(&d, j, 0) = -at(T, j, k) - at(T, k + 1, k) * at(T, j, k + 1);
 							at(&d, k + j, 0) = -eigval_im * at(T, j, k) + g * at(T, j, k + 1);
 						}
-						s = solve_lu_robust(&C, &d);
+						s = solve_eigvec(&C, &d, eigval_re, eigval_im);
 						for (j = k - 1; j >= 0; j--) {
 							at(V, j, k + 1) = d.data[k + j];
 							d.data[k + j] = 0;
@@ -1488,7 +1438,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 							at(&d, j, 0) = g * at(T, k, k + 2 + j) - eigval_im * at(T, k + 1, k + 2 + j);
 							at(&d, h + j, 0) = -at(T, k + 1, k) * at(T, k, k + 2 + j) - at(T, k + 1, k + 2 + j);
 						}
-						s = solve_lu_robust(&C, &d);
+						s = solve_eigvec(&C, &d, eigval_re, eigval_im);
 						for (j = h - 1; j >= 0; j--) {
 							at(W, k + 2 + j, k + 1) = at(W, j, k + 1);
 							at(W, j, k + 1) = 0;
@@ -1522,7 +1472,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 							at(&d, j, 0) = -at(T, j, k + 1) * at(T, k + 1, k);
 							at(&d, k + j, 0) = -at(T, j, k) * eigval_im;
 						}
-						s = solve_lu_robust(&C, &d);
+						s = solve_eigvec(&C, &d, eigval_re, eigval_im);
 						for (j = k - 1; j >= 0; j--) {
 							at(V, j, k + 1) = d.data[k + j];
 							d.data[k + j] = 0;
@@ -1555,7 +1505,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 							at(&d, j, 0) = -at(T, k + 1, k + 2 + j) * at(T, k, k + 1);
 							at(&d, h + j, 0) = at(T, k, k + 2 + j) * eigval_im;
 						}
-						s = solve_lu_robust(&C, &d);
+						s = solve_eigvec(&C, &d, eigval_re, eigval_im);
 						for (j = h - 1; j >= 0; j--) {
 							at(W, k + 2 + j, k + 1) = at(W, j, k + 1);
 							at(W, j, k + 1) = 0;
