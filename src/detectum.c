@@ -1197,15 +1197,21 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 	// of the eigenvalues appears on the main diagonal. 
 	for (k = 0; k < n - 1; k++) {
 		if (at(A, k + 1, k) != 0) {
-			sine = 0;
+			sine = 0.0f;
 			x = 0.5f * (at(A, k, k) - at(A, k + 1, k + 1));
 			y = x * x + at(A, k + 1, k) * at(A, k, k + 1);
 			if (y >= 0) { // real eigenvalues
 				r = at(A, k, k + 1);
 				s = at(A, k, k) - at(A, k + 1, k + 1) - x + sqrtf(y);
 				t = hypotf(r, s);
-				cosine = r / t;
-				sine = s / t;
+				if (t != 0) {
+					cosine = r / t;
+					sine = s / t;
+				}
+				else {
+					cosine = 0.0f;
+					sine = 1.0f;
+				}
 			}
 			else if (at(A, k, k) != at(A, k + 1, k + 1)) {
 				r = (at(A, k + 1, k) + at(A, k, k + 1)) /
