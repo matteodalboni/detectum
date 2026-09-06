@@ -1266,10 +1266,18 @@ static inline float solve_eigvec(Matrixf* A, Matrixf* b, float eigval_re, float 
 {
 	int i, j;
 	const int n = A->rows;
-	float aii, scale_out = 1.0f;
-	float scale = DETECTUM_FLT_MIN, scale_inv;
-	float* b0 = b->data;
+	float aii, r, * b0 = b->data;
+	float scale = 0, scale_inv, scale_out = 1.0f;
+	float shift = DETECTUM_FLT_EPS * hypotf(eigval_re, eigval_im);
 
+	if (shift == 0) {
+		shift = DETECTUM_FLT_MIN;
+	}
+	for (i = 0; i < n; i++) {
+		if (at(A, i, i) == 0) {
+			at(A, i, i) = shift;
+		}
+	}
 	for (i = 0; i < n * n; i++) {
 		if (fabsf(A->data[i]) > scale) {
 			scale = fabsf(A->data[i]);
@@ -1280,41 +1288,37 @@ static inline float solve_eigvec(Matrixf* A, Matrixf* b, float eigval_re, float 
 			scale = fabsf(b->data[i]);
 		}
 	}
-	scale_inv = 1.0f / scale;
-	for (i = 0; i < n * n; i++) {
-		A->data[i] *= scale_inv;
-	}
-	for (i = 0; i < n; i++) {
-		b->data[i] *= scale_inv;
-	}
-	matrixf_decomp_lu(A, 0, b);
-	for (i = 1; i < n; i++) {
-		for (j = 0; j < i; j++) {
-			b0[i] -= at(A, i, j) * b0[j];
+	if (scale > 0) {
+		scale_inv = 1.0f / scale;
+		for (i = 0; i < n * n; i++) {
+			A->data[i] *= scale_inv;
 		}
-	}
-	for (i = n - 1; i >= 0; i--) {
-		for (j = i + 1; j < n; j++) {
-			b0[i] -= at(A, i, j) * b0[j];
+		for (i = 0; i < n; i++) {
+			b->data[i] *= scale_inv;
 		}
-		aii = at(A, i, i);
-		if (aii == 0) {
-			aii = DETECTUM_FLT_EPS * scale_inv;
-			if (eigval_im != 0) {
-				aii *= hypotf(eigval_re, eigval_im);
-			}
-			else if (eigval_re != 0) {
-				aii *= fabsf(eigval_re);
+		matrixf_decomp_lu(A, 0, b);
+		for (i = 1; i < n; i++) {
+			for (j = 0; j < i; j++) {
+				b0[i] -= at(A, i, j) * b0[j];
 			}
 		}
-		if (n * fabsf(b0[i] / aii) > DETECTUM_FLT_MAX) {
+		for (i = n - 1; i >= 0; i--) {
 			for (j = i + 1; j < n; j++) {
-				b0[j] *= aii;
+				b0[i] -= at(A, i, j) * b0[j];
 			}
-			scale_out *= aii;
-		}
-		else {
-			b0[i] /= aii;
+			aii = at(A, i, i);
+			if (b0[i] != 0) {
+				r = n * fabsf(b0[i] / aii);
+				if (r > DETECTUM_FLT_MAX) {
+					for (j = i + 1; j < n; j++) {
+						b0[j] *= aii;
+					}
+					scale_out *= aii;
+				}
+				else {
+					b0[i] /= aii;
+				}
+			}
 		}
 	}
 	return scale_out;
