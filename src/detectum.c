@@ -607,7 +607,6 @@ int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* perm, float 
 	const int m = A->rows;
 	const int n = A->cols;
 	const int p = m < n ? m : n;
-	const int q = m > n ? m : n;
 
 	if (matrixf_decomp_qr(A, U, perm, 0)) {
 		return -1;
@@ -1864,7 +1863,6 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 	const int n = A->cols;
 	const int h = B->cols;
 	const int p = m < n ? m : n;
-	const int q = m > n ? m : n;
 	float aji, aii;
 	float* Bi, * Bj;
 	Matrixf perm = { 1, n, work };
