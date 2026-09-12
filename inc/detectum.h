@@ -139,7 +139,7 @@ static inline void matrixf_print(Matrixf* A, const char* format)
 // memory on the heap. On allocation failure, the data pointer is null.
 static inline Matrixf matrixf(int rows, int cols)
 {
-	Matrixf A = { rows, cols, calloc((size_t)rows * (size_t)cols, sizeof(float)) };
+	Matrixf A = { rows, cols, calloc(rows * cols, sizeof(float)) };
 
 	return A;
 }

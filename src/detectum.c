@@ -125,32 +125,32 @@ void matrixf_transpose(Matrixf* A)
 {
 	int i, j;
 	float t, * d = A->data;
-	const int r = A->rows;
-	const int c = A->cols;
-	const int n = r * c - 1;
+	const int m = A->rows;
+	const int n = A->cols;
+	const int k = m * n - 1;
 
-	if (r == c) {
-		for (j = 0; j < c - 1; j++) {
+	if (m == n) {
+		for (j = 0; j < n - 1; j++) {
 			d = &at(A, 0, j);
-			for (i = j + 1; i < r; i++) {
+			for (i = j + 1; i < m; i++) {
 				t = d[i];
 				d[i] = at(A, j, i);
 				at(A, j, i) = t;
 			}
 		}
 	}
-	else if (r > 1 && c > 1) {
-		for (j = i = 1; i < n; j = ++i) {
+	else if (m > 1 && n > 1) {
+		for (j = i = 1; i < k; j = ++i) {
 			do {
-				j = j * r - n * (j / c);
+				j = j * m - k * (j / n);
 			} while (j < i);
 			t = d[i];
 			d[i] = d[j];
 			d[j] = t;
 		}
 	}
-	A->rows = c;
-	A->cols = r;
+	A->rows = n;
+	A->cols = m;
 }
 
 int matrixf_decomp_chol(Matrixf* A)
