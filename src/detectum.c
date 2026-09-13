@@ -1933,8 +1933,8 @@ int matrixf_solve_bvls(Matrixf* C, Matrixf* d, Matrixf* x,
 	float nrm1, tmp, alpha;
 	float* xset = work;
 	float* w_data = work + n;
-	float* Cf_data = work + 2 * n;
-	float* df_data = work + 2 * n + m * n;
+	float* Cf_data = w_data + n;
+	float* df_data = Cf_data + m * n;
 	Matrixf Cf = { m, 0, Cf_data };
 	Matrixf df = { m, 1, df_data };
 	Matrixf z = { n, 1, df_data };
@@ -2160,8 +2160,8 @@ int matrixf_exp(Matrixf* A, float* work)
 	const int q = DETECTUM_EXP_PADE_ORDER;
 	float c, p, t;
 	Matrixf X = { n, n, work + n };
-	Matrixf N = { n, n, work + n + n * n };
-	Matrixf D = { n, n, work + n + n * n * 2 };
+	Matrixf N = { n, n, X.data + n * n };
+	Matrixf D = { n, n, N.data + n * n };
 
 	if (n != A->cols) {
 		return -1;
@@ -2224,8 +2224,8 @@ int matrixf_log(Matrixf* A, float* work)
 	const float thr = DETECTUM_LOG_ISS_THR;
 	float tmp, nrm1;
 	Matrixf U = { n, n, work + n };
-	Matrixf N = { n, n, work + n + n * n };
-	Matrixf D = { n, n, work + n + n * n * 2 };
+	Matrixf N = { n, n, U.data + n * n };
+	Matrixf D = { n, n, N.data + n * n };
 
 	f = matrixf_decomp_schur(A, &U);
 	if (f < 0) {
