@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "detectum.h"
 
-#define TEST 3
+#define TEST 0
 
 int main()
 {

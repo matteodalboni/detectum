@@ -66,8 +66,8 @@ int main()
 	struct timespec t0;
 #endif
 	if (!A.data || !B.data) return -1;
-	fread(A.data, sizeof(float), (size_t)(A.rows * A.cols), A_file);
-	fread(B.data, sizeof(float), (size_t)(B.rows * B.cols), b_file);
+	fread(A.data, sizeof(float), A.rows * A.cols, A_file);
+	fread(B.data, sizeof(float), B.rows * B.cols, b_file);
 	fclose(A_file);
 	fclose(b_file);
 #ifdef TICKTOCK
@@ -77,7 +77,7 @@ int main()
 #ifdef TICKTOCK
 	printf("Elapsed time: %f s\n", tock(&t0));
 #endif
-	fwrite(X.data, sizeof(float), (size_t)(X.rows * X.cols), x_file);
+	fwrite(X.data, sizeof(float), X.rows * X.cols, x_file);
 	fclose(x_file);
 	free(A.data);
 	free(B.data);

@@ -5,7 +5,7 @@
 static void print_complex_eigenvectors(Matrixf* T, Matrixf* V)
 {
 	int i, j;
-	const int n = T->rows;
+	const size_t n = T->rows;
 
 	for (i = 0; i < n; i++) {
 		for (j = 0; j < n; j++) {
@@ -48,7 +48,7 @@ int main()
 #else
 	float A_data[n * n] = { 0 };
 	FILE* A_file = fopen("../A.bin", "rb");
-	fread(A_data, sizeof(float), (size_t)(n * n), A_file); fclose(A_file);
+	fread(A_data, sizeof(float), n * n, A_file); fclose(A_file);
 	for (i = 0; i < n * n; i++) T.data[i] = A_data[i];
 #endif
 	matrixf_decomp_schur(&T, &U);

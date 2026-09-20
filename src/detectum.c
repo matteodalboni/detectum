@@ -3,9 +3,9 @@
 // Householder transformation X(i0:iend,j0:jend) = H*X(i0:iend,j0:jend),
 // where H = I - beta*v*v' and v(0) = 1. stride is the increment of v.
 static void housef_apply_l(Matrixf* X, const float* v, float beta,
-	int i0, int iend, int j0, int jend, int stride)
+	size_t i0, size_t iend, size_t j0, size_t jend, size_t stride)
 {
-	int i, j;
+	size_t i, j;
 	float h, * Xj;
 
 	if (beta != 0) {
@@ -27,9 +27,9 @@ static void housef_apply_l(Matrixf* X, const float* v, float beta,
 // Householder transformation X(i0:iend,j0:jend) = X(i0:iend,j0:jend)*H,
 // where H = I - beta*v*v' and v(0) = 1. stride is the increment of v.
 static void housef_apply_r(Matrixf* X, const float* v, float beta,
-	int i0, int iend, int j0, int jend, int stride)
+	size_t i0, size_t iend, size_t j0, size_t jend, size_t stride)
 {
-	int i, j;
+	size_t i, j;
 	float h;
 
 	if (beta != 0) {
@@ -47,7 +47,7 @@ static void housef_apply_r(Matrixf* X, const float* v, float beta,
 	}
 }
 
-void matrixf_init(Matrixf* A, int rows, int cols, float* data, int ordmem)
+void matrixf_init(Matrixf* A, size_t rows, size_t cols, float* data, int ordmem)
 {
 	A->data = data;
 	if (ordmem) {
@@ -63,8 +63,8 @@ void matrixf_init(Matrixf* A, int rows, int cols, float* data, int ordmem)
 
 int matrixf_permute(Matrixf* A, Matrixf* perm, int reverse, int transP)
 {
-	int i, j, k, q;
-	const int len = perm->rows * perm->cols;
+	size_t i, j, k, q;
+	const size_t len = perm->rows * perm->cols;
 	float t, * x = perm->data, * Ai, * Aj;
 
 	if (reverse) {
@@ -80,12 +80,12 @@ int matrixf_permute(Matrixf* A, Matrixf* perm, int reverse, int transP)
 		(!reverse && transP)) {
 		if (len > 1) {
 			for (k = 0; k < len; k++) {
-				i = (int)x[k];
-				if (i >= 0) {
+				if (x[k] >= 0) {
+					i = (size_t)x[k];
 					j = k;
 					do {
-						q = (int)x[i];
-						x[i] = (float)(-j - 1);
+						q = (size_t)x[i];
+						x[i] = -(float)(j + 1);
 						j = i;
 						i = q;
 					} while (j != k);
@@ -101,9 +101,9 @@ int matrixf_permute(Matrixf* A, Matrixf* perm, int reverse, int transP)
 	}
 	q = A->rows;
 	for (i = 0; i < len - 1; i++) {
-		j = (int)x[i];
+		j = (size_t)x[i];
 		while (j < i) {
-			j = (int)x[j];
+			j = (size_t)x[j];
 		}
 		if (i != j) {
 			Ai = &at(A, 0, i);
@@ -123,11 +123,11 @@ int matrixf_permute(Matrixf* A, Matrixf* perm, int reverse, int transP)
 
 void matrixf_transpose(Matrixf* A)
 {
-	int i, j;
+	size_t i, j;
 	float t, * d = A->data;
-	const int m = A->rows;
-	const int n = A->cols;
-	const int k = m * n - 1;
+	const size_t m = A->rows;
+	const size_t n = A->cols;
+	const size_t k = m * n - 1;
 
 	if (m == n) {
 		for (j = 0; j < n - 1; j++) {
@@ -155,8 +155,8 @@ void matrixf_transpose(Matrixf* A)
 
 int matrixf_decomp_chol(Matrixf* A)
 {
-	int i, j, k;
-	const int n = A->rows;
+	size_t i, j, k;
+	const size_t n = A->rows;
 	float v, r = 0;
 	float* Ai, * Aj;
 
@@ -187,8 +187,8 @@ int matrixf_decomp_chol(Matrixf* A)
 
 int matrixf_decomp_ltl(Matrixf* A)
 {
-	int i, j, jp, k;
-	const int n = A->rows;
+	size_t i, j, jp, k;
+	const size_t n = A->rows;
 	float tmp, a00 = A->data[0], a01, * h = A->data;
 	float* Ajp, * Aj1;
 
@@ -288,8 +288,8 @@ int matrixf_decomp_ltl(Matrixf* A)
 
 int matrixf_decomp_lu(Matrixf* A, Matrixf* perm, Matrixf* B)
 {
-	int i, j, k;
-	const int n = A->rows;
+	size_t i, j, k;
+	const size_t n = A->rows;
 	float a, b, t;
 	float* Xi, * Xk;
 
@@ -363,13 +363,13 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* perm, Matrixf* B)
 	return 0;
 }
 
-int matrixf_decomp_lu_banded(Matrixf* A, int ubw)
+int matrixf_decomp_lu_banded(Matrixf* A, size_t ubw)
 {
-	int i, j, p, piv;
-	const int n = A->rows;
-	float tau, t;
+	size_t i, j, p;
+	const size_t n = A->rows;
+	float tau, piv, t;
 
-	if (A->cols != n || ubw < 0) {
+	if (A->cols != n) {
 		return -1;
 	}
 	for (i = 0; i < n - 1; i++) {
@@ -381,7 +381,7 @@ int matrixf_decomp_lu_banded(Matrixf* A, int ubw)
 				at(A, i, j) = at(A, i + 1, j);
 				at(A, i + 1, j) = t;
 			}
-			piv = 10;
+			piv = 10.0f;
 		}
 		if (at(A, i, i) != 0) {
 			tau = at(A, i + 1, i) / at(A, i, i);
@@ -396,17 +396,17 @@ int matrixf_decomp_lu_banded(Matrixf* A, int ubw)
 
 int matrixf_unpack_lu_banded(Matrixf* A, Matrixf* B)
 {
-	int i, j, piv;
-	const int n = A->rows;
-	const int p = B->cols;
-	float t, tau;
+	size_t i, j;
+	const size_t n = A->rows;
+	const size_t p = B->cols;
+	float tau, piv, t;
 
 	if (B->rows != n) {
 		return -1;
 	}
 	for (i = 0; i < n - 1; i++) {
-		piv = fabsf(at(A, i + 1, i)) > 1;
-		tau = at(A, i + 1, i) - 10 * piv;
+		piv = (float)(fabsf(at(A, i + 1, i)) > 1);
+		tau = at(A, i + 1, i) - 10.0f * piv;
 		for (j = 0; j < p; j++) {
 			if (piv > 0) {
 				t = at(B, i, j);
@@ -421,10 +421,10 @@ int matrixf_unpack_lu_banded(Matrixf* A, Matrixf* B)
 
 int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* perm, Matrixf* B)
 {
-	int i, jm = 0, j = 0, k = 0, q = 0;
-	const int m = A->rows;
-	const int n = A->cols;
-	const int kmax = m < n ? m - 1 : n - 1;
+	size_t i, jm = 0, j = 0, k = 0, q = 0;
+	const size_t m = A->rows;
+	const size_t n = A->cols;
+	const size_t kmax = m < n ? m - 1 : n - 1;
 	float beta, t, c, cm, * v;
 	float* Ak, * Aj, * Ajm;
 	Matrixf A_econ = { n, n, A->data };
@@ -507,20 +507,20 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* perm, Matrixf* B)
 	return 0;
 }
 
-int matrixf_unpack_house(Matrixf* A, Matrixf* B, int s, int fwd)
+int matrixf_unpack_house(Matrixf* A, Matrixf* B, size_t s, int fwd)
 {
-	int i, k;
-	const int f = fwd > 0 ? 1 : -1;
-	const int m = A->rows;
-	const int n = A->cols;
-	const int p = B->cols;
-	const int kmax = m - 1 < n ? m - 2 - s : n - 1 - s;
+	size_t i, j, k;
+	const size_t m = A->rows;
+	const size_t n = A->cols;
+	const size_t p = B->cols;
+	const size_t kmax = m - 1 < n ? m - 2 - s : n - 1 - s;
 	float beta, gamma, * v;
 
-	if (B->rows != m || s < 0) {
+	if (B->rows != m) {
 		return -1;
 	}
-	for (k = f > 0 ? 0 : kmax; f > 0 ? k <= kmax : k >= 0; k += f) {
+	for (j = 0; j <= kmax; j++) {
+		k = fwd > 0 ? j : kmax - j;
 		v = &at(A, 0, k);
 		gamma = 0;
 		for (i = k + 1 + s; i < m; i++) {
@@ -536,18 +536,19 @@ int matrixf_unpack_house(Matrixf* A, Matrixf* B, int s, int fwd)
 
 int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 {
-	int i, j, k, q = A->rows;
-	const int m = A->rows;
-	const int n = A->cols;
-	const int kmax = m - 1 < n ? m - 2 : n - 1;
+	size_t i, j, k, q = A->rows;
+	int f;
+	const size_t m = A->rows;
+	const size_t n = A->cols;
+	const size_t kmax = m - 1 < n ? m - 2 : n - 1;
 	float beta, * v;
 	Matrixf A_econ = { n, n, A->data };
 
 	if (m < n) {
 		matrixf_transpose(A);
-		k = matrixf_decomp_bidiag(A, V, U);
+		f = matrixf_decomp_bidiag(A, V, U);
 		matrixf_transpose(A);
-		return k;
+		return f;
 	}
 	if ((U && (U->rows != m || (U->cols != m && U->cols != n))) ||
 		(V && (V->rows != n || (V->cols != n)))) {
@@ -603,10 +604,10 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 
 int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* perm, float tol)
 {
-	int i, j, rank = 0;
-	const int m = A->rows;
-	const int n = A->cols;
-	const int p = m < n ? m : n;
+	size_t i, j, rank = 0;
+	const size_t m = A->rows;
+	const size_t n = A->cols;
+	const size_t p = m < n ? m : n;
 
 	if (matrixf_decomp_qr(A, U, perm, 0)) {
 		return -1;
@@ -631,7 +632,7 @@ int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* perm, float 
 	}
 	A->cols = U ? U->cols : m;
 	matrixf_transpose(A);
-	return rank;
+	return (int)rank;
 }
 
 #ifndef DETECTUM_SVD_ITER_MAX
@@ -642,10 +643,11 @@ int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* perm, float 
 #endif
 int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 {
-	const int m = A->rows;
-	const int n = A->cols;
-	int i, j, k, q, r = n - 1, iter = 0;
-	const int iter_max = DETECTUM_SVD_ITER_MAX;
+	const size_t m = A->rows;
+	const size_t n = A->cols;
+	size_t i, j, k, q, r = n - 1;
+	int f, iter = 0;
+	const int iter_max = (int)(DETECTUM_SVD_ITER_MAX);
 	const float tol = DETECTUM_SVD_TOL;
 	float small, nrm1, tmp, cosine, sine, a, b;
 	float c00, c01, c11, y, z, mu;
@@ -655,9 +657,9 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 
 	if (m < n) {
 		matrixf_transpose(A);
-		k = matrixf_decomp_svd(A, V, U);
+		f = matrixf_decomp_svd(A, V, U);
 		matrixf_transpose(A);
-		return k;
+		return f;
 	}
 	if (matrixf_decomp_bidiag(A, U, V)) {
 		return -1;
@@ -687,14 +689,16 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 				q--;
 			}
 			while (i >= q && fabsf(at(A, i, i)) > small) {
-				i--;
+				if (i-- == 0) {
+					break;
+				}
 			}
-			if (i == q - 1) {
+			if (i + 1 == q) {
 				j = r - 1;
 				Xj = &at(A, 0, j);
 				Xr = &at(A, 0, r);
 				c00 = c01 = c11 = 0;
-				for (k = (r - 2 < 0 ? 0 : r - 2); k <= r; k++) {
+				for (k = (r < 2 ? 0 : r - 2); k <= r; k++) {
 					a = Xj[k];
 					b = Xr[k];
 					c00 += a * a;
@@ -710,7 +714,7 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 					givensf(y, z, &cosine, &sine);
 					Xj = &at(A, 0, j);
 					Xj1 = &at(A, 0, j + 1);
-					for (k = (j - 1 < 0 ? 0 : j - 1); k <= j + 1; k++) {
+					for (k = (j < 1 ? 0 : j - 1); k <= j + 1; k++) {
 						a = Xj[k];
 						b = Xj1[k];
 						Xj[k] = cosine * a - sine * b;
@@ -774,11 +778,11 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 				}
 			}
 			else {
-				for (j = r - 1; j >= q; j--) {
+				for (j = r; j-- > q;) {
 					givensf(at(A, j, j), at(A, j, r), &cosine, &sine);
 					Xj = &at(A, 0, j);
 					Xr = &at(A, 0, r);
-					for (k = (j - 1 > q ? j - 1 : q); k <= j; k++) {
+					for (k = (j > q + 1 ? j - 1 : q); k <= j; k++) {
 						a = Xj[k];
 						b = Xr[k];
 						Xj[k] = cosine * a - sine * b;
@@ -861,19 +865,20 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 #endif
 int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 {
-	int i, j, k, count = 1, iter = 0, sorted, orthog;
+	size_t i, j, k, count = 1;
+	int f, iter = 0, sorted, orthog;
 	float x, y, p, q, v, a, b, s, sine, cosine;
 	float* Xj, * Xk;
-	const int m = A->rows;
-	const int n = A->cols;
-	const int iter_max = DETECTUM_SVD_JACOBI_ITER_MAX;
+	const size_t m = A->rows;
+	const size_t n = A->cols;
+	const size_t iter_max = DETECTUM_SVD_JACOBI_ITER_MAX;
 	const float tol = DETECTUM_SVD_JACOBI_TOL;
 
 	if (m < n) {
 		matrixf_transpose(A);
-		k = matrixf_decomp_svd_jacobi(A, V, U);
+		f = matrixf_decomp_svd_jacobi(A, V, U);
 		matrixf_transpose(A);
-		return k;
+		return f;
 	}
 	if (U) {
 		if (U->rows != m || (U->cols != m && U->cols != n)) {
@@ -960,8 +965,8 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 
 int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
 {
-	int i, j, k;
-	const int n = A->rows;
+	size_t i, j, k;
+	const size_t n = A->rows;
 	float beta, * v;
 
 	if (A->cols != n || (P && (P->rows != n || P->cols != n))) {
@@ -995,9 +1000,10 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
 #endif
 int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 {
-	const int n = A->rows;
-	int k, i, imin, imax, q, m = n - 1, iter = 0;
-	const int iter_max = DETECTUM_SCHUR_SYMM_ITER_MAX;
+	const size_t n = A->rows;
+	size_t k, i, imin, imax, q, m = n - 1;
+	int iter = 0;
+	const int iter_max = (int)(DETECTUM_SCHUR_SYMM_ITER_MAX);
 	const float tol = DETECTUM_SCHUR_SYMM_TOL;
 	float a, b, d, f, g, x, y, cosine, sine;
 	float* Uk, * Uk1;
@@ -1026,7 +1032,7 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 			y = at(A, q + 1, q);
 			for (k = q; k < m; k++) {
 				givensf(x, y, &cosine, &sine);
-				imin = k - 1 < 0 ? 0 : k - 1;
+				imin = k < 1 ? 0 : k - 1;
 				imax = k + 2 > n - 1 ? n - 1 : k + 2;
 				for (i = imin; i <= imax; i++) {
 					a = at(A, k, i);
@@ -1083,9 +1089,10 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 #endif
 int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 {
-	const int n = A->rows;
-	int i, j, k, q, m = n - 1, iter = 0, ad_hoc_shift;
-	const int iter_max = DETECTUM_SCHUR_ITER_MAX;
+	const size_t n = A->rows;
+	size_t i, j, k, q, m = n - 1;
+	int iter = 0, ad_hoc_shift;
+	const int iter_max = (int)(DETECTUM_SCHUR_ITER_MAX);
 	const int ahsc = DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT;
 	const float tol = DETECTUM_SCHUR_TOL;
 	const float eps = DETECTUM_FLT_EPS;
@@ -1097,7 +1104,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 		return -1;
 	}
 	if (!U) {
-		for (k = 0; k < n - 2; k++) {
+		for (k = 0; k + 2 < n; k++) {
 			for (i = k + 2; i < n; i++) {
 				at(A, i, k) = 0;
 			}
@@ -1145,7 +1152,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 				x = at(A, q, q) * at(A, q, q) + at(A, q, q + 1) * at(A, q + 1, q) - s * at(A, q, q) + t;
 				y = at(A, q + 1, q) * (at(A, q, q) + at(A, q + 1, q + 1) - s);
 				z = at(A, q + 1, q) * at(A, q + 2, q + 1);
-				for (k = q - 1; k <= m - 3; k++) {
+				for (k = q; k + 2 <= m; k++) {
 					t = hypotf(x, y);
 					mu = hypotf(t, z);
 					if (mu > 0) {
@@ -1154,16 +1161,16 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 						v[1] = y / t;
 						v[2] = z / t;
 						beta = t * s / mu;
-						housef_apply_l(A, v, beta, k + 1, k + 3, q > k ? q : k, n - 1, 1);
-						housef_apply_r(A, v, beta, 0, (k + 4) < m ? (k + 4) : m, k + 1, k + 3, 1);
+						housef_apply_l(A, v, beta, k, k + 2, q >= k ? q : k - 1, n - 1, 1);
+						housef_apply_r(A, v, beta, 0, (k + 3) < m ? (k + 3) : m, k, k + 2, 1);
 						if (U) {
-							housef_apply_l(U, v, beta, k + 1, k + 3, 0, n - 1, 1);
+							housef_apply_l(U, v, beta, k, k + 2, 0, n - 1, 1);
 						}
 					}
-					x = at(A, k + 2, k + 1);
-					y = at(A, k + 3, k + 1);
-					if (k < m - 3) {
-						z = at(A, k + 4, k + 1);
+					x = at(A, k + 1, k);
+					y = at(A, k + 2, k);
+					if (k + 2 < m) {
+						z = at(A, k + 3, k);
 					}
 				}
 				mu = hypotf(x, y);
@@ -1263,8 +1270,8 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 
 static inline float solve_eigvec(Matrixf* A, Matrixf* b, float eigval_re, float eigval_im)
 {
-	int i, j;
-	const int n = A->rows;
+	size_t i, j;
+	const size_t n = A->rows;
 	float aii, r, * b0 = b->data;
 	float scale = 0, scale_inv, scale_out = 1.0f;
 	float shift = DETECTUM_FLT_EPS * hypotf(eigval_re, eigval_im);
@@ -1301,7 +1308,7 @@ static inline float solve_eigvec(Matrixf* A, Matrixf* b, float eigval_re, float 
 				b0[i] -= at(A, i, j) * b0[j];
 			}
 		}
-		for (i = n - 1; i >= 0; i--) {
+		for (i = n; i-- > 0;) {
 			for (j = i + 1; j < n; j++) {
 				b0[i] -= at(A, i, j) * b0[j];
 			}
@@ -1326,8 +1333,8 @@ static inline float solve_eigvec(Matrixf* A, Matrixf* b, float eigval_re, float 
 int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 	Matrixf* V, Matrixf* W, int pseudo, float* work)
 {
-	int i, j, k, h;
-	const int n = T->rows;
+	size_t i, j, k, h;
+	const size_t n = T->rows;
 	float nrm_inv, eigval_re, eigval_im, g, s;
 	Matrixf C = { 0, 0, work }, d = { 0 };
 
@@ -1414,7 +1421,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 							at(&d, k + j, 0) = -eigval_im * at(T, j, k) + g * at(T, j, k + 1);
 						}
 						s = solve_eigvec(&C, &d, eigval_re, eigval_im);
-						for (j = k - 1; j >= 0; j--) {
+						for (j = k; j-- > 0;) {
 							at(V, j, k + 1) = d.data[k + j];
 							d.data[k + j] = 0;
 						}
@@ -1448,7 +1455,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 							at(&d, h + j, 0) = -at(T, k + 1, k) * at(T, k, k + 2 + j) - at(T, k + 1, k + 2 + j);
 						}
 						s = solve_eigvec(&C, &d, eigval_re, eigval_im);
-						for (j = h - 1; j >= 0; j--) {
+						for (j = h; j-- > 0;) {
 							at(W, k + 2 + j, k + 1) = at(W, j, k + 1);
 							at(W, j, k + 1) = 0;
 						}
@@ -1482,7 +1489,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 							at(&d, k + j, 0) = -at(T, j, k) * eigval_im;
 						}
 						s = solve_eigvec(&C, &d, eigval_re, eigval_im);
-						for (j = k - 1; j >= 0; j--) {
+						for (j = k; j-- > 0;) {
 							at(V, j, k + 1) = d.data[k + j];
 							d.data[k + j] = 0;
 						}
@@ -1515,7 +1522,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 							at(&d, h + j, 0) = at(T, k, k + 2 + j) * eigval_im;
 						}
 						s = solve_eigvec(&C, &d, eigval_re, eigval_im);
-						for (j = h - 1; j >= 0; j--) {
+						for (j = h; j-- > 0;) {
 							at(W, k + 2 + j, k + 1) = at(W, j, k + 1);
 							at(W, j, k + 1) = 0;
 						}
@@ -1543,11 +1550,11 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 
 int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri)
 {
-	int i, j, k;
-	const int m = L->rows;
-	const int n = L->cols;
-	const int h = B->cols;
-	const int q = m < n ? m : n;
+	size_t i, j, k;
+	const size_t m = L->rows;
+	const size_t n = L->cols;
+	const size_t h = B->cols;
+	const size_t q = m < n ? m : n;
 	float lij, lii;
 	float* Bi, * Bj;
 
@@ -1555,8 +1562,8 @@ int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri)
 		return -1;
 	}
 	if (m < n) {
-		for (k = h - 1; k >= 0; k--) {
-			for (i = n - 1; i >= 0; i--) {
+		for (k = h; k-- > 0;) {
+			for (i = n; i-- > 0;) {
 				at(X, i, k) = (i < q) ? at(B, i, k) : 0;
 			}
 		}
@@ -1594,11 +1601,11 @@ int matrixf_solve_tril(Matrixf* L, Matrixf* B, Matrixf* X, int unitri)
 
 int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri)
 {
-	int i, j, k;
-	const int m = U->rows;
-	const int n = U->cols;
-	const int h = B->cols;
-	const int q = m < n ? m : n;
+	size_t i, j, k;
+	const size_t m = U->rows;
+	const size_t n = U->cols;
+	const size_t h = B->cols;
+	const size_t q = m < n ? m : n;
 	float uij, uii;
 	float* Bi, * Bj;
 
@@ -1606,8 +1613,8 @@ int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri)
 		return -1;
 	}
 	if (m < n) {
-		for (k = h - 1; k >= 0; k--) {
-			for (i = n - 1; i >= 0; i--) {
+		for (k = h; k-- > 0;) {
+			for (i = n; i-- > 0;) {
 				at(X, i, k) = (i < q) ? at(B, i, k) : 0;
 			}
 		}
@@ -1620,7 +1627,7 @@ int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri)
 		}
 	}
 	matrixf_transpose(X);
-	for (i = q - 1; i >= 0; i--) {
+	for (i = q; i-- > 0;) {
 		Bi = &at(X, 0, i);
 		for (j = i + 1; j < q; j++) {
 			uij = at(U, i, j);
@@ -1645,18 +1652,19 @@ int matrixf_solve_triu(Matrixf* U, Matrixf* B, Matrixf* X, int unitri)
 
 int matrixf_solve_chol(Matrixf* A, Matrixf* B)
 {
-	int i, j, k;
-	const int n = A->rows;
-	const int p = B->cols;
+	size_t i, j, k;
+	int f;
+	const size_t n = A->rows;
+	const size_t p = B->cols;
 	float aji, aij, aii;
 	float* Bi, * Bj;
 
 	if (B->rows != n) {
 		return -1;
 	}
-	k = matrixf_decomp_chol(A);
-	if (k) {
-		return k;
+	f = matrixf_decomp_chol(A);
+	if (f) {
+		return f;
 	}
 	matrixf_transpose(B);
 	for (i = 0; i < n; i++) {
@@ -1673,7 +1681,7 @@ int matrixf_solve_chol(Matrixf* A, Matrixf* B)
 			Bi[k] /= aii;
 		}
 	}
-	for (i = n - 1; i >= 0; i--) {
+	for (i = n; i-- > 0;) {
 		Bi = &at(B, 0, i);
 		for (j = i + 1; j < n; j++) {
 			aij = at(A, i, j);
@@ -1693,9 +1701,9 @@ int matrixf_solve_chol(Matrixf* A, Matrixf* B)
 
 int matrixf_solve_lu(Matrixf* A, Matrixf* B)
 {
-	int i, j, k;
-	const int n = A->rows;
-	const int p = B->cols;
+	size_t i, j, k;
+	const size_t n = A->rows;
+	const size_t p = B->cols;
 	float aij, aii;
 	float* Bi, * Bj;
 
@@ -1713,7 +1721,7 @@ int matrixf_solve_lu(Matrixf* A, Matrixf* B)
 			}
 		}
 	}
-	for (i = n - 1; i >= 0; i--) {
+	for (i = n; i-- > 0;) {
 		Bi = &at(B, 0, i);
 		for (j = i + 1; j < n; j++) {
 			aij = at(A, i, j);
@@ -1734,11 +1742,11 @@ int matrixf_solve_lu(Matrixf* A, Matrixf* B)
 	return 0;
 }
 
-int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, int ubw)
+int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, size_t ubw)
 {
-	int i, j, k, p;
-	const int n = A->rows;
-	const int h = B->cols;
+	size_t i, j, k, p;
+	const size_t n = A->rows;
+	const size_t h = B->cols;
 	float bik, aii;
 	float* Bk;
 
@@ -1749,7 +1757,7 @@ int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, int ubw)
 		return -1;
 	}
 	for (k = 0; k < h; k++) {
-		for (i = n - 1; i >= 0; i--) {
+		for (i = n; i-- > 0;) {
 			p = ubw + i + 2;
 			if (p > n) {
 				p = n;
@@ -1771,9 +1779,9 @@ int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, int ubw)
 
 int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X)
 {
-	const int m = A->rows;
-	const int n = A->cols;
-	const int p = B->cols;
+	const size_t m = A->rows;
+	const size_t n = A->cols;
+	const size_t p = B->cols;
 
 	if (B->rows != m || X->rows != n || X->cols != p) {
 		return -1;
@@ -1801,11 +1809,11 @@ int matrixf_solve_qr(Matrixf* A, Matrixf* B, Matrixf* X)
 
 int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work)
 {
-	int i, j, k, rank;
-	const int m = A->rows;
-	const int n = A->cols;
-	const int h = B->cols;
-	const int p = m < n ? m : n;
+	size_t i, j, k, rank;
+	const size_t m = A->rows;
+	const size_t n = A->cols;
+	const size_t h = B->cols;
+	const size_t p = m < n ? m : n;
 	float aij, aii;
 	float* Bi, * Bj;
 	Matrixf perm = { 1, n, work };
@@ -1823,7 +1831,7 @@ int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 	}
 	rank = j;
 	matrixf_transpose(B);
-	for (i = rank - 1; i >= 0; i--) {
+	for (i = rank; i-- > 0;) {
 		Bi = &at(B, 0, i);
 		for (j = i + 1; j < rank; j++) {
 			aij = at(A, i, j);
@@ -1839,8 +1847,8 @@ int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 	}
 	matrixf_transpose(B);
 	if (m < n) {
-		for (k = h - 1; k >= 0; k--) {
-			for (i = n - 1; i >= 0; i--) {
+		for (k = h; k-- > 0;) {
+			for (i = n; i-- > 0;) {
 				at(X, i, k) = (i < rank) ? at(B, i, k) : 0;
 			}
 		}
@@ -1858,11 +1866,11 @@ int matrixf_solve_qrp(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 
 int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work)
 {
-	int i, j, k, rank;
-	const int m = A->rows;
-	const int n = A->cols;
-	const int h = B->cols;
-	const int p = m < n ? m : n;
+	size_t i, j, k, rank;
+	const size_t m = A->rows;
+	const size_t n = A->cols;
+	const size_t h = B->cols;
+	const size_t p = m < n ? m : n;
 	float aji, aii;
 	float* Bi, * Bj;
 	Matrixf perm = { 1, n, work };
@@ -1902,8 +1910,8 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 	}
 	matrixf_transpose(B);
 	if (m < n) {
-		for (k = h - 1; k >= 0; k--) {
-			for (i = n - 1; i >= 0; i--) {
+		for (k = h; k-- > 0;) {
+			for (i = n; i-- > 0;) {
 				at(X, i, k) = (i < rank) ? at(B, i, k) : 0;
 			}
 		}
@@ -1925,11 +1933,11 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 int matrixf_solve_bvls(Matrixf* C, Matrixf* d, Matrixf* x,
 	float* lb, float* ub, float tol, float* work)
 {
-	int i, j, k, t, done;
-	int ito = 0, iti = 0;
-	const int m = C->rows;
-	const int n = C->cols;
-	const int itimax = 3 * n;
+	size_t i, j, k, t;
+	int done, ito = 0, iti = 0;
+	const size_t m = C->rows;
+	const size_t n = C->cols;
+	const int itimax = 3 * (int)n;
 	float nrm1, tmp, alpha;
 	float* xset = work;
 	float* w_data = work + n;
@@ -2021,7 +2029,7 @@ int matrixf_solve_bvls(Matrixf* C, Matrixf* d, Matrixf* x,
 		z.rows = k;
 		matrixf_solve_qrp(&Cf, &df, &z, tol, w_data);
 		z.rows = n;
-		for (j = n - 1; j >= 0; j--) {
+		for (j = n; j-- > 0;) {
 			if (xset[j] < 0) {
 				z.data[j] = lb[j];
 			}
@@ -2095,7 +2103,7 @@ int matrixf_solve_bvls(Matrixf* C, Matrixf* d, Matrixf* x,
 			z.rows = k;
 			matrixf_solve_qrp(&Cf, &df, &z, tol, w_data);
 			z.rows = n;
-			for (j = n - 1; j >= 0; j--) {
+			for (j = n; j-- > 0;) {
 				if (xset[j] < 0) {
 					z.data[j] = lb[j];
 				}
@@ -2112,11 +2120,12 @@ int matrixf_solve_bvls(Matrixf* C, Matrixf* d, Matrixf* x,
 
 int matrixf_pseudoinv(Matrixf* A, float tol, float* work)
 {
-	int i, j, iter;
-	const int m = A->rows;
-	const int n = A->cols;
-	const int p = m < n ? m : n;
-	const int q = m > n ? m : n;
+	size_t i, j;
+	int iter;
+	const size_t m = A->rows;
+	const size_t n = A->cols;
+	const size_t p = m < n ? m : n;
+	const size_t q = m > n ? m : n;
 	float sj, rj, * Aj, * Xj;
 	Matrixf V = { p, p, work + p };
 	Matrixf* X = (m < n) ? A : &V;
@@ -2155,9 +2164,9 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work)
 #endif
 int matrixf_exp(Matrixf* A, float* work)
 {
-	int i, j, k, z, s;
-	const int n = A->rows;
-	const int q = DETECTUM_EXP_PADE_ORDER;
+	size_t i, j, k, z, s;
+	const size_t n = A->rows;
+	const size_t q = DETECTUM_EXP_PADE_ORDER;
 	float c, p, t;
 	Matrixf X = { n, n, work + n };
 	Matrixf N = { n, n, X.data + n * n };
@@ -2174,11 +2183,11 @@ int matrixf_exp(Matrixf* A, float* work)
 			p = t;
 		}
 	}
-	z = 1 + (int)floorf(log2f(p));
+	z = 1 + (size_t)floorf(log2f(p));
 	if (z < 0) {
 		z = 0;
 	}
-	s = 1 << z;
+	s = (size_t)1 << z;
 	for (i = 0; i < n * n; i++) {
 		t = !(i % (n + 1));
 		X.data[i] = t;
@@ -2218,8 +2227,9 @@ int matrixf_exp(Matrixf* A, float* work)
 #endif
 int matrixf_log(Matrixf* A, float* work)
 {
-	int i, k, f, s = 1;
-	const int n = A->rows;
+	size_t i, k;
+	int f, s = 1;
+	const size_t n = A->rows;
 	const int nterms = DETECTUM_LOG_NTERMS;
 	const float thr = DETECTUM_LOG_ISS_THR;
 	float tmp, nrm1;
@@ -2270,7 +2280,7 @@ int matrixf_log(Matrixf* A, float* work)
 		}
 	}
 	for (k = 0; k < n * n; k++) {
-		A->data[k] *= -2 * s;
+		A->data[k] *= -2.0f * s;
 	}
 	matrixf_multiply_inplace(A, &U, &U, 0, 1, work);
 	return 0;
@@ -2278,15 +2288,16 @@ int matrixf_log(Matrixf* A, float* work)
 
 int matrixf_sqrt_quasitriu(Matrixf* T)
 {
-	int i, j = 0, r, k1, kj = 0, kr, kr1, sj, sr, singular = 0;
-	const int n = T->rows;
+	size_t i, j = 0, r, k1, kj = 0, kr, kr1, sj, sr;
+	int singular = 0;
+	const size_t n = T->rows;
 	float T00, T10, T01, t;
 	float* k = T->data, C_data[16] = { 0 }, D_data[4] = { 0 };
 	Matrixf C = { 0, 0, C_data };
 	Matrixf D = { 0, 1, D_data };
 
 	while (kj < n) {
-		sj = kj < n - 1 ? 1 + (at(T, kj + 1, kj) != 0) : 1;
+		sj = kj < n - 1 ? 1 + (size_t)(at(T, kj + 1, kj) != 0) : 1;
 		if (sj == 1) {
 			T00 = at(T, kj, kj);
 			if (T00 > 0) {
@@ -2314,20 +2325,20 @@ int matrixf_sqrt_quasitriu(Matrixf* T)
 		else if (j == 1) {
 			k1 = kj;
 		}
-		for (r = j - 1; r >= 0; r--) {
+		for (r = j; r-- > 0;) {
 			if (r == 0) {
 				kr = 0;
 				kr1 = k1;
 			}
 			else if (r == 1) {
 				kr = k1;
-				kr1 = (int)k[2];
+				kr1 = (size_t)k[2];
 			}
 			else {
-				kr = (int)k[r];
-				kr1 = (int)k[r + 1];
+				kr = (size_t)k[r];
+				kr1 = (size_t)k[r + 1];
 			}
-			sr = 1 + (at(T, kr + 1, kr) != 0);
+			sr = 1 + (size_t)(at(T, kr + 1, kr) != 0);
 			D.data[0] = at(T, kr, kj);
 			if (sj + sr == 2) {
 				C.data[0] = at(T, kr, kr) + at(T, kj, kj);
@@ -2413,7 +2424,7 @@ int matrixf_sqrt_quasitriu(Matrixf* T)
 int matrixf_sqrt(Matrixf* A, float* work)
 {
 	int f;
-	const int n = A->rows;
+	const size_t n = A->rows;
 	Matrixf U = { n, n, work + n };
 
 	f = matrixf_decomp_schur(A, &U);
@@ -2431,13 +2442,13 @@ int matrixf_sqrt(Matrixf* A, float* work)
 int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 	float alpha, float beta, int transA, int transB)
 {
-	int i, j, k;
-	const int m = C->rows;
-	const int n = C->cols;
-	const int p = transA ? A->rows : A->cols;
-	const int q = transB ? B->cols : B->rows;
-	const int r = transB ? B->rows : B->cols;
-	const int f = transA && (A == B) ? !transB : transB;
+	size_t i, j, k;
+	const size_t m = C->rows;
+	const size_t n = C->cols;
+	const size_t p = transA ? A->rows : A->cols;
+	const size_t q = transB ? B->cols : B->rows;
+	const size_t r = transB ? B->rows : B->cols;
+	const size_t f = transA && (A == B) ? !transB : transB;
 	float b, * Ak, * Cj;
 
 	for (i = 0; i < m * n; i++) {
@@ -2472,9 +2483,9 @@ int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 int matrixf_multiply_inplace(Matrixf* A, Matrixf* L, Matrixf* R,
 	int transL, int transR, float* work)
 {
-	int i, j, k;
-	const int m = A->rows;
-	const int n = A->cols;
+	size_t i, j, k;
+	const size_t m = A->rows;
+	const size_t n = A->cols;
 	float* Aj, * Xi, * Xk;
 
 	if (L) {

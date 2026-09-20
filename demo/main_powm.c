@@ -3,8 +3,9 @@
 
 static int powm(Matrixf* A, float p, float* work)
 {
-	const int numel = A->rows * A->cols;
-	int i, exitflag = matrixf_log(A, work);
+	const size_t numel = A->rows * A->cols;
+	size_t i;
+	int exitflag = matrixf_log(A, work);
 
 	if (exitflag) {
 		return exitflag;

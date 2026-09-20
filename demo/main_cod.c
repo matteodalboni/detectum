@@ -37,12 +37,12 @@ int main()
 	rank = matrixf_decomp_cod(&A, &U, 0, &P, -1);
 	matrixf_transpose(&A);
 	A.cols = rank;
-	for (int i = 0; i < n; i++) {
+	for (size_t i = 0; i < n; i++) {
 		at(&V, i, i) = 1;
 	}
 	matrixf_unpack_house(&A, &V, 0, 0);
-	for (int j = 0; j < rank; j++) {
-		for (int i = j + 1; i < A.rows; i++) {
+	for (size_t j = 0; j < rank; j++) {
+		for (size_t i = j + 1; i < A.rows; i++) {
 			at(&A, i, j) = 0;
 		}
 	}

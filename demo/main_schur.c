@@ -6,13 +6,13 @@
 // respectively.
 static void get_eigvals(Matrixf* T, float* lambda_re, float* lambda_im)
 {
-	int i = 0;
-	const int n = T->rows;
+	size_t i = 0;
+	const size_t n = T->rows;
 	float t, s, r;
 
 	while (i < n)
 	{
-		if (i == n - 1 || at(T, i + 1, i) == 0) {
+		if (i + 1 == n || at(T, i + 1, i) == 0) {
 			lambda_re[i] = at(T, i, i);
 			lambda_im[i] = 0;
 			i += 1;
@@ -51,11 +51,11 @@ static void get_eigvals2x2(float* lambda,
 
 static int is_quasitriu(Matrixf* T, float tol)
 {
-	int i = 0;
-	const int n = T->rows;
+	size_t i = 0;
+	const size_t n = T->rows;
 	const float eps = tol * normf(T->data, n * n, 1);
 
-	while (i < n - 2) {
+	while (i + 2 < n) {
 		if (fabsf(at(T, i + 1, i)) <= eps) {
 			at(T, i + 1, i) = 0; i += 1;
 		}
@@ -77,7 +77,7 @@ static int is_quasitriu(Matrixf* T, float tol)
 
 float A_data[] = {
 #if (TEST == 0) // gallery(3)
-	-149, -50, -154,
+	- 149, -50, -154,
 	 537, 180,  546,
 	 -27,  -9,  -25
 #elif (TEST == 1) // symmetric with repeated eigenvalues
@@ -109,7 +109,7 @@ float A_data[] = {
 	 1, 1, 3, 1,
 	-2, 1, 1, 4
 #elif (TEST == 6) // gallery('hanowa',10)
-	-1,  0,  0,  0,  0, -1,  0,  0,  0,  0,
+	- 1,  0,  0,  0,  0, -1,  0,  0,  0,  0,
 	 0, -1,  0,  0,  0,  0, -2,  0,  0,  0,
 	 0,  0, -1,  0,  0,  0,  0, -3,  0,  0,
 	 0,  0,  0, -1,  0,  0,  0,  0, -4,  0,

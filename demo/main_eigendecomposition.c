@@ -6,8 +6,8 @@
 static void print_complex_eigenvec_matrix(Matrixf* T, Matrixf* V,
 	const char* format_real, const char* format_cplx)
 {
-	int i, j;
-	const int n = T->rows;
+	size_t i, j;
+	const size_t n = T->rows;
 
 	for (i = 0; i < n; i++) {
 		for (j = 0; j < n; j++) {
@@ -27,8 +27,9 @@ static void print_complex_eigenvec_matrix(Matrixf* T, Matrixf* V,
 static void print_complex_eigenval_matrix(Matrixf* T_blkdiag,
 	const char* format_real, const char* format_cplx)
 {
-	int i, j, cplx = 0;
-	const int n = T_blkdiag->rows;
+	size_t i, j;
+	int cplx = 0;
+	const size_t n = T_blkdiag->rows;
 	float re, im;
 
 	for (i = 0; i < n; i++) {
@@ -58,8 +59,8 @@ static void print_complex_eigenval_matrix(Matrixf* T_blkdiag,
 
 static void get_eigenval_matrix(Matrixf* T)
 {
-	int i, j;
-	const int n = T->rows;
+	size_t i, j;
+	const size_t n = T->rows;
 
 	for (j = 0; j < n; j++) {
 		if (j == n - 1 || at(T, j + 1, j) == 0) {
@@ -140,7 +141,7 @@ int main()
 	matrixf_decomp_schur(&A, &U);
 	printf("\nT = [\n"); matrixf_print(&A, format_r); printf("];\n");
 	printf("\nU = [\n"); matrixf_print(&U, format_r); printf("];\n");
-	work = malloc(sizeof(float) * (4 * n * n + 2 * n));
+	work = malloc(sizeof(float) * ((size_t)4 * n * n + (size_t)2 * n));
 	exitflag = matrixf_get_eigenvectors(&A, &U, &V, &W, pseudo, work);
 	if (pseudo) {
 		printf("\nV = [\n"); matrixf_print(&V, format_r); printf("];\n");

@@ -3,9 +3,10 @@
 
 #include <math.h>
 
+// Matrix type having single-precision float numbers
 typedef struct {
-	int rows; // number of rows (must be < 2^24)
-	int cols; // number of columns (must be < 2^24)
+	size_t rows; // number of rows (must be < 2^24)
+	size_t cols; // number of columns (must be < 2^24)
 	float* data; // pointer to data array
 } Matrixf;
 
@@ -52,9 +53,9 @@ static inline float epsf(float x)
 
 // This function computes the 2-norm of vector v without underflow or 
 // overflow. The length of v is len, and stride is its increment. 
-static inline float normf(const float* v, int len, int stride)
+static inline float normf(const float* v, size_t len, size_t stride)
 {
-	int i;
+	size_t i;
 	float s = 0, h = 0, a;
 	const float tsml = DETECTUM_FLT_TSML;
 	const float tbig = DETECTUM_FLT_TBIG;
@@ -94,9 +95,9 @@ static inline float givensf(float a, float b, float* c, float* s)
 // where v is the normalized Householder vector. len is x length 
 // and stride is its increment. Also, the function returns beta
 // such that H = I - beta*v*v' is a Householder matrix.
-static inline float housef(float* x, int len, int stride)
+static inline float housef(float* x, size_t len, size_t stride)
 {
-	int i;
+	size_t i;
 	float b, beta = 0;
 	const float a = x[0];
 	const float eps = DETECTUM_FLT_EPS;
@@ -123,7 +124,7 @@ static inline float housef(float* x, int len, int stride)
 // the specified format.
 static inline void matrixf_print(Matrixf* A, const char* format)
 {
-	int i, j;
+	size_t i, j;
 
 	for (i = 0; i < A->rows; i++) {
 		for (j = 0; j < A->cols; j++) {
@@ -137,7 +138,7 @@ static inline void matrixf_print(Matrixf* A, const char* format)
 #ifdef RAND_MAX // include stdlib.h before detectum.h to enable this section
 // This function initializes a rows-by-cols matrix, allocating its data 
 // memory on the heap. On allocation failure, the data pointer is null.
-static inline Matrixf matrixf(int rows, int cols)
+static inline Matrixf matrixf(size_t rows, size_t cols)
 {
 	Matrixf A = { rows, cols, calloc(rows * cols, sizeof(float)) };
 
@@ -149,7 +150,7 @@ static inline Matrixf matrixf(int rows, int cols)
 // collects the matrix elements, which must be stored in column-major order.
 // If the data are initially arranged in row-major layout, the flag ordmem 
 // can be raised to enable the conversion to column-major memory order.
-void matrixf_init(Matrixf* A, int rows, int cols, float* data, int ordmem);
+void matrixf_init(Matrixf* A, size_t rows, size_t cols, float* data, int ordmem);
 
 // This function permutes the m-by-n matrix A according to the vector of 
 // permutation indices perm, which encodes the permutation matrix P: if perm is 
@@ -218,9 +219,8 @@ int matrixf_decomp_lu(Matrixf* A, Matrixf* perm, Matrixf* B);
 // The matrix A is transformed so that its upper triangular part stores the 
 // matrix U, whereas its first subdiagonal encodes the transformations that 
 // are needed to assemble the inverse of the permuted lower triangular matrix
-// L. If A is not square or ubw < 0, the function returns -1. On success, it 
-// returns 0.
-int matrixf_decomp_lu_banded(Matrixf* A, int ubw);
+// L. If A is not square, the function returns -1. On success, it returns 0.
+int matrixf_decomp_lu_banded(Matrixf* A, size_t ubw);
 
 // This function unpacks the compact form of LU decomposition of the banded 
 // Hessenberg matrix A. In particular, the function accumulates the inverse of
@@ -256,8 +256,8 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* perm, Matrixf* B);
 // must store the essential parts of the Householder vectors. For instance, if 
 // s = 0, the Householder vectors are below the main diagonal of A; whereas, if 
 // s = 1, the Householder vectors are below the first subdiagonal of A. On size
-// mismatch or if s < 0, the function returns -1. On success, it returns 0.
-int matrixf_unpack_house(Matrixf* A, Matrixf* B, int s, int fwd);
+// mismatch, the function returns -1. On success, it returns 0.
+int matrixf_unpack_house(Matrixf* A, Matrixf* B, size_t s, int fwd);
 
 // This function accomplishes the bidiagonalization of the m-by-n matrix A so
 // that A = U*B*V'. A is overwritten by the bidiagonal matrix B. Specifically,
@@ -448,10 +448,9 @@ int matrixf_solve_lu(Matrixf* A, Matrixf* B);
 // particular, A must be a Hessenberg matrix with upper bandwidth ubw >= 0. For
 // instance, if ubw = 1, A is tridiagonal. The upper triangular part of matrix 
 // A and its first subdiagonal are destroyed, whereas B is overwritten with the
-// matrix X. If A is singular, the function returns -2. On size mismatch, 
-// non-square system or ubw < 0, the function returns -1. On success, it 
-// returns 0.
-int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, int ubw);
+// matrix X. If A is singular, the function returns -2. On size mismatch or 
+// non-square system, the function returns -1. On success, it returns 0.
+int matrixf_solve_lu_banded(Matrixf* A, Matrixf* B, size_t ubw);
 
 // This function solves the linear system A*X = B by QR decomposition of the 
 // full-rank matrix A. If the system is underdetermined, the returned solution 

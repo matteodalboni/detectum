@@ -19,8 +19,8 @@ int matrixf_get_eigenvector(Matrixf* A, Matrixf* v,
 	float eigval_re, float eigval_im, int iter, float* work)
 {
 	int i, j;
-	const int n = A->rows;
-	const int q = v->cols;
+	const size_t n = A->rows;
+	const size_t q = v->cols;
 	const int p = eigval_im == 0 ? 1 : 2;
 	float nrm_inv, nrmA = normf(A->data, n * n, 1);
 	float del = nrmA * DETECTUM_FLT_MIN;

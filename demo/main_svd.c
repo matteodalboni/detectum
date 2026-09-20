@@ -7,11 +7,13 @@
 
 static void copy_matrix(Matrixf* Dest, Matrixf* Src)
 {
-	int len = Src->rows * Src->cols;
+	size_t i, len = Src->rows * Src->cols;
 
 	Dest->rows = Src->rows;
 	Dest->cols = Src->cols;
-	while (len--) Dest->data[len] = Src->data[len];
+	for (i = 0; i < len; i++) {
+		Dest->data[i] = Src->data[i];
+	}
 }
 
 int main()

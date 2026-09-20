@@ -9,7 +9,7 @@
 static int powmi(Matrixf* A, unsigned const int p, float* work)
 {
 	int j, k = 0;
-	const int n = A->rows;
+	const size_t n = A->rows;
 	unsigned int s = 1, i = 0;
 	Matrixf Z = { n, n, work };
 	Matrixf F = { n, n, work + n * n };

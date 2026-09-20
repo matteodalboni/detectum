@@ -3,8 +3,8 @@
 
 int matrixf_decomp_ldl(Matrixf* A)
 {
-	const int n = A->rows;
-	int i, j, k;
+	const size_t n = A->rows;
+	size_t i, j, k;
 	float a, * Ai, * Aj;
 
 	for (j = 0; j < n; j++) {
