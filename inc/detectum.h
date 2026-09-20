@@ -1,6 +1,7 @@
 #ifndef DETECTUM_H
 #define DETECTUM_H
 
+#include <stddef.h>
 #include <math.h>
 
 // Matrix of single-precision floating-point values.

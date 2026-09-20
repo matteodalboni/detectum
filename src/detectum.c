@@ -76,8 +76,7 @@ int matrixf_permute(Matrixf* A, Matrixf* perm, int reverse, int transP)
 		(A->cols != perm->cols || perm->rows != 1)) {
 		return -1;
 	}
-	if ((reverse && !transP) ||
-		(!reverse && transP)) {
+	if ((reverse && !transP) || (!reverse && transP)) {
 		if (len > 1) {
 			for (k = 0; k < len; k++) {
 				if (x[k] >= 0) {
@@ -858,7 +857,7 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 }
 
 #ifndef DETECTUM_SVD_JACOBI_ITER_MAX
-#define DETECTUM_SVD_JACOBI_ITER_MAX (10 * n)
+#define DETECTUM_SVD_JACOBI_ITER_MAX (10 * (int)n)
 #endif
 #ifndef DETECTUM_SVD_JACOBI_TOL
 #define DETECTUM_SVD_JACOBI_TOL (1e-6f)
@@ -871,7 +870,7 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 	float* Xj, * Xk;
 	const size_t m = A->rows;
 	const size_t n = A->cols;
-	const size_t iter_max = DETECTUM_SVD_JACOBI_ITER_MAX;
+	const int iter_max = DETECTUM_SVD_JACOBI_ITER_MAX;
 	const float tol = DETECTUM_SVD_JACOBI_TOL;
 
 	if (m < n) {
@@ -2167,7 +2166,7 @@ int matrixf_exp(Matrixf* A, float* work)
 	size_t i, j, k, z, s;
 	const size_t n = A->rows;
 	const size_t q = DETECTUM_EXP_PADE_ORDER;
-	float c, p, t;
+	float c, t, nrm_inf;
 	Matrixf X = { n, n, work + n };
 	Matrixf N = { n, n, X.data + n * n };
 	Matrixf D = { n, n, N.data + n * n };
@@ -2175,18 +2174,16 @@ int matrixf_exp(Matrixf* A, float* work)
 	if (n != A->cols) {
 		return -1;
 	}
-	for (p = 0, i = 0; i < n; i++) {
+	for (nrm_inf = 0, i = 0; i < n; i++) {
 		for (t = 0, j = 0; j < n; j++) {
 			t += fabsf(at(A, i, j));
 		}
-		if (t > p) {
-			p = t;
+		if (t > nrm_inf) {
+			nrm_inf = t;
 		}
 	}
-	z = 1 + (size_t)floorf(log2f(p));
-	if (z < 0) {
-		z = 0;
-	}
+	t = 1.0f + floorf(log2f(nrm_inf));
+	z = t < 0 ? 0 : (size_t)t;
 	s = (size_t)1 << z;
 	for (i = 0; i < n * n; i++) {
 		t = !(i % (n + 1));
@@ -2230,7 +2227,7 @@ int matrixf_log(Matrixf* A, float* work)
 	size_t i, k, s = 1;
 	int f;
 	const size_t n = A->rows;
-	const int nterms = DETECTUM_LOG_NTERMS;
+	const size_t nterms = DETECTUM_LOG_NTERMS;
 	const float thr = DETECTUM_LOG_ISS_THR;
 	float tmp, nrm1;
 	Matrixf U = { n, n, work + n };
