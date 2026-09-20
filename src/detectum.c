@@ -636,7 +636,7 @@ int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* perm, float 
 }
 
 #ifndef DETECTUM_SVD_ITER_MAX
-#define DETECTUM_SVD_ITER_MAX (100 * n)
+#define DETECTUM_SVD_ITER_MAX (100 * (int)n)
 #endif
 #ifndef DETECTUM_SVD_TOL
 #define DETECTUM_SVD_TOL (2e-7f)
@@ -647,7 +647,7 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 	const size_t n = A->cols;
 	size_t i, j, k, q, r = n - 1;
 	int f, iter = 0;
-	const int iter_max = (int)(DETECTUM_SVD_ITER_MAX);
+	const int iter_max = DETECTUM_SVD_ITER_MAX;
 	const float tol = DETECTUM_SVD_TOL;
 	float small, nrm1, tmp, cosine, sine, a, b;
 	float c00, c01, c11, y, z, mu;
@@ -993,7 +993,7 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
 }
 
 #ifndef DETECTUM_SCHUR_SYMM_ITER_MAX
-#define DETECTUM_SCHUR_SYMM_ITER_MAX (100 * n)
+#define DETECTUM_SCHUR_SYMM_ITER_MAX (100 * (int)n)
 #endif
 #ifndef DETECTUM_SCHUR_SYMM_TOL
 #define DETECTUM_SCHUR_SYMM_TOL (1e-6f)
@@ -1003,7 +1003,7 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 	const size_t n = A->rows;
 	size_t k, i, imin, imax, q, m = n - 1;
 	int iter = 0;
-	const int iter_max = (int)(DETECTUM_SCHUR_SYMM_ITER_MAX);
+	const int iter_max = DETECTUM_SCHUR_SYMM_ITER_MAX;
 	const float tol = DETECTUM_SCHUR_SYMM_TOL;
 	float a, b, d, f, g, x, y, cosine, sine;
 	float* Uk, * Uk1;
@@ -1079,7 +1079,7 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 }
 
 #ifndef DETECTUM_SCHUR_ITER_MAX
-#define DETECTUM_SCHUR_ITER_MAX (100 * n)
+#define DETECTUM_SCHUR_ITER_MAX (100 * (int)n)
 #endif
 #ifndef DETECTUM_SCHUR_TOL
 #define DETECTUM_SCHUR_TOL (1e-6f)
@@ -1092,7 +1092,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 	const size_t n = A->rows;
 	size_t i, j, k, q, m = n - 1;
 	int iter = 0, ad_hoc_shift;
-	const int iter_max = (int)(DETECTUM_SCHUR_ITER_MAX);
+	const int iter_max = DETECTUM_SCHUR_ITER_MAX;
 	const int ahsc = DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT;
 	const float tol = DETECTUM_SCHUR_TOL;
 	const float eps = DETECTUM_FLT_EPS;
@@ -2227,8 +2227,8 @@ int matrixf_exp(Matrixf* A, float* work)
 #endif
 int matrixf_log(Matrixf* A, float* work)
 {
-	size_t i, k;
-	int f, s = 1;
+	size_t i, k, s = 1;
+	int f;
 	const size_t n = A->rows;
 	const int nterms = DETECTUM_LOG_NTERMS;
 	const float thr = DETECTUM_LOG_ISS_THR;

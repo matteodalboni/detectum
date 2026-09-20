@@ -3,11 +3,12 @@
 
 #include <math.h>
 
-// Matrix type having single-precision float numbers
+// Matrix of single-precision floating-point values.
+// The elements are stored contiguously in column-major order.
 typedef struct {
 	size_t rows; // number of rows (must be < 2^24)
 	size_t cols; // number of columns (must be < 2^24)
-	float* data; // pointer to data array
+	float* data; // pointer to the elements
 } Matrixf;
 
 // Minimum positive value
