@@ -121,7 +121,8 @@ static inline float housef(float* x, size_t len, size_t stride)
 	return beta;
 }
 
-#ifdef EOF // include stdio.h before detectum.h to enable this section
+// Include stdio.h before detectum.h to enable this section.
+#ifdef EOF
 // This function prints the matrix A on the standard output according to
 // the specified format.
 static inline void matrixf_print(Matrixf* A, const char* format)
@@ -137,7 +138,8 @@ static inline void matrixf_print(Matrixf* A, const char* format)
 }
 #endif
 
-#ifdef RAND_MAX // include stdlib.h before detectum.h to enable this section
+// Include stdlib.h before detectum.h to enable this section.
+#ifdef RAND_MAX
 // This function initializes a rows-by-cols matrix, allocating its data 
 // memory on the heap. On allocation failure, the data pointer is null.
 static inline Matrixf matrixf(size_t rows, size_t cols)
