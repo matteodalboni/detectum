@@ -2,13 +2,12 @@
 #define DETECTUM_H
 
 #include <stddef.h>
-#include <math.h>
 
 // Matrix of single-precision floating-point values.
 // The elements are stored contiguously in column-major order.
 typedef struct {
-	size_t rows; // number of rows (must be < 2^24)
-	size_t cols; // number of columns (must be < 2^24)
+	size_t rows; // number of rows (must be < 2^24 = 16777216)
+	size_t cols; // number of columns (must be < 2^24 = 16777216)
 	float* data; // pointer to the elements
 } Matrixf;
 
@@ -48,81 +47,26 @@ Matrixf A = { rows, cols, A##_data }
 
 // This function returns the positive distance from abs(x) to the next 
 // larger floating-point number.
-static inline float epsf(float x)
-{
-	return powf(2.0f, floorf(log2f(fabsf(x))) - 23.0f);
-}
+float epsf(float x);
 
 // This function computes the 2-norm of vector v without underflow or 
 // overflow. The length of v is len, and stride is its increment. 
-static inline float normf(const float* v, size_t len, size_t stride)
-{
-	size_t i;
-	float s = 0, h = 0, a;
-	const float tsml = DETECTUM_FLT_TSML;
-	const float tbig = DETECTUM_FLT_TBIG;
-
-	for (i = 0; i < len; i++) {
-		a = fabsf(v[i * stride]);
-		if (a > tsml && a < tbig) {
-			s += a * a;
-		}
-		else if (a > 0) {
-			h = hypotf(h, a);
-		}
-	}
-	return hypotf(sqrtf(s), h);
-}
+float normf(const float* v, size_t len, size_t stride);
 
 // This function computes the Givens rotation pair (c,s) so that 
 // [c -s; s c]*[a; b] = [r; 0].
-static inline float givensf(float a, float b, float* c, float* s)
-{
-	float r = a;
-
-	if (b == 0) {
-		*c = 1.0f;
-		*s = 0.0f;
-	}
-	else {
-		r = hypotf(a, b);
-		*c = +a / r;
-		*s = -b / r;
-	}
-	return r;
-}
+float givensf(float a, float b, float* c, float* s);
 
 // This function generates a Householder vector. The vector x is
 // transformed so that x(0) is the norm of x and v = [1; x(1:end)],
 // where v is the normalized Householder vector. len is x length 
 // and stride is its increment. Also, the function returns beta
 // such that H = I - beta*v*v' is a Householder matrix.
-static inline float housef(float* x, size_t len, size_t stride)
-{
-	size_t i;
-	float b, beta = 0;
-	const float a = x[0];
-	const float eps = DETECTUM_FLT_EPS;
-	const float nrm = normf(x + stride, len - 1, stride);
+float housef(float* x, size_t len, size_t stride);
 
-	if (nrm > eps) {
-		b = a < 0 ? hypotf(a, nrm) : -hypotf(a, nrm);
-		beta = (b - a) / b;
-		x[0] = b;
-		for (i = 1; i < len; i++) {
-			x[stride * i] /= a - b;
-		}
-	}
-	else if (nrm > 0) {
-		for (i = 1; i < len; i++) {
-			x[stride * i] = 0;
-		}
-	}
-	return beta;
-}
+#ifdef DETECTUM_ENABLE_PRINT
+#include <stdio.h>
 
-// Include stdio.h before detectum.h to enable this section.
-#ifdef EOF
 // This function prints the matrix A on the standard output according to
 // the specified format.
 static inline void matrixf_print(Matrixf* A, const char* format)
@@ -138,8 +82,9 @@ static inline void matrixf_print(Matrixf* A, const char* format)
 }
 #endif
 
-// Include stdlib.h before detectum.h to enable this section.
-#ifdef RAND_MAX
+#ifdef DETECTUM_ENABLE_ALLOC
+#include <stdlib.h>
+
 // This function initializes a rows-by-cols matrix, allocating its data 
 // memory on the heap. On allocation failure, the data pointer is null.
 static inline Matrixf matrixf(size_t rows, size_t cols)

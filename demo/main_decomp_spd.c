@@ -1,4 +1,4 @@
-#include <stdio.h>
+#define DETECTUM_ENABLE_PRINT
 #include "detectum.h"
 
 int matrixf_decomp_ldl(Matrixf* A)
@@ -40,15 +40,17 @@ int main()
 		-40, -111, -125,  -4,  173, -93,
 		 55,   97,   23, -99,  -93,  93
 	};
+	float A_data_copy[n * n] = { 0 };
 	float L_data[n * n] = { 0 };
 	float D_data[n * n] = { 0 };
 	Matrixf A = { n, n, A_data };
 	Matrixf L = { n, n, L_data };
 	Matrixf D = { n, n, D_data };
-	int i, j;
+	size_t i, j;
 
 	matrixf_init(&A, n, n, A_data, 1);
 	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
+	for (i = 0; i < n * n; i++) A_data_copy[i] = A_data[i];
 	printf("\nLDL decomposition\n");
 	matrixf_decomp_ldl(&A);
 	for (j = 0; j < n; j++) {
@@ -61,6 +63,9 @@ int main()
 	printf("\nD = \n"); matrixf_print(&D, "%9.4f ");
 	matrixf_multiply_inplace(&D, &L, &L, 0, 1, A_data);
 	printf("\nL*D*L' = \n"); matrixf_print(&D, "%9.4f ");
+	for (i = 0; i < n * n; i++) A_data_copy[i] -= D.data[i];
+	printf("\n||L*D*L' - A||_F = %g\n", normf(A_data_copy, n * n, 1));
+	for (i = 0; i < n * n; i++) A_data_copy[i] = D.data[i];
 
 	printf("\nCholesky decomposition\n");
 	if (matrixf_decomp_chol(&D)) {
@@ -73,5 +78,7 @@ int main()
 	printf("\nR = \n"); matrixf_print(&D, "%9.4f ");
 	matrixf_multiply(&D, &D, &L, 1, 0, 1, 0);
 	printf("\nR'*R = \n"); matrixf_print(&L, "%9.4f ");
+	for (i = 0; i < n * n; i++) A_data_copy[i] -= L.data[i];
+	printf("\n||R'*R - A||_F = %g\n", normf(A_data_copy, n * n, 1));
 	return 0;
 }

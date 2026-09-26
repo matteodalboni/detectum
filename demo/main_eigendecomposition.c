@@ -1,7 +1,8 @@
 #define _CRT_SECURE_NO_WARNINGS
-#include <stdio.h>
-#include <stdlib.h>
+#define DETECTUM_ENABLE_PRINT
+#define DETECTUM_ENABLE_ALLOC
 #include "detectum.h"
+#include <math.h>
 
 static void print_complex_eigenvec_matrix(Matrixf* T, Matrixf* V,
 	const char* format_real, const char* format_cplx)

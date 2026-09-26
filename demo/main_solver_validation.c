@@ -47,9 +47,9 @@ static inline double tock(struct timespec* t0) {
 	return ((tf.tv_sec - t0->tv_sec) + ((tf.tv_nsec - t0->tv_nsec) * 1e-9));
 }
 #endif
-#include "stdio.h"
-#include "stdlib.h"
+#define DETECTUM_ENABLE_ALLOC
 #include "detectum.h"
+#include <stdio.h>
 
 #define M 200
 #define N 180

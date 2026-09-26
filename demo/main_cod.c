@@ -1,8 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
+#define DETECTUM_ENABLE_PRINT
+#define DETECTUM_ENABLE_ALLOC
 #include "detectum.h"
 
-#define ONE_STEP 1
+#define ONE_STEP
 #define m 10
 #define n 5
 
@@ -20,7 +20,9 @@ int main()
 		10, 0, 0, 0, 78,
 		11, 0, 0, 0, 84
 	};
+	float A_data_copy[m * n] = { 0 };
 	int rank;
+	size_t i = 0, j = 0;
 	Matrixf A;
 	Matrixf P = matrixf(1, n);
 	Matrixf U = matrixf(m, m);
@@ -29,20 +31,21 @@ int main()
 
 	// Initialization
 	matrixf_init(&A, m, n, A_data, 1);
+	for (i = 0; i < m * n; i++) A_data_copy[i] = A_data[i];
 	printf("A = [\n"); matrixf_print(&A, "%10.5g "); printf("];\n\n");
 	// Complete orthogonal decomposition (COD)
-#if ONE_STEP
+#ifdef ONE_STEP
 	rank = matrixf_decomp_cod(&A, &U, &V, &P, -1);
 #else
 	rank = matrixf_decomp_cod(&A, &U, 0, &P, -1);
 	matrixf_transpose(&A);
 	A.cols = rank;
-	for (size_t i = 0; i < n; i++) {
+	for (i = 0; i < n; i++) {
 		at(&V, i, i) = 1;
 	}
 	matrixf_unpack_house(&A, &V, 0, 0);
-	for (size_t j = 0; j < rank; j++) {
-		for (size_t i = j + 1; i < A.rows; i++) {
+	for (j = 0; j < rank; j++) {
+		for (i = j + 1; i < A.rows; i++) {
 			at(&A, i, j) = 0;
 		}
 	}
@@ -59,6 +62,8 @@ int main()
 	A.rows = m; A.cols = n;
 	matrixf_multiply(&UT, &V, &A, 1, 0, 0, 1);
 	printf("U*T*(P*V)' = [\n"); matrixf_print(&A, "%10.5g "); printf("];\n\n");
+	for (i = 0; i < m * n; i++) A_data_copy[i] -= A_data[i];
+	printf("||U*T*(P*V)' - A||_F = %g\n", normf(A_data_copy, m * n, 1));
 	// Memory release
 	free(P.data);
 	free(U.data);

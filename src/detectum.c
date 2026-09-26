@@ -1,4 +1,69 @@
 #include "detectum.h"
+#include <math.h>
+
+float epsf(float x)
+{
+	return powf(2.0f, floorf(log2f(fabsf(x))) - 23.0f);
+}
+
+float normf(const float* v, size_t len, size_t stride)
+{
+	size_t i;
+	float s = 0, h = 0, a;
+	const float tsml = DETECTUM_FLT_TSML;
+	const float tbig = DETECTUM_FLT_TBIG;
+
+	for (i = 0; i < len; i++) {
+		a = fabsf(v[i * stride]);
+		if (a > tsml && a < tbig) {
+			s += a * a;
+		}
+		else if (a > 0) {
+			h = hypotf(h, a);
+		}
+	}
+	return hypotf(sqrtf(s), h);
+}
+
+float givensf(float a, float b, float* c, float* s)
+{
+	float r = a;
+
+	if (b == 0) {
+		*c = 1.0f;
+		*s = 0.0f;
+	}
+	else {
+		r = hypotf(a, b);
+		*c = +a / r;
+		*s = -b / r;
+	}
+	return r;
+}
+
+float housef(float* x, size_t len, size_t stride)
+{
+	size_t i;
+	float b, beta = 0;
+	const float a = x[0];
+	const float eps = DETECTUM_FLT_EPS;
+	const float nrm = normf(x + stride, len - 1, stride);
+
+	if (nrm > eps) {
+		b = a < 0 ? hypotf(a, nrm) : -hypotf(a, nrm);
+		beta = (b - a) / b;
+		x[0] = b;
+		for (i = 1; i < len; i++) {
+			x[stride * i] /= a - b;
+		}
+	}
+	else if (nrm > 0) {
+		for (i = 1; i < len; i++) {
+			x[stride * i] = 0;
+		}
+	}
+	return beta;
+}
 
 // Householder transformation X(i0:iend,j0:jend) = H*X(i0:iend,j0:jend),
 // where H = I - beta*v*v' and v(0) = 1. stride is the increment of v.

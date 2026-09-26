@@ -1,4 +1,4 @@
-#include <stdio.h>
+#define DETECTUM_ENABLE_PRINT
 #include "detectum.h"
 
 #define TEST 0
@@ -49,7 +49,8 @@ int main()
 #define N 2
 	float A_data[] = { 1, 2 };
 #endif
-	int i;
+	float A_data_copy[M * N] = { 0 };
+	size_t i;
 	float Q_data[M * M] = { 0 }, QR_data[M * N] = { 0 };
 	float P_data[N * N] = { 0 }, perm_data[N] = { 0 };
 	Matrixf A = { 0 }, Q = { 0 }, QR = { 0 }, P = { 0 }, perm = { 0 };
@@ -61,6 +62,7 @@ int main()
 	matrixf_init(&P, N, N, P_data, 0);
 	matrixf_init(&perm, 1, N, perm_data, 0);
 	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
+	for (i = 0; i < M * N; i++) A_data_copy[i] = A_data[i];
 
 	matrixf_decomp_qr(&A, &Q, &perm, 0);
 	matrixf_permute(&P, &perm, 0, 0);
@@ -77,6 +79,8 @@ int main()
 	matrixf_permute(&QR, &perm, 0, 1);
 	for (i = 0; i < M * N; i++) A.data[i] = QR.data[i];
 	printf("\nQ*R*P' = \n"); matrixf_print(&A, "%9.4f ");
+	for (i = 0; i < M * N; i++) A_data_copy[i] -= A_data[i];
+	printf("\n||Q*R*P' - A||_F = %g\n", normf(A_data_copy, M * N, 1));
 
 	return 0;
 }

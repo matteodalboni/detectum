@@ -1,10 +1,10 @@
-#include <stdio.h>
-#include <stdlib.h>
+#define DETECTUM_ENABLE_PRINT
+#define DETECTUM_ENABLE_ALLOC
 #include "detectum.h"
 
 static void unpack_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 {
-	int i, j;
+	size_t i, j;
 
 	if (A->rows < A->cols) {
 		matrixf_transpose(A);
@@ -54,11 +54,14 @@ int main()
 		10, 12,  94, 96, 78,
 		11, 18, 100, 77, 84
 	};
+	float A_data_copy[m * n] = { 0 };
+	size_t i;
 	Matrixf A, C;
 	Matrixf U = matrixf(m, m);
 	Matrixf V = matrixf(n, n);
 
 	matrixf_init(&A, m, n, A_data, 1);
+	for (i = 0; i < m * n; i++) A_data_copy[i] = A_data[i];
 	printf("A = [\n"); matrixf_print(&A, "%9.4f "); printf("];\n\n");
 #if ONE_STEP
 	matrixf_decomp_bidiag(&A, &U, &V);
@@ -76,6 +79,8 @@ int main()
 	A.cols = n;
 	matrixf_multiply(&C, &V, &A, 1, 0, 0, 1);
 	printf("U*B*V' = [\n"); matrixf_print(&A, "%9.4f "); printf("];\n\n");
+	for (i = 0; i < m * n; i++) A_data_copy[i] -= A_data[i];
+	printf("||U*B*V' - A||_F = %g\n", normf(A_data_copy, m * n, 1));
 
 	free(U.data);
 	free(V.data);
