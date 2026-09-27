@@ -1,4 +1,4 @@
-#include <stdio.h>
+#define DETECTUM_ENABLE_PRINT
 #include "detectum.h"
 
 #define ALGO 2
@@ -68,8 +68,8 @@ int main()
 #endif
 #define p (m > n ? m : n)
 
-	int i, j, k, iter = ITER;
-	float s;
+	int i, j = 0, k = 0, iter = ITER;
+	float s = 0;
 	float A_copy[m * n] = { 0 };
 	float U_data[m * m] = { 0 };
 	float V_data[n * n] = { 0 };
@@ -82,7 +82,7 @@ int main()
 	Matrixf P = { m, m, P_data };
 	Matrixf Q = { m, m, Q_data };
 	Matrixf W = { m, n, W_data };
-	Matrixf* X;
+	Matrixf* X = 0;
 
 	matrixf_init(&A, m, n, A_data, 1);
 	for (i = 0; i < m * n; i++) A_copy[i] = A_data[i];

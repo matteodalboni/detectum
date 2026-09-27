@@ -1,4 +1,4 @@
-#include <stdio.h>
+#define DETECTUM_ENABLE_PRINT
 #include "detectum.h"
 
 #define CASE 1
@@ -40,7 +40,7 @@ int main()
 #endif
 	};
 	float data[10] = { 0 };
-	int i, j;
+	size_t i, j;
 	Matrixf A, x, b;
 
 	matrixf_init(&A, m, n, A_data, 1);

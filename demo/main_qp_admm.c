@@ -7,8 +7,9 @@
 // UKACC 12th International Conference on Control (CONTROL), 
 // Sheffield, UK, 2018, pp. 339-339, doi: 10.1109/CONTROL.2018.8516834.
 
-#include <stdio.h>
+#define DETECTUM_ENABLE_PRINT
 #include "detectum.h"
+#include <math.h>
 
 #define PROBLEM (3)
 

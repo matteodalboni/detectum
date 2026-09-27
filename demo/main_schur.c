@@ -1,5 +1,6 @@
-#include <stdio.h>
+#define DETECTUM_ENABLE_PRINT
 #include "detectum.h"
+#include <math.h>
 
 // This function extracts the eigenvalues from the quasitriangular Schur 
 // matrix T. The real and imaginary parts are stored in lambda_re and lambda_im, 
@@ -99,7 +100,7 @@ float A_data[] = {
 	1, 2, 3, 4, 5, 6, 7, 8, 8, 8,
 	1, 2, 3, 4, 5, 6, 7, 8, 9, 9,
 	1, 2, 3, 4, 5, 6, 7, 8, 9, 10
-#elif (TEST == 4) // A(n,n) = 0 and complex conjugate pair of eigenvalues
+#elif (TEST == 4) // A(n-1,n-1) = 0 and complex conjugate pair of eigenvalues
 	0, 0, 1,
 	1, 0, 0,
 	0, 1, 0
@@ -157,7 +158,8 @@ int main()
 	int i, n = (int)sqrtf(NUMEL), iter = ITER;
 	float s = 0;
 	const float eps = epsf(1);
-	float lambda[NUMEL] = { 0 };
+	float A_data_copy[NUMEL] = { 0 };
+	float lambda[NUMEL + 1] = { 0 };
 	float U_data[NUMEL] = { 0 };
 	float Q_data[NUMEL] = { 0 };
 	float R_data[NUMEL] = { 0 };
@@ -167,6 +169,7 @@ int main()
 	Matrixf R = { n, n, R_data };
 
 	matrixf_transpose(&A);
+	for (i = 0; i < n * n; i++) A_data_copy[i] = A_data[i];
 	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
 
 	matrixf_decomp_hess(&A, &U);
@@ -199,6 +202,8 @@ int main()
 	matrixf_multiply(&U, &R, &Q, 1, 0, 0, 0);
 	matrixf_multiply(&Q, &U, &A, 1, 0, 0, 1);
 	printf("\nU*T*U' = \n"); matrixf_print(&A, "%9.4f ");
+	for (i = 0; i < n * n; i++) A_data_copy[i] -= A_data[i];
+	printf("\n||U*T*U' - A||_F = %g\n", normf(A_data_copy, n * n, 1));
 
 	printf("\nEigenvalues\n");
 	for (i = 0; i < n; i++) {
@@ -215,7 +220,8 @@ int main()
 int main()
 {
 	int i, n = (int)sqrtf(NUMEL), iter = ITER;
-	float lambda[NUMEL] = { 0 };
+	float A_data_copy[NUMEL] = { 0 };
+	float lambda[NUMEL + 1] = { 0 };
 	float P_data[NUMEL] = { 0 };
 	float U_data[NUMEL] = { 0 };
 	float T_data[NUMEL] = { 0 };
@@ -225,15 +231,12 @@ int main()
 	Matrixf T = { n, n, T_data };
 
 	matrixf_transpose(&A);
+	for (i = 0; i < n * n; i++) A_data_copy[i] = A_data[i];
 	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
 
 	matrixf_decomp_hess(&A, &P);
-	printf("\nH = \n"); matrixf_print(&A, "%9.4f ");
-	printf("\nP = \n"); matrixf_print(&P, "%9.4f ");
-
-	//matrixf_multiply(&P, &A, &T, 1, 0, 0, 0);
-	//matrixf_multiply(&T, &P, &A, 1, 0, 0, 1);
-	//printf("\nP*H*P' = \n"); matrixf_print(&A, "%9.4f ");
+	//printf("\nH = \n"); matrixf_print(&A, "%9.4f ");
+	//printf("\nP = \n"); matrixf_print(&P, "%9.4f ");
 
 	for (i = 0; i < n * n; i++) T.data[i] = A.data[i];
 
@@ -257,6 +260,8 @@ int main()
 	matrixf_multiply(&U, &T, &A, 1, 0, 0, 0);
 	matrixf_multiply(&A, &U, &T, 1, 0, 0, 1);
 	printf("\nU*T*U' = \n"); matrixf_print(&T, "%9.4f ");
+	for (i = 0; i < n * n; i++) A_data_copy[i] -= T.data[i];
+	printf("\n||U*T*U' - A||_F = %g\n", normf(A_data_copy, n * n, 1));
 
 	printf("\nEigenvalues\n");
 	for (i = 0; i < n; i++) {
@@ -272,7 +277,8 @@ int main()
 int main()
 {
 	int i, n = (int)sqrtf(NUMEL), iter = ITER;
-	float lambda[NUMEL] = { 0 };
+	float A_data_copy[NUMEL] = { 0 };
+	float lambda[NUMEL + 1] = { 0 };
 	float U_data[NUMEL] = { 0 };
 	float B_data[NUMEL] = { 0 };
 	Matrixf A = { n, n, A_data };
@@ -280,6 +286,7 @@ int main()
 	Matrixf B = { n, n, B_data };
 
 	matrixf_transpose(&A);
+	for (i = 0; i < n * n; i++) A_data_copy[i] = A_data[i];
 	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
 
 	iter = matrixf_decomp_schur(&A, &U);
@@ -293,6 +300,8 @@ int main()
 	matrixf_multiply(&U, &A, &B, 1, 0, 0, 0);
 	matrixf_multiply(&B, &U, &A, 1, 0, 0, 1);
 	printf("\nU*T*U' = \n"); matrixf_print(&A, "%9.4f ");
+	for (i = 0; i < n * n; i++) A_data_copy[i] -= A_data[i];
+	printf("\n||U*T*U' - A||_F = %g\n", normf(A_data_copy, n * n, 1));
 
 	printf("\nEigenvalues\n");
 	for (i = 0; i < n; i++) {

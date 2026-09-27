@@ -12,8 +12,9 @@
 // in IEEE Transactions on Automatic Control, vol. 63, no. 2, pp.
 // 525 - 531, Feb. 2018, doi : 10.1109/TAC.2017.2735938.
 
-#include <stdio.h>
+#define DETECTUM_ENABLE_PRINT
 #include "detectum.h"
+#include <math.h>
 
 #define m 5 // number of constraints
 #define n 4 // number of variables

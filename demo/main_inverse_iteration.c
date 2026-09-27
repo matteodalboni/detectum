@@ -1,6 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
+#define DETECTUM_ENABLE_PRINT
+#define DETECTUM_ENABLE_ALLOC
 #include "detectum.h"
+#include <math.h>
 
 // This function computes the right eigenvector v of a square matrix A corresponding
 // to the eigenvalue eigval_re+eigval_im*i using the inverse iteration method. 
@@ -18,7 +19,7 @@
 int matrixf_get_eigenvector(Matrixf* A, Matrixf* v,
 	float eigval_re, float eigval_im, int iter, float* work)
 {
-	int i, j;
+	size_t i, j;
 	const size_t n = A->rows;
 	const size_t q = v->cols;
 	const int p = eigval_im == 0 ? 1 : 2;

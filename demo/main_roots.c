@@ -1,5 +1,6 @@
-#include <stdio.h>
+#define DETECTUM_ENABLE_PRINT
 #include "detectum.h"
+#include <math.h>
 
 #define deg 4 // degree of the polynomial
 

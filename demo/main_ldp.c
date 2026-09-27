@@ -6,8 +6,9 @@
 // "Solving least squares problems". Society for 
 // Industrial and Applied Mathematics, 1995.
 
-#include <stdio.h>
+#define DETECTUM_ENABLE_PRINT
 #include "detectum.h"
+#include <math.h>
 
 #define m 3 // number of constraints
 #define n 4 // number of variables

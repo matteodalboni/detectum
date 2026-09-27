@@ -1,4 +1,4 @@
-#include <stdio.h>
+#define DETECTUM_ENABLE_PRINT
 #include "detectum.h"
 
 #define n 7

@@ -1,6 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
+#define DETECTUM_ENABLE_PRINT
+#define DETECTUM_ENABLE_ALLOC
 #include "detectum.h"
+#include <math.h>
 
 #define TEST 3
 
@@ -47,11 +48,14 @@ float A_data[] = {
 
 int main()
 {
-	const int n = (int)roundf(sqrtf(sizeof(A_data) / sizeof(A_data[0])));
+	const size_t n = (int)roundf(sqrtf(sizeof(A_data) / sizeof(A_data[0])));
+	size_t i;
 	Matrixf A = { n, n, A_data };
+	Matrixf A_copy = matrixf(n, n);
 	Matrixf U = matrixf(n, n);
 	Matrixf B = matrixf(n, n);
 
+	for (i = 0; i < n * n; i++) A_copy.data[i] = A_data[i];
 	printf("A = \n"); matrixf_print(&A, "%9.4g ");
 	matrixf_decomp_schur_symm(&A, &U);
 	printf("\nD = \n"); matrixf_print(&A, "%9.4g ");
@@ -64,7 +68,10 @@ int main()
 
 	matrixf_multiply_inplace(&A, &U, &U, 0, 1, B.data);
 	printf("\nU*D*U' = \n"); matrixf_print(&A, "%9.4g ");
+	for (i = 0; i < n * n; i++) A_copy.data[i] -= A_data[i];
+	printf("\n||U*D*U' - A||_F = %g\n", normf(A_copy.data, n * n, 1));
 
+	free(A_copy.data);
 	free(U.data);
 	free(B.data);
 

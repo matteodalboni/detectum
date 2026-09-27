@@ -298,7 +298,7 @@ int matrixf_decomp_ltl(Matrixf* A)
 				h[i] = at(A, j, i) - tmp;
 			}
 		}
-		if (j < n - 1) {
+		if (j + 1 < n) {
 			for (jp = j + 1, k = j + 1; k < n; k++) {
 				if (fabsf(h[k]) > fabsf(h[jp])) {
 					jp = k;
@@ -323,7 +323,7 @@ int matrixf_decomp_ltl(Matrixf* A)
 				a01 = at(A, 0, 1);
 			}
 			at(A, j, j + 1) = h[j + 1];
-			if (j < n - 2) {
+			if (j + 2 < n) {
 				if (h[jp] != 0) {
 					for (i = j + 2; i < n; i++) {
 						at(A, i, j + 1) = h[i] / h[j + 1];
@@ -488,7 +488,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* perm, Matrixf* B)
 	size_t i, jm = 0, j = 0, k = 0, q = 0;
 	const size_t m = A->rows;
 	const size_t n = A->cols;
-	const size_t kmax = m < n ? m - 1 : n - 1;
+	const size_t kmax = m < n ? m : n;
 	float beta, t, c, cm, * v;
 	float* Ak, * Aj, * Ajm;
 	Matrixf A_econ = { n, n, A->data };
@@ -510,7 +510,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* perm, Matrixf* B)
 	if (B && B->rows != m) {
 		return -1;
 	}
-	for (k = 0; k <= kmax; k++) {
+	for (k = 0; k < kmax; k++) {
 		Ak = &at(A, 0, k);
 		if (perm) {
 			cm = 0;
@@ -577,14 +577,14 @@ int matrixf_unpack_house(Matrixf* A, Matrixf* B, size_t s, int fwd)
 	const size_t m = A->rows;
 	const size_t n = A->cols;
 	const size_t p = B->cols;
-	const size_t kmax = m - 1 < n ? m - 2 - s : n - 1 - s;
+	const size_t jmax = m < n + 1 ? m - 1 - s : n - s;
 	float beta, gamma, * v;
 
 	if (B->rows != m) {
 		return -1;
 	}
-	for (j = 0; j <= kmax; j++) {
-		k = fwd > 0 ? j : kmax - j;
+	for (j = 0; j < jmax; j++) {
+		k = fwd > 0 ? j : jmax - 1 - j;
 		v = &at(A, 0, k);
 		gamma = 0;
 		for (i = k + 1 + s; i < m; i++) {
@@ -604,7 +604,7 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 	int f;
 	const size_t m = A->rows;
 	const size_t n = A->cols;
-	const size_t kmax = m - 1 < n ? m - 2 : n - 1;
+	const size_t kmax = m < n + 1 ? m - 1 : n;
 	float beta, * v;
 	Matrixf A_econ = { n, n, A->data };
 
@@ -618,7 +618,7 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 		(V && (V->rows != n || (V->cols != n)))) {
 		return -1;
 	}
-	for (k = 0; k <= kmax; k++) {
+	for (k = 0; k < kmax; k++) {
 		v = &at(A, k, k);
 		beta = housef(v, m - k, 1);
 		housef_apply_l(A, v, beta, k, m - 1, k + 1, n - 1, 1);
@@ -655,7 +655,9 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 		for (i = 0; i < n * n; i++) {
 			V->data[i] = !(i % (n + 1));
 		}
-		matrixf_unpack_house(A, V, 1, 0);
+		if (n > 1) {
+			matrixf_unpack_house(A, V, 1, 0);
+		}
 		for (j = 0; j < A->cols; j++) {
 			for (i = j + 2; i < A->rows; i++) {
 				at(A, i, j) = 0;
@@ -1036,7 +1038,7 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
 	if (A->cols != n || (P && (P->rows != n || P->cols != n))) {
 		return -1;
 	}
-	for (k = 0; k < n - 2; k++) {
+	for (k = 0; k + 2 < n; k++) {
 		v = &at(A, k + 1, k);
 		beta = housef(v, n - k - 1, 1);
 		housef_apply_l(A, v, beta, k + 1, n - 1, k + 1, n - 1, 1);
@@ -1046,7 +1048,9 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
 		for (i = 0; i < n * n; i++) {
 			P->data[i] = !(i % (n + 1));
 		}
-		matrixf_unpack_house(A, P, 1, 0);
+		if (n > 1) {
+			matrixf_unpack_house(A, P, 1, 0);
+		}
 		for (j = 0; j < n; j++) {
 			for (i = j + 2; i < n; i++) {
 				at(A, i, j) = 0;
@@ -1076,7 +1080,7 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 		return -1;
 	}
 	if (!U) {
-		for (k = 0; k < n - 2; k++) {
+		for (k = 0; k + 2 < n; k++) {
 			at(A, k + 2, k) = 0;
 		}
 	}
@@ -1192,7 +1196,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 				q--;
 			}
 			ad_hoc_shift = !((iter + 1) % ahsc);
-			if (m - q > 1) {
+			if (m > 1 + q) {
 				if (ad_hoc_shift) {
 					x = 0.5f * (at(A, m - 1, m - 1) - at(A, m, m));
 					y = x * x + at(A, m - 1, m) * at(A, m, m - 1);
@@ -1501,7 +1505,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 				}
 				if (W) { // left eigenvectors
 					s = 1.0f;
-					if (k < n - 2) {
+					if (k + 2 < n) {
 						h = n - 2 - k;
 						C.rows = C.cols = 2 * h;
 						matrixf_init(&d, 2 * h, 1, &at(W, k + 2, k), 0);
@@ -1568,7 +1572,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
 				}
 				if (W) { // left eigenvectors
 					s = 1.0f;
-					if (k < n - 2) {
+					if (k + 2 < n) {
 						h = n - 2 - k;
 						C.rows = C.cols = 2 * h;
 						matrixf_init(&d, 2 * h, 1, &at(W, k + 2, k), 0);

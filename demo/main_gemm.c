@@ -15,16 +15,16 @@ static inline double tock(struct timespec* t0) {
 	return ((tf.tv_sec - t0->tv_sec) + ((tf.tv_nsec - t0->tv_nsec) * 1e-9));
 }
 #endif
-#include <stdio.h>
-#include <stdlib.h>
+#define DETECTUM_ENABLE_PRINT
+#define DETECTUM_ENABLE_ALLOC
 #include "detectum.h"
 
 #define M 2002
 #define N 2001
 #define P 2000
 
-#define PRINT_MATRIX 0
-#define NO_TRANSPOSE 1
+//#define PRINT
+//#define TRANSPOSE
 
 int main()
 {
@@ -42,7 +42,7 @@ int main()
 	if (transA) matrixf_transpose(&A);
 	if (transB) matrixf_transpose(&B);
 
-#if PRINT_MATRIX
+#ifdef PRINT
 	printf("A = [\n"); matrixf_print(&A, "%9.4f "); printf("];\n");
 	printf("B = [\n"); matrixf_print(&B, "%9.4f "); printf("];\n");
 	printf("C = [\n"); matrixf_print(&C, "%9.4f "); printf("];\n");
@@ -50,7 +50,7 @@ int main()
 #ifdef TICKTOCK
 	tick(&t0);
 #endif
-#if NO_TRANSPOSE
+#ifndef TRANSPOSE
 	if (!matrixf_multiply(&A, &B, &C, alpha, beta, transA, transB)) {
 #ifdef TICKTOCK
 		printf("Elapsed time: %f s\n\n", tock(&t0));
@@ -68,7 +68,7 @@ int main()
 	else {
 		printf("ERROR: size mismatch\n\n");
 	}
-#if PRINT_MATRIX
+#if PRINT
 	printf("%g * A%s * B%s + %g * C = D = [\n", alpha,
 		transA ? "'" : "", transB ? "'" : "", beta);
 	matrixf_print(&C, "%9.4f "); printf("];\n");

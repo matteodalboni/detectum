@@ -1,13 +1,14 @@
-#include <stdio.h>
+#define DETECTUM_ENABLE_PRINT
 #include "detectum.h"
 
 #define n 10
 
 int main() 
 {
-	int exitflag;
+	int i, exitflag;
 	float work[n * n + n] = { 0 };
 	Matrixf A, XX = { n, n, work };
+	float A_data_copy[n * n] = { 0 };
 #if 0
 	float A_data[n * n] = { 0 };
 	FILE* A_file = fopen("../A.bin", "rb");
@@ -28,11 +29,14 @@ int main()
 	};
 	matrixf_init(&A, n, n, A_data, 1);
 #endif
+	for (i = 0; i < n * n; i++) A_data_copy[i] = A_data[i];
 	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
 	exitflag = matrixf_sqrt(&A, work);
 	printf("\nX = \n"); matrixf_print(&A, "%9.4f ");
 	matrixf_multiply(&A, &A, &XX, 1, 0, 0, 0);
 	printf("\nX*X = \n"); matrixf_print(&XX, "%9.4f ");
+	for (i = 0; i < n * n; i++) A_data_copy[i] -= XX.data[i];
+	printf("\n||X*X - A||_F = %g\n", normf(A_data_copy, n * n, 1));
 
 	return exitflag;
 }

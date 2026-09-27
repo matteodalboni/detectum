@@ -1,4 +1,4 @@
-#include <stdio.h>
+#define DETECTUM_ENABLE_PRINT
 #include "detectum.h"
 
 static void print_complex(float* Real, float* Imag, int rows, int cols, char* format) {

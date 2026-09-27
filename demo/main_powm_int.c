@@ -1,4 +1,4 @@
-#include <stdio.h>
+#define DETECTUM_ENABLE_PRINT
 #include "detectum.h"
 
 // This function raises the n-by-n matrix A to the p-th positive integer power.
@@ -6,11 +6,10 @@
 // matrix multiplications. The array work is the additional workspace memory:
 // its minimum length is 2*n*n. The function returns -1 if the input matrix is 
 // not square.
-static int powmi(Matrixf* A, unsigned const int p, float* work)
+static int powmi(Matrixf* A, size_t p, float* work)
 {
-	int j, k = 0;
 	const size_t n = A->rows;
-	unsigned int s = 1, i = 0;
+	size_t s = 1, i = 0, j, k = 0;
 	Matrixf Z = { n, n, work };
 	Matrixf F = { n, n, work + n * n };
 
@@ -61,12 +60,12 @@ int main()
 	};
 	float work[2 * 3 * 3] = { 0 };
 	Matrixf A;
-	unsigned int p = 15;
+	size_t p = 15;
 
 	matrixf_init(&A, 3, 3, A_data, 1);
 	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
 	powmi(&A, p, work);
-	printf("\nA^%d = \n", p); matrixf_print(&A, "%9.4f ");
+	printf("\nA^%zu = \n", p); matrixf_print(&A, "%9.4f ");
 
 	return 0;
 }

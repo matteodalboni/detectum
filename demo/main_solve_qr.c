@@ -1,4 +1,4 @@
-#include <stdio.h>
+#define DETECTUM_ENABLE_PRINT
 #include "detectum.h"
 
 #define m 5
@@ -7,7 +7,7 @@
 
 int main()
 {
-	int i, j;
+	size_t i, j;
 	float A_data[m * n] = {
 		 3.7688e-01f, -6.5364e-02f,  4.3145e-01f,  6.0063e-04f,  3.3769e-01f,  3.8228e-01f, -4.6315e-01f,
 		 1.0081e-01f,  1.9233e-02f,  7.4142e-03f,  1.0015e-02f, -6.3969e-03f,  2.4442e-02f, -5.0215e-02f,

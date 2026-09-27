@@ -1,6 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
+#define DETECTUM_ENABLE_PRINT
+#define DETECTUM_ENABLE_ALLOC
 #include "detectum.h"
+#include <math.h>
 
 #define MATRIX 2
 #define METHOD 1
@@ -40,7 +41,7 @@ int main()
 
 	matrixf_exp(&A, work);
 #else // general method based on diagonalization with perturbation
-	int i, j;
+	size_t i, j;
 	Matrixf U = matrixf(N, N);
 	Matrixf V = matrixf(N, N);
 	float work[4 * N * N] = { 0 };

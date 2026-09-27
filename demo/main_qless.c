@@ -2,7 +2,7 @@
 // explicitly forming the matrix Q (Q-less QR decomposition):
 // A'*A*x = A'*b --> R'*Q'*Q*R*x = A'*b --> R'*R*x = A'*b.
 
-#include <stdio.h>
+#define DETECTUM_ENABLE_PRINT
 #include "detectum.h"
 
 int main()

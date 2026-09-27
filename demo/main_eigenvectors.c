@@ -1,10 +1,11 @@
-#include <stdlib.h>
-#include <stdio.h>
+#define DETECTUM_ENABLE_PRINT
+#define DETECTUM_ENABLE_ALLOC
 #include "detectum.h"
+#include <math.h>
 
 static void print_complex_eigenvectors(Matrixf* T, Matrixf* V)
 {
-	int i, j;
+	size_t i, j;
 	const size_t n = T->rows;
 
 	for (i = 0; i < n; i++) {
