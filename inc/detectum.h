@@ -50,8 +50,9 @@ Matrixf A = { rows, cols, A##_data }
 float epsf(float x);
 
 // This function computes the 2-norm of vector v without underflow or 
-// overflow. The length of v is len, and stride is its increment. 
-float normf(const float* v, size_t len, size_t stride);
+// overflow. The number of elements of v is length, and stride (> 0) 
+// is its increment. 
+float normf(const float* v, size_t length, size_t stride);
 
 // This function computes the Givens rotation pair (c,s) so that 
 // [c -s; s c]*[a; b] = [r; 0].
@@ -59,10 +60,10 @@ float givensf(float a, float b, float* c, float* s);
 
 // This function generates a Householder vector. The vector x is
 // transformed so that x(0) is the norm of x and v = [1; x(1:end)],
-// where v is the normalized Householder vector. len is x length 
-// and stride is its increment. Also, the function returns beta
-// such that H = I - beta*v*v' is a Householder matrix.
-float housef(float* x, size_t len, size_t stride);
+// where v is the normalized Householder vector. length is x number 
+// of elements and stride (> 0) is its increment. Also, the function
+// returns beta such that H = I - beta*v*v' is a Householder matrix.
+float housef(float* x, size_t length, size_t stride);
 
 #ifdef DETECTUM_ENABLE_PRINT
 #include <stdio.h>

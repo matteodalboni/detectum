@@ -6,14 +6,14 @@ float epsf(float x)
 	return powf(2.0f, floorf(log2f(fabsf(x))) - 23.0f);
 }
 
-float normf(const float* v, size_t len, size_t stride)
+float normf(const float* v, size_t length, size_t stride)
 {
 	size_t i;
 	float s = 0, h = 0, a;
 	const float tsml = DETECTUM_FLT_TSML;
 	const float tbig = DETECTUM_FLT_TBIG;
 
-	for (i = 0; i < len; i++) {
+	for (i = 0; i < length; i++) {
 		a = fabsf(v[i * stride]);
 		if (a > tsml && a < tbig) {
 			s += a * a;
@@ -41,24 +41,24 @@ float givensf(float a, float b, float* c, float* s)
 	return r;
 }
 
-float housef(float* x, size_t len, size_t stride)
+float housef(float* x, size_t length, size_t stride)
 {
 	size_t i;
 	float b, beta = 0;
 	const float a = x[0];
 	const float eps = DETECTUM_FLT_EPS;
-	const float nrm = normf(x + stride, len - 1, stride);
+	const float nrm = normf(x + stride, length - 1, stride);
 
 	if (nrm > eps) {
 		b = a < 0 ? hypotf(a, nrm) : -hypotf(a, nrm);
 		beta = (b - a) / b;
 		x[0] = b;
-		for (i = 1; i < len; i++) {
+		for (i = 1; i < length; i++) {
 			x[stride * i] /= a - b;
 		}
 	}
 	else if (nrm > 0) {
-		for (i = 1; i < len; i++) {
+		for (i = 1; i < length; i++) {
 			x[stride * i] = 0;
 		}
 	}
@@ -129,7 +129,7 @@ void matrixf_init(Matrixf* A, size_t rows, size_t cols, float* data, int ordmem)
 int matrixf_permute(Matrixf* A, Matrixf* perm, int reverse, int transP)
 {
 	size_t i, j, k, q;
-	const size_t len = perm->rows * perm->cols;
+	const size_t length = perm->rows * perm->cols;
 	float t, * x = perm->data, * Ai, * Aj;
 
 	if (reverse) {
@@ -142,8 +142,8 @@ int matrixf_permute(Matrixf* A, Matrixf* perm, int reverse, int transP)
 		return -1;
 	}
 	if ((reverse && !transP) || (!reverse && transP)) {
-		if (len > 1) {
-			for (k = 0; k < len; k++) {
+		if (length > 1) {
+			for (k = 0; k < length; k++) {
 				if (x[k] >= 0) {
 					i = (size_t)x[k];
 					j = k;
@@ -155,7 +155,7 @@ int matrixf_permute(Matrixf* A, Matrixf* perm, int reverse, int transP)
 					} while (j != k);
 				}
 			}
-			for (k = 0; k < len; k++) {
+			for (k = 0; k < length; k++) {
 				x[k] = -x[k] - 1;
 			}
 		}
@@ -164,7 +164,7 @@ int matrixf_permute(Matrixf* A, Matrixf* perm, int reverse, int transP)
 		matrixf_transpose(A);
 	}
 	q = A->rows;
-	for (i = 0; i < len - 1; i++) {
+	for (i = 0; i < length - 1; i++) {
 		j = (size_t)x[i];
 		while (j < i) {
 			j = (size_t)x[j];
