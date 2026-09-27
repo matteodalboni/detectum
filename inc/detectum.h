@@ -26,16 +26,6 @@ typedef struct {
 #define DETECTUM_FLT_EPS (1.1920929e-07f)
 #endif
 
-// Blue's underflow threshold
-#ifndef DETECTUM_FLT_TSML
-#define DETECTUM_FLT_TSML (1.0842022e-19f) 
-#endif
-
-// Blue's overflow threshold
-#ifndef DETECTUM_FLT_TBIG
-#define DETECTUM_FLT_TBIG (4.5035996e+15f) 
-#endif
-
 // This macro initializes a rows-by-cols matrix A, allocating its data 
 // memory on the stack. rows and cols must be known at compile time.
 #define Matrixf(A, rows, cols) \
@@ -51,7 +41,12 @@ float epsf(float x);
 
 // This function computes the 2-norm of vector v without underflow or 
 // overflow. The number of elements of v is length, and stride (> 0) 
-// is its increment. 
+// is its increment.
+// Related macros
+// - DETECTUM_FLT_TSML: Blue's underflow threshold. The default 
+//   value is 1.0842022e-19. 
+// - DETECTUM_FLT_TBIG: Blue's overflow threshold. The default 
+//   value is 4.5035996e+15.
 float normf(const float* v, size_t length, size_t stride);
 
 // This function computes the Givens rotation pair (c,s) so that 

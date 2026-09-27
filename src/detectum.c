@@ -6,6 +6,12 @@ float epsf(float x)
 	return powf(2.0f, floorf(log2f(fabsf(x))) - 23.0f);
 }
 
+#ifndef DETECTUM_FLT_TSML
+#define DETECTUM_FLT_TSML (1.0842022e-19f)
+#endif
+#ifndef DETECTUM_FLT_TBIG
+#define DETECTUM_FLT_TBIG (4.5035996e+15f)
+#endif
 float normf(const float* v, size_t length, size_t stride)
 {
 	size_t i;
