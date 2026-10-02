@@ -71,48 +71,48 @@ float housef(float* x, size_t length, size_t stride)
 	return beta;
 }
 
-// Householder transformation X(i0:iend,j0:jend) = H*X(i0:iend,j0:jend),
+// Householder transformation X(imin:imax,jmin:jmax) = H*X(imin:imax,jmin:jmax),
 // where H = I - beta*v*v' and v(0) = 1. stride is the increment of v.
 static void housef_apply_l(Matrixf* X, const float* v, float beta,
-	size_t i0, size_t iend, size_t j0, size_t jend, size_t stride)
+	size_t imin, size_t imax, size_t jmin, size_t jmax, size_t stride)
 {
 	size_t i, j;
 	float h, * Xj;
 
 	if (beta != 0) {
-		for (j = j0; j <= jend; j++) {
+		for (j = jmin; j <= jmax; j++) {
 			Xj = &at(X, 0, j);
-			h = Xj[i0];
-			for (i = i0 + 1; i <= iend; i++) {
-				h += Xj[i] * v[(i - i0) * stride];
+			h = Xj[imin];
+			for (i = imin + 1; i <= imax; i++) {
+				h += Xj[i] * v[(i - imin) * stride];
 			}
 			h *= beta;
-			Xj[i0] -= h;
-			for (i = i0 + 1; i <= iend; i++) {
-				Xj[i] -= h * v[(i - i0) * stride];
+			Xj[imin] -= h;
+			for (i = imin + 1; i <= imax; i++) {
+				Xj[i] -= h * v[(i - imin) * stride];
 			}
 		}
 	}
 }
 
-// Householder transformation X(i0:iend,j0:jend) = X(i0:iend,j0:jend)*H,
+// Householder transformation X(imin:imax,jmin:jmax) = X(imin:imax,jmin:jmax)*H,
 // where H = I - beta*v*v' and v(0) = 1. stride is the increment of v.
 static void housef_apply_r(Matrixf* X, const float* v, float beta,
-	size_t i0, size_t iend, size_t j0, size_t jend, size_t stride)
+	size_t imin, size_t imax, size_t jmin, size_t jmax, size_t stride)
 {
 	size_t i, j;
 	float h;
 
 	if (beta != 0) {
-		for (i = i0; i <= iend; i++) {
-			h = at(X, i, j0);
-			for (j = j0 + 1; j <= jend; j++) {
-				h += at(X, i, j) * v[(j - j0) * stride];
+		for (i = imin; i <= imax; i++) {
+			h = at(X, i, jmin);
+			for (j = jmin + 1; j <= jmax; j++) {
+				h += at(X, i, j) * v[(j - jmin) * stride];
 			}
 			h *= beta;
-			at(X, i, j0) -= h;
-			for (j = j0 + 1; j <= jend; j++) {
-				at(X, i, j) -= h * v[(j - j0) * stride];
+			at(X, i, jmin) -= h;
+			for (j = jmin + 1; j <= jmax; j++) {
+				at(X, i, j) -= h * v[(j - jmin) * stride];
 			}
 		}
 	}
@@ -494,7 +494,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* perm, Matrixf* B)
 	size_t i, jm = 0, j = 0, k = 0, q = 0;
 	const size_t m = A->rows;
 	const size_t n = A->cols;
-	const size_t kmax = m < n ? m : n;
+	const size_t kend = m < n ? m : n;
 	float beta, t, c, cm, * v;
 	float* Ak, * Aj, * Ajm;
 	Matrixf A_econ = { n, n, A->data };
@@ -516,7 +516,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* perm, Matrixf* B)
 	if (B && B->rows != m) {
 		return -1;
 	}
-	for (k = 0; k < kmax; k++) {
+	for (k = 0; k < kend; k++) {
 		Ak = &at(A, 0, k);
 		if (perm) {
 			cm = 0;
@@ -583,14 +583,14 @@ int matrixf_unpack_house(Matrixf* A, Matrixf* B, size_t s, int fwd)
 	const size_t m = A->rows;
 	const size_t n = A->cols;
 	const size_t p = B->cols;
-	const size_t jmax = m < n + 1 ? m - 1 - s : n - s;
+	const size_t jend = m < n + 1 ? m - 1 - s : n - s;
 	float beta, gamma, * v;
 
 	if (B->rows != m) {
 		return -1;
 	}
-	for (j = 0; j < jmax; j++) {
-		k = fwd > 0 ? j : jmax - 1 - j;
+	for (j = 0; j < jend; j++) {
+		k = fwd > 0 ? j : jend - 1 - j;
 		v = &at(A, 0, k);
 		gamma = 0;
 		for (i = k + 1 + s; i < m; i++) {
@@ -610,7 +610,7 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 	int f;
 	const size_t m = A->rows;
 	const size_t n = A->cols;
-	const size_t kmax = m < n + 1 ? m - 1 : n;
+	const size_t kend = m < n + 1 ? m - 1 : n;
 	float beta, * v;
 	Matrixf A_econ = { n, n, A->data };
 
@@ -624,7 +624,7 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
 		(V && (V->rows != n || (V->cols != n)))) {
 		return -1;
 	}
-	for (k = 0; k < kmax; k++) {
+	for (k = 0; k < kend; k++) {
 		v = &at(A, k, k);
 		beta = housef(v, m - k, 1);
 		housef_apply_l(A, v, beta, k, m - 1, k + 1, n - 1, 1);
