@@ -2091,18 +2091,20 @@ int matrixf_solve_bvls(Matrixf* C, Matrixf* d, Matrixf* x,
 				k++;
 			}
 		}
-		Cf.cols = k;
-		for (i = 0; i < m; i++) {
-			df_data[i] = d->data[i];
-			for (j = 0; j < n; j++) {
-				if (xset[j]) {
-					df_data[i] -= at(C, i, j) * x->data[j];
+		if (k > 0) {
+			Cf.cols = k;
+			for (i = 0; i < m; i++) {
+				df_data[i] = d->data[i];
+				for (j = 0; j < n; j++) {
+					if (xset[j]) {
+						df_data[i] -= at(C, i, j) * x->data[j];
+					}
 				}
 			}
+			z.rows = k;
+			matrixf_solve_qrp(&Cf, &df, &z, tol, w_data);
+			z.rows = n;
 		}
-		z.rows = k;
-		matrixf_solve_qrp(&Cf, &df, &z, tol, w_data);
-		z.rows = n;
 		for (j = n; j-- > 0;) {
 			if (xset[j] < 0) {
 				z.data[j] = lb[j];
@@ -2165,18 +2167,20 @@ int matrixf_solve_bvls(Matrixf* C, Matrixf* d, Matrixf* x,
 					k++;
 				}
 			}
-			Cf.cols = k;
-			for (i = 0; i < m; i++) {
-				df_data[i] = d->data[i];
-				for (j = 0; j < n; j++) {
-					if (xset[j]) {
-						df_data[i] -= at(C, i, j) * x->data[j];
+			if (k > 0) {
+				Cf.cols = k;
+				for (i = 0; i < m; i++) {
+					df_data[i] = d->data[i];
+					for (j = 0; j < n; j++) {
+						if (xset[j]) {
+							df_data[i] -= at(C, i, j) * x->data[j];
+						}
 					}
 				}
+				z.rows = k;
+				matrixf_solve_qrp(&Cf, &df, &z, tol, w_data);
+				z.rows = n;
 			}
-			z.rows = k;
-			matrixf_solve_qrp(&Cf, &df, &z, tol, w_data);
-			z.rows = n;
 			for (j = n; j-- > 0;) {
 				if (xset[j] < 0) {
 					z.data[j] = lb[j];

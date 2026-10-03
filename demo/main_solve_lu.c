@@ -22,7 +22,7 @@ int main()
 	float P_data[n * n] = { 0 };
 	float L_data[n * n] = { 0 };
 	Matrixf A, B, P, L;
-	int i, j;
+	size_t i, j;
 
 	matrixf_init(&A, n, n, A_data, 1);
 	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");

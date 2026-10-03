@@ -1,9 +1,9 @@
 #define DETECTUM_ENABLE_PRINT
 #include "detectum.h"
 
-static void print_complex(float* Real, float* Imag, int rows, int cols, char* format) {
+static void print_complex(float* Real, float* Imag, size_t rows, size_t cols, char* format) {
 
-	int i, j;
+	size_t i, j;
 
 	for (i = 0; i < rows; i++) {
 		for (j = 0; j < cols; j++) {
@@ -48,7 +48,7 @@ int main()
 	Matrixf A = { 2 * m, 2 * n, A_data };
 	Matrixf b = { 2 * m, 1, b_data };
 	Matrixf x = { 2 * n, 1, b_data };
-	int i, j;
+	size_t i, j;
 
 	printf("\nA = \n"); print_complex(A_real_data, A_imag_data, m, n, "%5.0f%+.0fi\t"); 
 	printf("\nb = \n"); print_complex(b_real_data, b_imag_data, m, 1, "%5.0f%+.0fi\t"); 

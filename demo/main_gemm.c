@@ -68,7 +68,7 @@ int main()
 	else {
 		printf("ERROR: size mismatch\n\n");
 	}
-#if PRINT
+#ifdef PRINT
 	printf("%g * A%s * B%s + %g * C = D = [\n", alpha,
 		transA ? "'" : "", transB ? "'" : "", beta);
 	matrixf_print(&C, "%9.4f "); printf("];\n");
