@@ -212,7 +212,7 @@ void matrixf_transpose(Matrixf* A)
 	else if (m > 1 && n > 1) {
 		for (j = i = 1; i < k; j = ++i) {
 			do {
-				j = j * m - k * (j / n);
+				j = (j * m) % k;
 			} while (j < i);
 			t = d[i];
 			d[i] = d[j];
