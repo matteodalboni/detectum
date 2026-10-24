@@ -271,15 +271,25 @@ int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* perm, float 
 int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V);
 
 // This function performs the singular value decomposition of the m-by-n matrix A
-// by one-sided Jacobi algorithm. The decomposition is such that A = U*S*V'. If U
-// is a null pointer, the matrix A is overwritten by U*S: in this case the singular
-// values are the norms of A = U*S columns. Whereas, if U is initialized as an 
-// m-by-m matrix, the matrix of the left singular vectors (i.e. matrix U) is 
-// explicitly computed, and A is overwritten by the diagonal matrix S. 
-// The computation of the matrix of the right singular vectors (i.e. matrix V) 
-// is performed only if V is initialized as an n-by-n matrix, whereas it is 
-// omitted if V is a null pointer. The function can also produce the economy-size 
-// decomposition such that:
+// by one-sided Jacobi algorithm. The decomposition is such that A = U*S*V'. 
+// There exist two cases.
+// Case I: m >= n
+//   If U is a null pointer, the matrix A is overwritten by U*S: in this case the 
+//   singular values are the norms of U*S columns. Whereas, if U is initialized 
+//   as an m-by-m matrix, the matrix of the left singular vectors (i.e. matrix U) 
+//   is explicitly computed, and A is overwritten by the diagonal matrix S. 
+//   The computation of the matrix of the right singular vectors (i.e. matrix V) 
+//   is performed only if V is initialized as an n-by-n matrix, whereas it is 
+//   omitted if V is a null pointer. 
+// Case II: m < n
+//   If V is a null pointer, the matrix A is overwritten by S*V': in this case the 
+//   singular values are the norms of S*V' rows. Whereas, if V is initialized 
+//   as an n-by-n matrix, the matrix of the right singular vectors (i.e. matrix V) 
+//   is explicitly computed, and A is overwritten by the diagonal matrix S. 
+//   The computation of the matrix of the left singular vectors (i.e. matrix U) 
+//   is performed only if U is initialized as an m-by-m matrix, whereas it is 
+//   omitted if U is a null pointer. 
+// The function can also produce the economy-size decomposition such that:
 // - if m > n, only the first n columns of U are computed (thin U) and the last 
 //   m - n rows of S are excluded so that S becomes n-by-n; to enable the 
 //   economy-size decomposition, U must be initialized as an m-by-n matrix;
