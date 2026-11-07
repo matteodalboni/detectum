@@ -259,7 +259,7 @@ int matrixf_decomp_ltl(Matrixf* A)
 {
 	size_t i, j, jp, k;
 	const size_t n = A->rows;
-	float tmp, a00 = A->data[0], a01, * h = A->data;
+	float tmp, a00 = A->data[0], a01 = 0, * h = A->data;
 	float* Ajp, * Aj1;
 
 	if (A->cols != n) {
