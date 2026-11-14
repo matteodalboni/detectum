@@ -6,9 +6,9 @@
 // Matrix of single-precision floating-point values.
 // The elements are stored contiguously in column-major order.
 typedef struct {
-	size_t rows; // number of rows (must be < 2^24 = 16777216)
-	size_t cols; // number of columns (must be < 2^24 = 16777216)
-	float* data; // pointer to the elements
+  size_t rows; // number of rows (must be < 2^24 = 16777216)
+  size_t cols; // number of columns (must be < 2^24 = 16777216)
+  float* data; // pointer to the elements
 } Matrixf;
 
 // Minimum positive value
@@ -67,14 +67,14 @@ float housef(float* x, size_t length, size_t stride);
 // the specified format.
 static inline void matrixf_print(Matrixf* A, const char* format)
 {
-	size_t i, j;
+  size_t i, j;
 
-	for (i = 0; i < A->rows; i++) {
-		for (j = 0; j < A->cols; j++) {
-			printf(format, at(A, i, j));
-		}
-		printf("\n");
-	}
+  for (i = 0; i < A->rows; i++) {
+    for (j = 0; j < A->cols; j++) {
+      printf(format, at(A, i, j));
+    }
+    printf("\n");
+  }
 }
 #endif
 
@@ -85,9 +85,9 @@ static inline void matrixf_print(Matrixf* A, const char* format)
 // memory on the heap. On allocation failure, the data pointer is null.
 static inline Matrixf matrixf(size_t rows, size_t cols)
 {
-	Matrixf A = { rows, cols, calloc(rows * cols, sizeof(float)) };
+  Matrixf A = { rows, cols, calloc(rows * cols, sizeof(float)) };
 
-	return A;
+  return A;
 }
 #endif
 
@@ -361,7 +361,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U);
 // minimum length of work is max(2,(n-1)^2). If the matrices of eigenvectors are
 // not n-by-n, the function returns -1. On success, it returns 0.
 int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
-	Matrixf* V, Matrixf* W, int pseudo, float* work);
+  Matrixf* V, Matrixf* W, int pseudo, float* work);
 
 // This function performs the forward substitution on the lower-triangular
 // matrix L to solve the the system L*X = B for X. The flag unitri indicates
@@ -456,7 +456,7 @@ int matrixf_solve_cod(Matrixf* A, Matrixf* B, Matrixf* X, float tol, float* work
 // the maximum number of iterations is reached. On success, it returns the number
 // of iterations taken.
 int matrixf_solve_bvls(Matrixf* C, Matrixf* d, Matrixf* x,
-	float* lb, float* ub, float tol, float* work);
+  float* lb, float* ub, float tol, float* work);
 
 // This function substitutes the m-by-n input matrix A with its Moore-Penrose
 // pseudoinverse obtained by Jacobi SVD. tol is the tolerance to treat singular
@@ -523,7 +523,7 @@ int matrixf_sqrt(Matrixf* A, float* work);
 // Matrices A and B remain unchanged. On size mismatch, the function returns -1.
 // On success, it returns 0.
 int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
-	float alpha, float beta, int transA, int transB);
+  float alpha, float beta, int transA, int transB);
 
 // This function sequentially performs the matrix multiplications A = op(L)*A
 // and A = A*op(R), where A is m-by-n, L and R are square, and op(X) is one of
@@ -536,6 +536,6 @@ int matrixf_multiply(Matrixf* A, Matrixf* B, Matrixf* C,
 // are provided, its minimum length is max(m,n). On size mismatch, the function
 // returns -1. On success, it returns 0.
 int matrixf_multiply_inplace(Matrixf* A, Matrixf* L, Matrixf* R,
-	int transL, int transR, float* work);
+  int transL, int transR, float* work);
 
 #endif

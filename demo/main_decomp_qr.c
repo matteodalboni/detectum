@@ -8,79 +8,79 @@ int main()
 #if (TEST == 0)
 #define M 3
 #define N 3
-	float A_data[] = {
-	1, 1, 0,
-	0, 0, 2,
-	0, 0,-1
-	};
+  float A_data[] = {
+  1, 1, 0,
+  0, 0, 2,
+  0, 0,-1
+  };
 #elif (TEST == 1)
 #define M 4
 #define N 2
-	float A_data[] = {
-	1, 2,
-	3, 4,
-	5, 6,
-	7, 8
-	};
+  float A_data[] = {
+  1, 2,
+  3, 4,
+  5, 6,
+  7, 8
+  };
 #elif (TEST == 2)
 #define M 2
 #define N 4
-	float A_data[] = {
-	1, 3, 5, 7,
-	2, 4, 6, 8
-	};
+  float A_data[] = {
+  1, 3, 5, 7,
+  2, 4, 6, 8
+  };
 #elif (TEST == 3)
 #define M 10
 #define N 5
-	float A_data[] = {
-	92, 99,   1,  8, 15,
-	98, 80,   7, 14, 16,
-	 4, 81,  88, 20, 22,
-	85, 87,  19, 21,  3,
-	86, 93,  25,  2,  9,
-	17, 24,  76, 83, 90,
-	23,  5,  82, 89, 91,
-	79,  6,  13, 95, 97,
-	10, 12,  94, 96, 78,
-	11, 18, 100, 77, 84
-	};
+  float A_data[] = {
+  92, 99,   1,  8, 15,
+  98, 80,   7, 14, 16,
+   4, 81,  88, 20, 22,
+  85, 87,  19, 21,  3,
+  86, 93,  25,  2,  9,
+  17, 24,  76, 83, 90,
+  23,  5,  82, 89, 91,
+  79,  6,  13, 95, 97,
+  10, 12,  94, 96, 78,
+  11, 18, 100, 77, 84
+  };
 #else
 #define M 1
 #define N 2
-	float A_data[] = { 1, 2 };
+  float A_data[] = { 1, 2 };
 #endif
-	float A_data_copy[M * N] = { 0 };
-	size_t i;
-	float Q_data[M * M] = { 0 }, QR_data[M * N] = { 0 };
-	float P_data[N * N] = { 0 }, perm_data[N] = { 0 };
-	Matrixf A = { 0 }, Q = { 0 }, QR = { 0 }, P = { 0 }, perm = { 0 };
+  float A_data_copy[M * N] = { 0 };
+  size_t i;
+  float Q_data[M * M] = { 0 }, QR_data[M * N] = { 0 };
+  float P_data[N * N] = { 0 }, perm_data[N] = { 0 };
+  Matrixf A = { 0 }, Q = { 0 }, QR = { 0 }, P = { 0 }, perm = { 0 };
 
-	for (i = 0; i < N * N; i++) P_data[i] = !(i % (N + 1));
+  for (i = 0; i < N * N; i++) P_data[i] = !(i % (N + 1));
 
-	matrixf_init(&A, M, N, A_data, 1);
-	matrixf_init(&Q, M, M, Q_data, 0);
-	matrixf_init(&P, N, N, P_data, 0);
-	matrixf_init(&perm, 1, N, perm_data, 0);
-	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
-	for (i = 0; i < M * N; i++) A_data_copy[i] = A_data[i];
+  matrixf_init(&A, M, N, A_data, 1);
+  matrixf_init(&Q, M, M, Q_data, 0);
+  matrixf_init(&P, N, N, P_data, 0);
+  matrixf_init(&perm, 1, N, perm_data, 0);
+  printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
+  for (i = 0; i < M * N; i++) A_data_copy[i] = A_data[i];
 
-	matrixf_decomp_qr(&A, &Q, &perm, 0);
-	matrixf_permute(&P, &perm, 0, 0);
-	printf("\nQ = \n"); matrixf_print(&Q, "%9.4f ");
-	printf("\nR = \n"); matrixf_print(&A, "%9.4f ");
-	printf("\nP = \n"); matrixf_print(&P, "%5.0f ");
+  matrixf_decomp_qr(&A, &Q, &perm, 0);
+  matrixf_permute(&P, &perm, 0, 0);
+  printf("\nQ = \n"); matrixf_print(&Q, "%9.4f ");
+  printf("\nR = \n"); matrixf_print(&A, "%9.4f ");
+  printf("\nP = \n"); matrixf_print(&P, "%5.0f ");
 
-	matrixf_init(&QR, M, N, QR_data, 0);
-	matrixf_multiply(&Q, &A, &QR, 1, 0, 0, 0);
-	printf("\nQ*R = \n"); matrixf_print(&QR, "%9.4f ");
-	A.rows = M;
-	A.cols = N;
-	//matrixf_multiply(&QR, &P, &A, 1, 0, 0, 1);
-	matrixf_permute(&QR, &perm, 0, 1);
-	for (i = 0; i < M * N; i++) A.data[i] = QR.data[i];
-	printf("\nQ*R*P' = \n"); matrixf_print(&A, "%9.4f ");
-	for (i = 0; i < M * N; i++) A_data_copy[i] -= A_data[i];
-	printf("\n||Q*R*P' - A||_F = %g\n", normf(A_data_copy, M * N, 1));
+  matrixf_init(&QR, M, N, QR_data, 0);
+  matrixf_multiply(&Q, &A, &QR, 1, 0, 0, 0);
+  printf("\nQ*R = \n"); matrixf_print(&QR, "%9.4f ");
+  A.rows = M;
+  A.cols = N;
+  //matrixf_multiply(&QR, &P, &A, 1, 0, 0, 1);
+  matrixf_permute(&QR, &perm, 0, 1);
+  for (i = 0; i < M * N; i++) A.data[i] = QR.data[i];
+  printf("\nQ*R*P' = \n"); matrixf_print(&A, "%9.4f ");
+  for (i = 0; i < M * N; i++) A_data_copy[i] -= A_data[i];
+  printf("\n||Q*R*P' - A||_F = %g\n", normf(A_data_copy, M * N, 1));
 
-	return 0;
+  return 0;
 }

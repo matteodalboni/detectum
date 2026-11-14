@@ -5,81 +5,81 @@
 
 int main()
 {
-	float A_data[] = {
-		1, 2, 3, 4,
-		5, 6, 7, 8,
-		9, 10, 11, 12,
-		13, 14, 15, 16
-	};
-	float P_data[16] = {
-		0, 1, 0, 0,
-		0, 0, 0, 1,
-		1, 0, 0, 0,
-		0, 0, 1, 0
-	};
-	float B_data[16] = { 0 };
-	float p_data[4] = { 0 };
-	int i, j;
-	Matrixf A, P, p, B;
-	matrixf_init(&A, 4, 4, A_data, 1);
-	matrixf_init(&B, 4, 4, B_data, 1);
-	matrixf_init(&P, 4, 4, P_data, 1);
-	for (j = 0; j < 4; j++) {
-		i = 0;
-		while (at(&P, i, j) == 0) {
-			i++;
-		}
-		p_data[j] = (float)i;
-	}
-	if (CASE <= 4) {
-		matrixf_init(&p, 1, 4, p_data, 0); // p encodes column permutations
-	}
-	else {
-		matrixf_init(&p, 4, 1, p_data, 0); // p encodes row permutations
-		matrixf_transpose(&P);
-	}
-	printf("\nA = \n"); matrixf_print(&A, "%5.0f ");
-	printf("\nP = \n"); matrixf_print(&P, "%5.0f ");
+  float A_data[] = {
+    1, 2, 3, 4,
+    5, 6, 7, 8,
+    9, 10, 11, 12,
+    13, 14, 15, 16
+  };
+  float P_data[16] = {
+    0, 1, 0, 0,
+    0, 0, 0, 1,
+    1, 0, 0, 0,
+    0, 0, 1, 0
+  };
+  float B_data[16] = { 0 };
+  float p_data[4] = { 0 };
+  int i, j;
+  Matrixf A, P, p, B;
+  matrixf_init(&A, 4, 4, A_data, 1);
+  matrixf_init(&B, 4, 4, B_data, 1);
+  matrixf_init(&P, 4, 4, P_data, 1);
+  for (j = 0; j < 4; j++) {
+    i = 0;
+    while (at(&P, i, j) == 0) {
+      i++;
+    }
+    p_data[j] = (float)i;
+  }
+  if (CASE <= 4) {
+    matrixf_init(&p, 1, 4, p_data, 0); // p encodes column permutations
+  }
+  else {
+    matrixf_init(&p, 4, 1, p_data, 0); // p encodes row permutations
+    matrixf_transpose(&P);
+  }
+  printf("\nA = \n"); matrixf_print(&A, "%5.0f ");
+  printf("\nP = \n"); matrixf_print(&P, "%5.0f ");
 #if CASE == 1
-	printf("\nA*P = \n");
-	matrixf_multiply(&A, &P, &B, 1, 0, 0, 0);
-	matrixf_permute(&A, &p, 0, 0);
+  printf("\nA*P = \n");
+  matrixf_multiply(&A, &P, &B, 1, 0, 0, 0);
+  matrixf_permute(&A, &p, 0, 0);
 #elif CASE == 2
-	printf("\nP*A = \n");
-	matrixf_multiply(&P, &A, &B, 1, 0, 0, 0);
-	matrixf_permute(&A, &p, 1, 0);
+  printf("\nP*A = \n");
+  matrixf_multiply(&P, &A, &B, 1, 0, 0, 0);
+  matrixf_permute(&A, &p, 1, 0);
 #elif CASE == 3
-	printf("\nP'*A = \n");
-	matrixf_multiply(&P, &A, &B, 1, 0, 1, 0);
-	matrixf_permute(&A, &p, 1, 1);
+  printf("\nP'*A = \n");
+  matrixf_multiply(&P, &A, &B, 1, 0, 1, 0);
+  matrixf_permute(&A, &p, 1, 1);
 #elif CASE == 4
-	printf("\nA*P' = \n");
-	matrixf_multiply(&A, &P, &B, 1, 0, 0, 1);
-	matrixf_permute(&A, &p, 0, 1);
+  printf("\nA*P' = \n");
+  matrixf_multiply(&A, &P, &B, 1, 0, 0, 1);
+  matrixf_permute(&A, &p, 0, 1);
 #elif CASE == 5
-	printf("\nP*A = \n");
-	matrixf_multiply(&P, &A, &B, 1, 0, 0, 0);
-	matrixf_permute(&A, &p, 0, 0);
+  printf("\nP*A = \n");
+  matrixf_multiply(&P, &A, &B, 1, 0, 0, 0);
+  matrixf_permute(&A, &p, 0, 0);
 #elif CASE == 6
-	printf("\nP'*A = \n");
-	matrixf_multiply(&P, &A, &B, 1, 0, 1, 0);
-	matrixf_permute(&A, &p, 0, 1);
+  printf("\nP'*A = \n");
+  matrixf_multiply(&P, &A, &B, 1, 0, 1, 0);
+  matrixf_permute(&A, &p, 0, 1);
 #elif CASE == 7
-	printf("\nA*P = \n");
-	matrixf_multiply(&A, &P, &B, 1, 0, 0, 0);
-	matrixf_permute(&A, &p, 1, 0);
+  printf("\nA*P = \n");
+  matrixf_multiply(&A, &P, &B, 1, 0, 0, 0);
+  matrixf_permute(&A, &p, 1, 0);
 #elif CASE == 8
-	printf("\nA*P' = \n");
-	matrixf_multiply(&A, &P, &B, 1, 0, 0, 1);
-	matrixf_permute(&A, &p, 1, 1);
+  printf("\nA*P' = \n");
+  matrixf_multiply(&A, &P, &B, 1, 0, 0, 1);
+  matrixf_permute(&A, &p, 1, 1);
 #endif
-	for (i = 0; i < 16; i++) {
-		if (A.data[i] != B.data[i]) {
-			return -1;
-		}
-	}
-	matrixf_print(&A, "%5.0f ");
-	printf("\np = \n"); matrixf_print(&p, "%5.0f ");
+  for (i = 0; i < 16; i++) {
+    if (A.data[i] != B.data[i]) {
+      return -1;
+    }
+  }
+  matrixf_print(&A, "%5.0f ");
+  printf("\np = \n"); matrixf_print(&p, "%5.0f ");
 
-	return 0;
+  return 0;
 }

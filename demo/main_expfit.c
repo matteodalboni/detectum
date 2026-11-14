@@ -10,21 +10,21 @@
 
 int main()
 {
-	int i;
-	float t[M] = { 0.0f, 0.3f, 0.8f, 1.1f, 1.6f, 2.3f };
-	float y[M] = { 0.82f, 0.72f, 0.63f, 0.60f, 0.55f, 0.50f };
-	float data[M * N] = { 0 };
-	Matrixf E = { M, N, data }, Y = { M, 1, y }, X = { N, 1, y };
+  int i;
+  float t[M] = { 0.0f, 0.3f, 0.8f, 1.1f, 1.6f, 2.3f };
+  float y[M] = { 0.82f, 0.72f, 0.63f, 0.60f, 0.55f, 0.50f };
+  float data[M * N] = { 0 };
+  Matrixf E = { M, N, data }, Y = { M, 1, y }, X = { N, 1, y };
 
-	for (i = 0; i < M; i++)
-	{
-		at(&E, i, 0) = 1;
-		at(&E, i, 1) = expf(-t[i]);
-	}
-		
-	matrixf_solve_qr(&E, &Y, &X);
+  for (i = 0; i < M; i++)
+  {
+    at(&E, i, 0) = 1;
+    at(&E, i, 1) = expf(-t[i]);
+  }
+    
+  matrixf_solve_qr(&E, &Y, &X);
 
-	printf("The model is y(t) = %f%+f*exp(-t)", y[0], y[1]);
+  printf("The model is y(t) = %f%+f*exp(-t)", y[0], y[1]);
 
-	return 0;
+  return 0;
 }

@@ -36,15 +36,15 @@ figure; plot(x(:)-xc(:))
 #include <time.h>
 static inline int tick(struct timespec* t0) {
 #ifdef _WIN32
-	if (timespec_get(t0, TIME_UTC) == TIME_UTC) return 1;
+  if (timespec_get(t0, TIME_UTC) == TIME_UTC) return 1;
 #else
-	if (clock_gettime(CLOCK_REALTIME, t0) == 0) return 1;
+  if (clock_gettime(CLOCK_REALTIME, t0) == 0) return 1;
 #endif
-	return 0;
+  return 0;
 }
 static inline double tock(struct timespec* t0) {
-	struct timespec tf = { 0 }; tick(&tf);
-	return ((tf.tv_sec - t0->tv_sec) + ((tf.tv_nsec - t0->tv_nsec) * 1e-9));
+  struct timespec tf = { 0 }; tick(&tf);
+  return ((tf.tv_sec - t0->tv_sec) + ((tf.tv_nsec - t0->tv_nsec) * 1e-9));
 }
 #endif
 #define DETECTUM_ENABLE_ALLOC
@@ -57,30 +57,30 @@ static inline double tock(struct timespec* t0) {
 
 int main()
 {
-	FILE* A_file = fopen("../A.bin", "rb");
-	FILE* b_file = fopen("../b.bin", "rb");
-	FILE* x_file = fopen("../x.bin", "wb");
-	Matrixf A = matrixf(M, N), B = matrixf(M, P);
-	Matrixf X = { N, P, B.data };
+  FILE* A_file = fopen("../A.bin", "rb");
+  FILE* b_file = fopen("../b.bin", "rb");
+  FILE* x_file = fopen("../x.bin", "wb");
+  Matrixf A = matrixf(M, N), B = matrixf(M, P);
+  Matrixf X = { N, P, B.data };
 #ifdef TICKTOCK
-	struct timespec t0;
+  struct timespec t0;
 #endif
-	if (!A.data || !B.data) return -1;
-	fread(A.data, sizeof(float), A.rows * A.cols, A_file);
-	fread(B.data, sizeof(float), B.rows * B.cols, b_file);
-	fclose(A_file);
-	fclose(b_file);
+  if (!A.data || !B.data) return -1;
+  fread(A.data, sizeof(float), A.rows * A.cols, A_file);
+  fread(B.data, sizeof(float), B.rows * B.cols, b_file);
+  fclose(A_file);
+  fclose(b_file);
 #ifdef TICKTOCK
-	tick(&t0);
+  tick(&t0);
 #endif
-	if (matrixf_solve_qr(&A, &B, &X)) return -1;
+  if (matrixf_solve_qr(&A, &B, &X)) return -1;
 #ifdef TICKTOCK
-	printf("Elapsed time: %f s\n", tock(&t0));
+  printf("Elapsed time: %f s\n", tock(&t0));
 #endif
-	fwrite(X.data, sizeof(float), X.rows * X.cols, x_file);
-	fclose(x_file);
-	free(A.data);
-	free(B.data);
+  fwrite(X.data, sizeof(float), X.rows * X.cols, x_file);
+  fclose(x_file);
+  free(A.data);
+  free(B.data);
 
-	return 0;
+  return 0;
 }

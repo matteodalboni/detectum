@@ -7,68 +7,68 @@
 // respectively.
 static void get_eigvals(Matrixf* T, float* lambda_re, float* lambda_im)
 {
-	size_t i = 0;
-	const size_t n = T->rows;
-	float t, s, r;
+  size_t i = 0;
+  const size_t n = T->rows;
+  float t, s, r;
 
-	while (i < n)
-	{
-		if (i + 1 == n || at(T, i + 1, i) == 0) {
-			lambda_re[i] = at(T, i, i);
-			lambda_im[i] = 0;
-			i += 1;
-		}
-		else {
-			t = 0.5f * (at(T, i, i) - at(T, i + 1, i + 1));
-			s = t * t + at(T, i + 1, i) * at(T, i, i + 1);
-			r = (s < 0) ? sqrtf(-s) : sqrtf(s);
-			lambda_re[i] = lambda_re[i + 1] = at(T, i + 1, i + 1) + t;
-			lambda_im[i] = lambda_im[i + 1] = 0;
-			if (s >= 0) {
-				lambda_re[i + 0] -= r;
-				lambda_re[i + 1] += r;
-			}
-			else {
-				lambda_im[i + 0] -= r;
-				lambda_im[i + 1] += r;
-			}
-			i += 2;
-		}
-	}
+  while (i < n)
+  {
+    if (i + 1 == n || at(T, i + 1, i) == 0) {
+      lambda_re[i] = at(T, i, i);
+      lambda_im[i] = 0;
+      i += 1;
+    }
+    else {
+      t = 0.5f * (at(T, i, i) - at(T, i + 1, i + 1));
+      s = t * t + at(T, i + 1, i) * at(T, i, i + 1);
+      r = (s < 0) ? sqrtf(-s) : sqrtf(s);
+      lambda_re[i] = lambda_re[i + 1] = at(T, i + 1, i + 1) + t;
+      lambda_im[i] = lambda_im[i + 1] = 0;
+      if (s >= 0) {
+        lambda_re[i + 0] -= r;
+        lambda_re[i + 1] += r;
+      }
+      else {
+        lambda_im[i + 0] -= r;
+        lambda_im[i + 1] += r;
+      }
+      i += 2;
+    }
+  }
 }
 
 static void get_eigvals2x2(float* lambda,
-	float a00, float a01, float a10, float a11)
+  float a00, float a01, float a10, float a11)
 {
-	float t = 0.5f * (a00 - a11);
-	float s = t * t + a10 * a01;
-	float r = (s < 0) ? sqrtf(-s) : sqrtf(s);
+  float t = 0.5f * (a00 - a11);
+  float s = t * t + a10 * a01;
+  float r = (s < 0) ? sqrtf(-s) : sqrtf(s);
 
-	lambda[0] = lambda[2] = a11 + t;
-	lambda[1] = lambda[3] = 0;
-	lambda[0 + (s < 0)] -= r;
-	lambda[2 + (s < 0)] += r;
+  lambda[0] = lambda[2] = a11 + t;
+  lambda[1] = lambda[3] = 0;
+  lambda[0 + (s < 0)] -= r;
+  lambda[2 + (s < 0)] += r;
 }
 
 static int is_quasitriu(Matrixf* T, float tol)
 {
-	size_t i = 0;
-	const size_t n = T->rows;
-	const float eps = tol * normf(T->data, n * n, 1);
+  size_t i = 0;
+  const size_t n = T->rows;
+  const float eps = tol * normf(T->data, n * n, 1);
 
-	while (i + 2 < n) {
-		if (fabsf(at(T, i + 1, i)) <= eps) {
-			at(T, i + 1, i) = 0; i += 1;
-		}
-		else {
-			if (fabsf(at(T, i + 2, i + 1)) <= eps) {
-				at(T, i + 2, i + 1) = 0; i += 2;
-			}
-			else return 0;
-		}
-	}
+  while (i + 2 < n) {
+    if (fabsf(at(T, i + 1, i)) <= eps) {
+      at(T, i + 1, i) = 0; i += 1;
+    }
+    else {
+      if (fabsf(at(T, i + 2, i + 1)) <= eps) {
+        at(T, i + 2, i + 1) = 0; i += 2;
+      }
+      else return 0;
+    }
+  }
 
-	return 1;
+  return 1;
 }
 
 #define ALGO 2
@@ -78,75 +78,75 @@ static int is_quasitriu(Matrixf* T, float tol)
 
 float A_data[] = {
 #if (TEST == 0) // gallery(3)
-	- 149, -50, -154,
-	 537, 180,  546,
-	 -27,  -9,  -25
+  - 149, -50, -154,
+   537, 180,  546,
+   -27,  -9,  -25
 #elif (TEST == 1) // symmetric with repeated eigenvalues
-	3, 2, 4,
-	2, 0, 2,
-	4, 2, 3
+  3, 2, 4,
+  2, 0, 2,
+  4, 2, 3
 #elif (TEST == 2) // nonsymmetric with repeated real eigenvalues
-	 6,  12,  19,
-	-9, -20, -33,
-	 4,  9,   15
+   6,  12,  19,
+  -9, -20, -33,
+   4,  9,   15
 #elif (TEST == 3) // gallery('minij',10)
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-	1, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-	1, 2, 3, 3, 3, 3, 3, 3, 3, 3,
-	1, 2, 3, 4, 4, 4, 4, 4, 4, 4,
-	1, 2, 3, 4, 5, 5, 5, 5, 5, 5,
-	1, 2, 3, 4, 5, 6, 6, 6, 6, 6,
-	1, 2, 3, 4, 5, 6, 7, 7, 7, 7,
-	1, 2, 3, 4, 5, 6, 7, 8, 8, 8,
-	1, 2, 3, 4, 5, 6, 7, 8, 9, 9,
-	1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+  1, 2, 3, 3, 3, 3, 3, 3, 3, 3,
+  1, 2, 3, 4, 4, 4, 4, 4, 4, 4,
+  1, 2, 3, 4, 5, 5, 5, 5, 5, 5,
+  1, 2, 3, 4, 5, 6, 6, 6, 6, 6,
+  1, 2, 3, 4, 5, 6, 7, 7, 7, 7,
+  1, 2, 3, 4, 5, 6, 7, 8, 8, 8,
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 9,
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 #elif (TEST == 4) // A(n-1,n-1) = 0 and complex conjugate pair of eigenvalues
-	0, 0, 1,
-	1, 0, 0,
-	0, 1, 0
+  0, 0, 1,
+  1, 0, 0,
+  0, 1, 0
 #elif (TEST == 5) // complex conjugate pair of eigenvalues 
-	 1, 1, 1, 3,
-	 1, 2, 1, 1,
-	 1, 1, 3, 1,
-	-2, 1, 1, 4
+   1, 1, 1, 3,
+   1, 2, 1, 1,
+   1, 1, 3, 1,
+  -2, 1, 1, 4
 #elif (TEST == 6) // gallery('hanowa',10)
-	- 1,  0,  0,  0,  0, -1,  0,  0,  0,  0,
-	 0, -1,  0,  0,  0,  0, -2,  0,  0,  0,
-	 0,  0, -1,  0,  0,  0,  0, -3,  0,  0,
-	 0,  0,  0, -1,  0,  0,  0,  0, -4,  0,
-	 0,  0,  0,  0, -1,  0,  0,  0,  0, -5,
-	 1,  0,  0,  0,  0, -1,  0,  0,  0,  0,
-	 0,  2,  0,  0,  0,  0, -1,  0,  0,  0,
-	 0,  0,  3,  0,  0,  0,  0, -1,  0,  0,
-	 0,  0,  0,  4,  0,  0,  0,  0, -1,  0,
-	 0,  0,  0,  0,  5,  0,  0,  0,  0, -1
+  - 1,  0,  0,  0,  0, -1,  0,  0,  0,  0,
+   0, -1,  0,  0,  0,  0, -2,  0,  0,  0,
+   0,  0, -1,  0,  0,  0,  0, -3,  0,  0,
+   0,  0,  0, -1,  0,  0,  0,  0, -4,  0,
+   0,  0,  0,  0, -1,  0,  0,  0,  0, -5,
+   1,  0,  0,  0,  0, -1,  0,  0,  0,  0,
+   0,  2,  0,  0,  0,  0, -1,  0,  0,  0,
+   0,  0,  3,  0,  0,  0,  0, -1,  0,  0,
+   0,  0,  0,  4,  0,  0,  0,  0, -1,  0,
+   0,  0,  0,  0,  5,  0,  0,  0,  0, -1
 #elif (TEST == 7)
-	0, 0, 0, -1e5f,
-	0, 0, -1e5f, 0,
-	0, -1e5f, 0, 0,
-	-1e5f, 0, 0, 0
+  0, 0, 0, -1e5f,
+  0, 0, -1e5f, 0,
+  0, -1e5f, 0, 0,
+  -1e5f, 0, 0, 0
 #elif (TEST == 8) // see "Variants of the QR Algorithm" by Cleve Moler
-	0, 2, 0, -1,
-	1, 0, 0,  0,
-	0, 1, 0,  0,
-	0, 0, 1,  0
+  0, 2, 0, -1,
+  1, 0, 0,  0,
+  0, 1, 0,  0,
+  0, 0, 1,  0
 #elif (TEST == 9) // see "Variants of the QR Algorithm" by Cleve Moler
-	0,     1,      0, 0,
-	1,     0, -1e-4f, 0,
-	0, 1e-4f,      0, 1,
-	0,     0,      1, 0
+  0,     1,      0, 0,
+  1,     0, -1e-4f, 0,
+  0, 1e-4f,      0, 1,
+  0,     0,      1, 0
 #elif (TEST == 10) // permutation matrix
-	0, 0, 0, 0, 0, 0, 0, 1,
-	0, 0, 0, 0, 0, 0, 1, 0,
-	0, 0, 0, 0, 1, 0, 0, 0,
-	0, 1, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 1, 0, 0,
-	0, 0, 0, 1, 0, 0, 0, 0,
-	0, 0, 1, 0, 0, 0, 0, 0,
-	1, 0, 0, 0, 0, 0, 0, 0
+  0, 0, 0, 0, 0, 0, 0, 1,
+  0, 0, 0, 0, 0, 0, 1, 0,
+  0, 0, 0, 0, 1, 0, 0, 0,
+  0, 1, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 1, 0, 0,
+  0, 0, 0, 1, 0, 0, 0, 0,
+  0, 0, 1, 0, 0, 0, 0, 0,
+  1, 0, 0, 0, 0, 0, 0, 0
 #elif (TEST == 11)
-	0, 1,
-	1, 0
+  0, 1,
+  1, 0
 #endif
 };
 #define NUMEL (sizeof(A_data) / sizeof(A_data[0]))
@@ -155,161 +155,161 @@ float A_data[] = {
 // Single shift QR iteration
 int main()
 {
-	int i, n = (int)sqrtf(NUMEL), iter = ITER;
-	float s = 0;
-	const float eps = epsf(1);
-	float A_data_copy[NUMEL] = { 0 };
-	float lambda[NUMEL + 1] = { 0 };
-	float U_data[NUMEL] = { 0 };
-	float Q_data[NUMEL] = { 0 };
-	float R_data[NUMEL] = { 0 };
-	Matrixf A = { n, n, A_data };
-	Matrixf U = { n, n, U_data };
-	Matrixf Q = { n, n, Q_data };
-	Matrixf R = { n, n, R_data };
+  int i, n = (int)sqrtf(NUMEL), iter = ITER;
+  float s = 0;
+  const float eps = epsf(1);
+  float A_data_copy[NUMEL] = { 0 };
+  float lambda[NUMEL + 1] = { 0 };
+  float U_data[NUMEL] = { 0 };
+  float Q_data[NUMEL] = { 0 };
+  float R_data[NUMEL] = { 0 };
+  Matrixf A = { n, n, A_data };
+  Matrixf U = { n, n, U_data };
+  Matrixf Q = { n, n, Q_data };
+  Matrixf R = { n, n, R_data };
 
-	matrixf_transpose(&A);
-	for (i = 0; i < n * n; i++) A_data_copy[i] = A_data[i];
-	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
+  matrixf_transpose(&A);
+  for (i = 0; i < n * n; i++) A_data_copy[i] = A_data[i];
+  printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
 
-	matrixf_decomp_hess(&A, &U);
-	matrixf_transpose(&U);
-	while (iter && !is_quasitriu(&A, TOL)) {
-		s = at(&A, n - 1, n - 1);
+  matrixf_decomp_hess(&A, &U);
+  matrixf_transpose(&U);
+  while (iter && !is_quasitriu(&A, TOL)) {
+    s = at(&A, n - 1, n - 1);
 #if 1 // Demmel shift
-		get_eigvals2x2(lambda,
-			at(&A, n - 2, n - 2), at(&A, n - 2, n - 1),
-			at(&A, n - 1, n - 2), at(&A, n - 1, n - 1));
-		s = fabsf(lambda[0] - s) < fabsf(lambda[2] - s) ? lambda[0] : lambda[2];
+    get_eigvals2x2(lambda,
+      at(&A, n - 2, n - 2), at(&A, n - 2, n - 1),
+      at(&A, n - 1, n - 2), at(&A, n - 1, n - 1));
+    s = fabsf(lambda[0] - s) < fabsf(lambda[2] - s) ? lambda[0] : lambda[2];
 #endif
-		if (s == 0) s = eps;
-		for (i = 0; i < n; i++) at(&A, i, i) -= s;
-		matrixf_decomp_qr(&A, &Q, 0, &U);
-		for (i = 0; i < n * n; i++) R.data[i] = A.data[i];
-		matrixf_multiply(&R, &Q, &A, 1, 0, 0, 0);
-		for (i = 0; i < n; i++) at(&A, i, i) += s;
-		iter--;
-	}
-	matrixf_transpose(&U);
+    if (s == 0) s = eps;
+    for (i = 0; i < n; i++) at(&A, i, i) -= s;
+    matrixf_decomp_qr(&A, &Q, 0, &U);
+    for (i = 0; i < n * n; i++) R.data[i] = A.data[i];
+    matrixf_multiply(&R, &Q, &A, 1, 0, 0, 0);
+    for (i = 0; i < n; i++) at(&A, i, i) += s;
+    iter--;
+  }
+  matrixf_transpose(&U);
 
-	printf("\n# iterations: %d\n", ITER - iter);
+  printf("\n# iterations: %d\n", ITER - iter);
 
-	for (i = 0; i < n * n; i++) R.data[i] = A.data[i];
-	printf("\nT = \n"); matrixf_print(&R, "%9.4f ");
-	printf("\nU = \n"); matrixf_print(&U, "%9.4f ");
-	get_eigvals(&R, lambda, lambda + n);
+  for (i = 0; i < n * n; i++) R.data[i] = A.data[i];
+  printf("\nT = \n"); matrixf_print(&R, "%9.4f ");
+  printf("\nU = \n"); matrixf_print(&U, "%9.4f ");
+  get_eigvals(&R, lambda, lambda + n);
 
-	matrixf_multiply(&U, &R, &Q, 1, 0, 0, 0);
-	matrixf_multiply(&Q, &U, &A, 1, 0, 0, 1);
-	printf("\nU*T*U' = \n"); matrixf_print(&A, "%9.4f ");
-	for (i = 0; i < n * n; i++) A_data_copy[i] -= A_data[i];
-	printf("\n||U*T*U' - A||_F = %g\n", normf(A_data_copy, n * n, 1));
+  matrixf_multiply(&U, &R, &Q, 1, 0, 0, 0);
+  matrixf_multiply(&Q, &U, &A, 1, 0, 0, 1);
+  printf("\nU*T*U' = \n"); matrixf_print(&A, "%9.4f ");
+  for (i = 0; i < n * n; i++) A_data_copy[i] -= A_data[i];
+  printf("\n||U*T*U' - A||_F = %g\n", normf(A_data_copy, n * n, 1));
 
-	printf("\nEigenvalues\n");
-	for (i = 0; i < n; i++) {
-		printf("%4d: %+.4f", i + 1, lambda[i]);
-		if (lambda[i + n]) printf("%+.4fi", lambda[i + n]);
-		printf("\n");
-	}
+  printf("\nEigenvalues\n");
+  for (i = 0; i < n; i++) {
+    printf("%4d: %+.4f", i + 1, lambda[i]);
+    if (lambda[i + n]) printf("%+.4fi", lambda[i + n]);
+    printf("\n");
+  }
 
-	return 0;
+  return 0;
 }
 #elif (ALGO == 1)
 // Orthogonal iteration (slow to converge with nonsymmetric matrices
 // when the magnitudes of some eigenvalues are close to each other)
 int main()
 {
-	int i, n = (int)sqrtf(NUMEL), iter = ITER;
-	float A_data_copy[NUMEL] = { 0 };
-	float lambda[NUMEL + 1] = { 0 };
-	float P_data[NUMEL] = { 0 };
-	float U_data[NUMEL] = { 0 };
-	float T_data[NUMEL] = { 0 };
-	Matrixf A = { n, n, A_data };
-	Matrixf P = { n, n, P_data };
-	Matrixf U = { n, n, U_data };
-	Matrixf T = { n, n, T_data };
+  int i, n = (int)sqrtf(NUMEL), iter = ITER;
+  float A_data_copy[NUMEL] = { 0 };
+  float lambda[NUMEL + 1] = { 0 };
+  float P_data[NUMEL] = { 0 };
+  float U_data[NUMEL] = { 0 };
+  float T_data[NUMEL] = { 0 };
+  Matrixf A = { n, n, A_data };
+  Matrixf P = { n, n, P_data };
+  Matrixf U = { n, n, U_data };
+  Matrixf T = { n, n, T_data };
 
-	matrixf_transpose(&A);
-	for (i = 0; i < n * n; i++) A_data_copy[i] = A_data[i];
-	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
+  matrixf_transpose(&A);
+  for (i = 0; i < n * n; i++) A_data_copy[i] = A_data[i];
+  printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
 
-	matrixf_decomp_hess(&A, &P);
-	//printf("\nH = \n"); matrixf_print(&A, "%9.4f ");
-	//printf("\nP = \n"); matrixf_print(&P, "%9.4f ");
+  matrixf_decomp_hess(&A, &P);
+  //printf("\nH = \n"); matrixf_print(&A, "%9.4f ");
+  //printf("\nP = \n"); matrixf_print(&P, "%9.4f ");
 
-	for (i = 0; i < n * n; i++) T.data[i] = A.data[i];
+  for (i = 0; i < n * n; i++) T.data[i] = A.data[i];
 
-	while (iter--) {
-		matrixf_decomp_qr(&T, &U, 0, 0);
-		matrixf_multiply(&A, &U, &T, 1, 0, 0, 0);
-	}
+  while (iter--) {
+    matrixf_decomp_qr(&T, &U, 0, 0);
+    matrixf_multiply(&A, &U, &T, 1, 0, 0, 0);
+  }
 
-	for (i = 0; i < n * n; i++) A.data[i] = T.data[i];
-	matrixf_multiply(&U, &A, &T, 1, 0, 1, 0);
-	for (i = 0; i < n * n; i++) A.data[i] = U.data[i];
-	matrixf_multiply(&P, &A, &U, 1, 0, 0, 0);
+  for (i = 0; i < n * n; i++) A.data[i] = T.data[i];
+  matrixf_multiply(&U, &A, &T, 1, 0, 1, 0);
+  for (i = 0; i < n * n; i++) A.data[i] = U.data[i];
+  matrixf_multiply(&P, &A, &U, 1, 0, 0, 0);
 
-	for (i = 0; i < n - 1; i++)
-		if (fabsf(at(&T, i + 1, i)) < TOL) at(&T, i + 1, i) = 0;
+  for (i = 0; i < n - 1; i++)
+    if (fabsf(at(&T, i + 1, i)) < TOL) at(&T, i + 1, i) = 0;
 
-	printf("\nT = \n"); matrixf_print(&T, "%9.4f ");
-	printf("\nU = \n"); matrixf_print(&U, "%9.4f ");
-	get_eigvals(&T, lambda, lambda + n);
+  printf("\nT = \n"); matrixf_print(&T, "%9.4f ");
+  printf("\nU = \n"); matrixf_print(&U, "%9.4f ");
+  get_eigvals(&T, lambda, lambda + n);
 
-	matrixf_multiply(&U, &T, &A, 1, 0, 0, 0);
-	matrixf_multiply(&A, &U, &T, 1, 0, 0, 1);
-	printf("\nU*T*U' = \n"); matrixf_print(&T, "%9.4f ");
-	for (i = 0; i < n * n; i++) A_data_copy[i] -= T.data[i];
-	printf("\n||U*T*U' - A||_F = %g\n", normf(A_data_copy, n * n, 1));
+  matrixf_multiply(&U, &T, &A, 1, 0, 0, 0);
+  matrixf_multiply(&A, &U, &T, 1, 0, 0, 1);
+  printf("\nU*T*U' = \n"); matrixf_print(&T, "%9.4f ");
+  for (i = 0; i < n * n; i++) A_data_copy[i] -= T.data[i];
+  printf("\n||U*T*U' - A||_F = %g\n", normf(A_data_copy, n * n, 1));
 
-	printf("\nEigenvalues\n");
-	for (i = 0; i < n; i++) {
-		printf("%4d: %+.4f", i + 1, lambda[i]);
-		if (lambda[i + n]) printf("%+.4fi", lambda[i + n]);
-		printf("\n");
-	}
+  printf("\nEigenvalues\n");
+  for (i = 0; i < n; i++) {
+    printf("%4d: %+.4f", i + 1, lambda[i]);
+    if (lambda[i + n]) printf("%+.4fi", lambda[i + n]);
+    printf("\n");
+  }
 
-	return 0;
+  return 0;
 }
 #else 
 // Francis double implicit shift QR iteration
 int main()
 {
-	int i, n = (int)sqrtf(NUMEL), iter = ITER;
-	float A_data_copy[NUMEL] = { 0 };
-	float lambda[NUMEL + 1] = { 0 };
-	float U_data[NUMEL] = { 0 };
-	float B_data[NUMEL] = { 0 };
-	Matrixf A = { n, n, A_data };
-	Matrixf U = { n, n, U_data };
-	Matrixf B = { n, n, B_data };
+  int i, n = (int)sqrtf(NUMEL), iter = ITER;
+  float A_data_copy[NUMEL] = { 0 };
+  float lambda[NUMEL + 1] = { 0 };
+  float U_data[NUMEL] = { 0 };
+  float B_data[NUMEL] = { 0 };
+  Matrixf A = { n, n, A_data };
+  Matrixf U = { n, n, U_data };
+  Matrixf B = { n, n, B_data };
 
-	matrixf_transpose(&A);
-	for (i = 0; i < n * n; i++) A_data_copy[i] = A_data[i];
-	printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
+  matrixf_transpose(&A);
+  for (i = 0; i < n * n; i++) A_data_copy[i] = A_data[i];
+  printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
 
-	iter = matrixf_decomp_schur(&A, &U);
+  iter = matrixf_decomp_schur(&A, &U);
 
-	printf("\n# iterations: %d\n", iter);
+  printf("\n# iterations: %d\n", iter);
 
-	printf("\nT = \n"); matrixf_print(&A, "%9.4f ");
-	printf("\nU = \n"); matrixf_print(&U, "%9.4f ");
-	get_eigvals(&A, lambda, lambda + n);
+  printf("\nT = \n"); matrixf_print(&A, "%9.4f ");
+  printf("\nU = \n"); matrixf_print(&U, "%9.4f ");
+  get_eigvals(&A, lambda, lambda + n);
 
-	matrixf_multiply(&U, &A, &B, 1, 0, 0, 0);
-	matrixf_multiply(&B, &U, &A, 1, 0, 0, 1);
-	printf("\nU*T*U' = \n"); matrixf_print(&A, "%9.4f ");
-	for (i = 0; i < n * n; i++) A_data_copy[i] -= A_data[i];
-	printf("\n||U*T*U' - A||_F = %g\n", normf(A_data_copy, n * n, 1));
+  matrixf_multiply(&U, &A, &B, 1, 0, 0, 0);
+  matrixf_multiply(&B, &U, &A, 1, 0, 0, 1);
+  printf("\nU*T*U' = \n"); matrixf_print(&A, "%9.4f ");
+  for (i = 0; i < n * n; i++) A_data_copy[i] -= A_data[i];
+  printf("\n||U*T*U' - A||_F = %g\n", normf(A_data_copy, n * n, 1));
 
-	printf("\nEigenvalues\n");
-	for (i = 0; i < n; i++) {
-		printf("%4d: %+.5f", i + 1, lambda[i]);
-		if (lambda[i + n]) printf("%+.5fi", lambda[i + n]);
-		printf("\n");
-	}
+  printf("\nEigenvalues\n");
+  for (i = 0; i < n; i++) {
+    printf("%4d: %+.5f", i + 1, lambda[i]);
+    if (lambda[i + n]) printf("%+.5fi", lambda[i + n]);
+    printf("\n");
+  }
 
-	return 0;
+  return 0;
 }
 #endif
