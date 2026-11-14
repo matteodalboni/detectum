@@ -555,7 +555,7 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* perm, Matrixf* B)
   if (Q) {
     q = Q->cols;
     for (i = 0; i < m * q; i++) {
-      Q->data[i] = !(i % (m + 1));
+      Q->data[i] = (float)!(i % (m + 1));
     }
     matrixf_unpack_house(A, Q, 0, 0);
     if (q < m) {
@@ -637,7 +637,7 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
   if (U) {
     q = U->cols;
     for (i = 0; i < m * q; i++) {
-      U->data[i] = !(i % (m + 1));
+      U->data[i] = (float)!(i % (m + 1));
     }
     matrixf_unpack_house(A, U, 0, 0);
     if (q < m) {
@@ -659,7 +659,7 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
   if (V) {
     matrixf_transpose(A);
     for (i = 0; i < n * n; i++) {
-      V->data[i] = !(i % (n + 1));
+      V->data[i] = (float)!(i % (n + 1));
     }
     if (n > 1) {
       matrixf_unpack_house(A, V, 1, 0);
@@ -962,7 +962,7 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
       return -1;
     }
     for (i = 0; i < n * n; i++) {
-      V->data[i] = !(i % (n + 1));
+      V->data[i] = (float)!(i % (n + 1));
     }
   }
   while (count > 0 && iter < iter_max) {
@@ -1052,7 +1052,7 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
   }
   if (P) {
     for (i = 0; i < n * n; i++) {
-      P->data[i] = !(i % (n + 1));
+      P->data[i] = (float)!(i % (n + 1));
     }
     if (n > 1) {
       matrixf_unpack_house(A, P, 1, 0);
@@ -1417,7 +1417,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
       return -1;
     }
     for (i = 0; i < n * n; i++) {
-      V->data[i] = !(i % (n + 1));
+      V->data[i] = (float)!(i % (n + 1));
     }
   }
   if (W) {
@@ -1425,7 +1425,7 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
       return -1;
     }
     for (i = 0; i < n * n; i++) {
-      W->data[i] = !(i % (n + 1));
+      W->data[i] = (float)!(i % (n + 1));
     }
   }
   k = 0;
@@ -2265,7 +2265,7 @@ int matrixf_exp(Matrixf* A, float* work)
   z = t < 0 ? 0 : (size_t)t;
   s = (size_t)1 << z;
   for (i = 0; i < n * n; i++) {
-    t = !(i % (n + 1));
+    t = (float)!(i % (n + 1));
     X.data[i] = t;
     N.data[i] = t;
     D.data[i] = t;
