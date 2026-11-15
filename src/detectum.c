@@ -554,8 +554,10 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* perm, Matrixf* B)
   }
   if (Q) {
     q = Q->cols;
-    for (i = 0; i < m * q; i++) {
-      Q->data[i] = (float)!(i % (m + 1));
+    for (j = k = 0; j < q; j++) {
+      for (i = 0; i < m; i++, k++) {
+        Q->data[k] = (float)(i == j);
+      }
     }
     matrixf_unpack_house(A, Q, 0, 0);
     if (q < m) {
@@ -636,8 +638,10 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
   }
   if (U) {
     q = U->cols;
-    for (i = 0; i < m * q; i++) {
-      U->data[i] = (float)!(i % (m + 1));
+    for (j = k = 0; j < q; j++) {
+      for (i = 0; i < m; i++, k++) {
+        U->data[k] = (float)(i == j);
+      }
     }
     matrixf_unpack_house(A, U, 0, 0);
     if (q < m) {
@@ -658,8 +662,10 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
   }
   if (V) {
     matrixf_transpose(A);
-    for (i = 0; i < n * n; i++) {
-      V->data[i] = (float)!(i % (n + 1));
+    for (j = k = 0; j < n; j++) {
+      for (i = 0; i < n; i++, k++) {
+        V->data[k] = (float)(i == j);
+      }
     }
     if (n > 1) {
       matrixf_unpack_house(A, V, 1, 0);
@@ -961,8 +967,10 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
     if (V->rows != n || V->cols != n) {
       return -1;
     }
-    for (i = 0; i < n * n; i++) {
-      V->data[i] = (float)!(i % (n + 1));
+    for (j = k = 0; j < n; j++) {
+      for (i = 0; i < n; i++, k++) {
+        V->data[k] = (float)(i == j);
+      }
     }
   }
   while (count > 0 && iter < iter_max) {
@@ -1051,8 +1059,10 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
     housef_apply_r(A, v, beta, 0, n - 1, k + 1, n - 1, 1);
   }
   if (P) {
-    for (i = 0; i < n * n; i++) {
-      P->data[i] = (float)!(i % (n + 1));
+    for (j = k = 0; j < n; j++) {
+      for (i = 0; i < n; i++, k++) {
+        P->data[k] = (float)(i == j);
+      }
     }
     if (n > 1) {
       matrixf_unpack_house(A, P, 1, 0);
@@ -1075,7 +1085,7 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
 int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 {
   const size_t n = A->rows;
-  size_t k, i, imin, imax, q, m = n - 1;
+  size_t i, j, k, imin, imax, q, m = n - 1;
   int iter = 0;
   const int iter_max = DETECTUM_SCHUR_SYMM_ITER_MAX;
   const float tol = DETECTUM_SCHUR_SYMM_TOL;
@@ -1144,9 +1154,11 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
       iter++;
     }
   }
-  for (k = 1; k < n * n - 1; k++) {
-    if (k % (n + 1)) {
-      A->data[k] = 0;
+  for (j = k = 0; j < n; j++) {
+    for (i = 0; i < n; i++, k++) {
+      if (i != j) {
+        A->data[k] = 0;
+      }
     }
   }
   return iter == iter_max ? -2 : iter;
@@ -1416,16 +1428,20 @@ int matrixf_get_eigenvectors(Matrixf* T, Matrixf* U,
     if (V->rows != n || V->cols != n) {
       return -1;
     }
-    for (i = 0; i < n * n; i++) {
-      V->data[i] = (float)!(i % (n + 1));
+    for (j = k = 0; j < n; j++) {
+      for (i = 0; i < n; i++, k++) {
+        V->data[k] = (float)(i == j);
+      }
     }
   }
   if (W) {
     if (W->rows != n || W->cols != n) {
       return -1;
     }
-    for (i = 0; i < n * n; i++) {
-      W->data[i] = (float)!(i % (n + 1));
+    for (j = k = 0; j < n; j++) {
+      for (i = 0; i < n; i++, k++) {
+        W->data[k] = (float)(i == j);
+      }
     }
   }
   k = 0;
@@ -2264,12 +2280,14 @@ int matrixf_exp(Matrixf* A, float* work)
   t = 1.0f + floorf(log2f(nrm_inf));
   z = t < 0 ? 0 : (size_t)t;
   s = (size_t)1 << z;
-  for (i = 0; i < n * n; i++) {
-    t = (float)!(i % (n + 1));
-    X.data[i] = t;
-    N.data[i] = t;
-    D.data[i] = t;
-    A->data[i] /= s;
+  for (j = k = 0; j < n; j++) {
+    for (i = 0; i < n; i++, k++) {
+      t = (float)(i == j);
+      X.data[k] = t;
+      N.data[k] = t;
+      D.data[k] = t;
+      A->data[k] /= s;
+    }
   }
   for (c = 1, k = 1; k <= q; k++) {
     c *= (float)(q - k + 1) / ((2 * q - k + 1) * k);
@@ -2303,12 +2321,12 @@ int matrixf_exp(Matrixf* A, float* work)
 #endif
 int matrixf_log(Matrixf* A, float* work)
 {
-  size_t i, k, s = 1;
+  size_t i, j, k, s = 1;
   int f;
   const size_t n = A->rows;
   const size_t nterms = DETECTUM_LOG_NTERMS;
   const float thr = DETECTUM_LOG_ISS_THR;
-  float tmp, nrm1;
+  float t, nrm1;
   Matrixf U = { n, n, work + n };
   Matrixf N = { n, n, U.data + n * n };
   Matrixf D = { n, n, N.data + n * n };
@@ -2327,19 +2345,21 @@ int matrixf_log(Matrixf* A, float* work)
     }
     s <<= 1;
     for (nrm1 = 0, k = 0; k < n; k++) {
-      for (tmp = 0, i = 0; i < n; i++) {
-        tmp += fabsf(at(A, i, k) - (i == k));
+      for (t = 0, i = 0; i < n; i++) {
+        t += fabsf(at(A, i, k) - (i == k));
       }
-      if (tmp > nrm1) {
-        nrm1 = tmp;
+      if (t > nrm1) {
+        nrm1 = t;
       }
     }
   } while (nrm1 > thr);
   matrixf_transpose(A);
-  for (k = 0; k < n * n; k++) {
-    f = !(k % (n + 1));
-    D.data[k] = f + A->data[k];
-    N.data[k] = f - A->data[k];
+  for (j = k = 0; j < n; j++) {
+    for (i = 0; i < n; i++, k++) {
+      t = (float)(i == j);
+      D.data[k] = t + A->data[k];
+      N.data[k] = t - A->data[k];
+    }
   }
   if (matrixf_solve_lu(&D, &N) < 0) {
     return -4;
