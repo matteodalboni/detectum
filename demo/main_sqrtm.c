@@ -1,9 +1,9 @@
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 
 #define n 10
 
-int main() 
+int main(void) 
 {
   int i, exitflag;
   float work[n * n + n] = { 0 };

@@ -2,10 +2,10 @@
 // explicitly forming the matrix Q (Q-less QR decomposition):
 // A'*A*x = A'*b --> R'*Q'*Q*R*x = A'*b --> R'*R*x = A'*b.
 
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 
-int main()
+int main(void)
 {
   float A_data[] = {
      0.358539f, -0.432372f, -0.494633f,

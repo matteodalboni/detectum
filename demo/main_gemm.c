@@ -15,8 +15,8 @@ static inline double tock(struct timespec* t0) {
   return ((tf.tv_sec - t0->tv_sec) + ((tf.tv_nsec - t0->tv_nsec) * 1e-9));
 }
 #endif
-#define DETECTUM_ENABLE_PRINT
-#define DETECTUM_ENABLE_ALLOC
+#include "detectum_print.h"
+#include "detectum_alloc.h"
 #include "detectum.h"
 
 #define M 2002
@@ -26,7 +26,7 @@ static inline double tock(struct timespec* t0) {
 //#define PRINT
 //#define TRANSPOSE
 
-int main()
+int main(void)
 {
   int i, transA = 1, transB = 1;
   float alpha = 2, beta = 3;

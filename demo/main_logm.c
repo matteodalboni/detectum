@@ -1,7 +1,7 @@
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 
-int main()
+int main(void)
 {
   size_t i;
   float A_data_copy[9] = { 0 };

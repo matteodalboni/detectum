@@ -1,6 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
-#define DETECTUM_ENABLE_PRINT
-#define DETECTUM_ENABLE_ALLOC
+#include "detectum_print.h"
+#include "detectum_alloc.h"
 #include "detectum.h"
 #include <math.h>
 
@@ -80,7 +80,7 @@ static void get_eigenval_matrix(Matrixf* T)
   }
 }
 
-int main()
+int main(void)
 {
   const int test = 1;
   const int pseudo = 0;

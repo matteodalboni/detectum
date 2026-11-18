@@ -1,12 +1,12 @@
-#define DETECTUM_ENABLE_PRINT
-#define DETECTUM_ENABLE_ALLOC
+#include "detectum_print.h"
+#include "detectum_alloc.h"
 #include "detectum.h"
 
 #define ONE_STEP
 #define m 10
 #define n 5
 
-int main()
+int main(void)
 {
   float A_data[m * n] = {
     92, 0, 0, 0, 15,

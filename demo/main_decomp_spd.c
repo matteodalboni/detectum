@@ -1,4 +1,4 @@
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 
 int matrixf_decomp_ldl(Matrixf* A)
@@ -30,7 +30,7 @@ int matrixf_decomp_ldl(Matrixf* A)
 
 #define n 6
 
-int main()
+int main(void)
 {
   float A_data[n * n] = {
      92,   85,   -4, -60,  -40,  55,

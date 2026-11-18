@@ -1,12 +1,12 @@
-#define DETECTUM_ENABLE_PRINT
-#define DETECTUM_ENABLE_ALLOC
+#include "detectum_print.h"
+#include "detectum_alloc.h"
 #include "detectum.h"
 #include <math.h>
 
 #define MATRIX 2
 #define METHOD 1
 
-int main()
+int main(void)
 {
 #if MATRIX == 0
 #define N 3

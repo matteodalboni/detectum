@@ -1,4 +1,4 @@
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 
 #define ALGO 2
@@ -16,7 +16,7 @@ static void copy_matrix(Matrixf* Dest, Matrixf* Src)
   }
 }
 
-int main()
+int main(void)
 {
 #if (TEST == 0)
 #define m 8

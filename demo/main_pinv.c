@@ -1,10 +1,10 @@
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 
 #define m 8
 #define n 6
 
-int main()
+int main(void)
 {
   float A_data[] = {
         64,   2,   3,  61,  60,   6,

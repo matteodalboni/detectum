@@ -1,5 +1,5 @@
-#define DETECTUM_ENABLE_PRINT
-#define DETECTUM_ENABLE_ALLOC
+#include "detectum_print.h"
+#include "detectum_alloc.h"
 #include "detectum.h"
 #include <math.h>
 
@@ -128,7 +128,7 @@ float A_data[] = {
 };
 #endif
 
-int main()
+int main(void)
 {
   int i, k = 0;
   float eigval_re = 0, eigval_im = 0;

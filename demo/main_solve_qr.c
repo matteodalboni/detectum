@@ -1,11 +1,11 @@
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 
 #define m 5
 #define n 7
 #define IN_PLACE
 
-int main()
+int main(void)
 {
   size_t i, j;
   float A_data[m * n] = {

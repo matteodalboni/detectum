@@ -12,7 +12,7 @@
 // in IEEE Transactions on Automatic Control, vol. 63, no. 2, pp.
 // 525 - 531, Feb. 2018, doi : 10.1109/TAC.2017.2735938.
 
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 #include <math.h>
 
@@ -52,7 +52,7 @@ float b_data[m] = {
   0
 };
 
-int main()
+int main(void)
 {
   float lb[m];
   float ub[m];

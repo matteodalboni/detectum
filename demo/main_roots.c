@@ -1,10 +1,10 @@
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 #include <math.h>
 
 #define deg 4 // degree of the polynomial
 
-int main()
+int main(void)
 {
   int i;
   float re, im;

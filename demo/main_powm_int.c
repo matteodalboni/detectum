@@ -1,4 +1,4 @@
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 
 // This function raises the n-by-n matrix A to the p-th positive integer power.
@@ -51,7 +51,7 @@ static int powmi(Matrixf* A, size_t p, float* work)
   return 0;
 }
 
-int main()
+int main(void)
 {
   float A_data[3 * 3] = {
     0.1f, 0.2f, 0.3f,

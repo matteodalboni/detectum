@@ -1,11 +1,11 @@
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 
 #define n 7
 #define p 2
 #define ubw 3
 
-int main()
+int main(void)
 {
   int i, j;
   float X_data[n * p] = { 0 };

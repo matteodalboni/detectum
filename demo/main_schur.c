@@ -1,4 +1,4 @@
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 #include <math.h>
 
@@ -153,7 +153,7 @@ float A_data[] = {
 
 #if (ALGO == 0) 
 // Single shift QR iteration
-int main()
+int main(void)
 {
   int i, n = (int)sqrtf(NUMEL), iter = ITER;
   float s = 0;
@@ -217,7 +217,7 @@ int main()
 #elif (ALGO == 1)
 // Orthogonal iteration (slow to converge with nonsymmetric matrices
 // when the magnitudes of some eigenvalues are close to each other)
-int main()
+int main(void)
 {
   int i, n = (int)sqrtf(NUMEL), iter = ITER;
   float A_data_copy[NUMEL] = { 0 };
@@ -274,7 +274,7 @@ int main()
 }
 #else 
 // Francis double implicit shift QR iteration
-int main()
+int main(void)
 {
   int i, n = (int)sqrtf(NUMEL), iter = ITER;
   float A_data_copy[NUMEL] = { 0 };

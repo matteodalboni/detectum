@@ -1,9 +1,9 @@
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 
 #define TEST 0
 
-int main()
+int main(void)
 {
 #if (TEST == 0)
 #define M 3

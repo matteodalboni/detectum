@@ -7,7 +7,7 @@
 // UKACC 12th International Conference on Control (CONTROL), 
 // Sheffield, UK, 2018, pp. 339-339, doi: 10.1109/CONTROL.2018.8516834.
 
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 #include <math.h>
 
@@ -82,7 +82,7 @@ float rl[m] = { -1e38f, -1e38f, -1e38f };
 float ru[m] = { 0.5251f, 0.2026f, 0.6721f };
 #endif
 
-int main()
+int main(void)
 {
   int iter = 100;
   float sigma = 1e-4f;

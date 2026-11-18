@@ -1,9 +1,9 @@
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 
 #define CASE 1
 
-int main()
+int main(void)
 {
 #if CASE == 1
 #define m 5

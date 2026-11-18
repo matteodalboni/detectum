@@ -6,7 +6,7 @@
 // "Solving least squares problems". Society for 
 // Industrial and Applied Mathematics, 1995.
 
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 #include <math.h>
 
@@ -15,7 +15,7 @@
 
 #define WORKLEN(m,n) (((m)+2)*(n)+((m)>(n)?(m):(n)))
 
-int main()
+int main(void)
 {
   float C_data[m * (n + 1)] = { // C = [A, b]
     -0.2027f, -0.2721f, -0.7467f, -0.4659f,  -0.5251f,

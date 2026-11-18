@@ -1,7 +1,7 @@
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 
-int main()
+int main(void)
 {
 #if 0
 #define m 5

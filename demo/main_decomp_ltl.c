@@ -1,10 +1,10 @@
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 
 #define n 6
 #define FULL_P
 
-int main()
+int main(void)
 {
   int i;
 #if 0

@@ -60,37 +60,6 @@ float givensf(float a, float b, float* c, float* s);
 // returns beta such that H = I - beta*v*v' is a Householder matrix.
 float housef(float* x, size_t length, size_t stride);
 
-#ifdef DETECTUM_ENABLE_PRINT
-#include <stdio.h>
-
-// This function prints the matrix A on the standard output according to
-// the specified format.
-static inline void matrixf_print(Matrixf* A, const char* format)
-{
-  size_t i, j;
-
-  for (i = 0; i < A->rows; i++) {
-    for (j = 0; j < A->cols; j++) {
-      printf(format, at(A, i, j));
-    }
-    printf("\n");
-  }
-}
-#endif
-
-#ifdef DETECTUM_ENABLE_ALLOC
-#include <stdlib.h>
-
-// This function initializes a rows-by-cols matrix, allocating its data 
-// memory on the heap. On allocation failure, the data pointer is null.
-static inline Matrixf matrixf(size_t rows, size_t cols)
-{
-  Matrixf A = { rows, cols, calloc(rows * cols, sizeof(float)) };
-
-  return A;
-}
-#endif
-
 // This function initializes the rows-by-cols matrix A. The array data
 // collects the matrix elements, which must be stored in column-major order.
 // If the data are initially arranged in row-major layout, the flag ordmem 
@@ -469,13 +438,13 @@ int matrixf_solve_bvls(Matrixf* C, Matrixf* d, Matrixf* x,
 int matrixf_pseudoinv(Matrixf* A, float tol, float* work);
 
 // This function computes the exponential of the square matrix A by scaling
-// and squaring algorithm with Padé approximation. The array work is the
+// and squaring algorithm with PadÃ© approximation. The array work is the
 // additional workspace memory: if A is n-by-n, its minimum length is 3*n*n+n.
 // The function returns -1 if the input matrix is not square; if the matrix 
 // exponential cannot be computed due to a singularity, it returns -2. On 
 // success, it returns 0.
 // Related macros
-// - DETECTUM_EXP_PADE_ORDER: order of diagonal Padé approximation. The 
+// - DETECTUM_EXP_PADE_ORDER: order of diagonal PadÃ© approximation. The 
 //   default value is 4.
 int matrixf_exp(Matrixf* A, float* work);
 

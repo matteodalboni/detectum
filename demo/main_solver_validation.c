@@ -47,7 +47,7 @@ static inline double tock(struct timespec* t0) {
   return ((tf.tv_sec - t0->tv_sec) + ((tf.tv_nsec - t0->tv_nsec) * 1e-9));
 }
 #endif
-#define DETECTUM_ENABLE_ALLOC
+#include "detectum_alloc.h"
 #include "detectum.h"
 #include <stdio.h>
 
@@ -55,7 +55,7 @@ static inline double tock(struct timespec* t0) {
 #define N 180
 #define P 40
 
-int main()
+int main(void)
 {
   FILE* A_file = fopen("../A.bin", "rb");
   FILE* b_file = fopen("../b.bin", "rb");

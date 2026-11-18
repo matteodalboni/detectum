@@ -8,7 +8,7 @@
 #define M 6
 #define N 2
 
-int main()
+int main(void)
 {
   int i;
   float t[M] = { 0.0f, 0.3f, 0.8f, 1.1f, 1.6f, 2.3f };

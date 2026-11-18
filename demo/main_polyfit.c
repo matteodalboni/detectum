@@ -1,4 +1,4 @@
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 #include <math.h>
 
@@ -29,7 +29,7 @@ static int polyfit(float* x, float* y, int pts, int deg, float* work)
   return matrixf_solve_qr(&A, &b, &p);
 }
 
-int main()
+int main(void)
 {
   int i;
   float x[PTS] = { 0 };

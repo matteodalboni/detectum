@@ -1,4 +1,4 @@
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 
 static int powm(Matrixf* A, float p, float* work)
@@ -20,7 +20,7 @@ static int powm(Matrixf* A, float p, float* work)
 
 #define n 10
 
-int main()
+int main(void)
 {
   float A_data[n * n] = {
     7,  2,  1,  5,  7,  8, -3, -4,   3,  1,

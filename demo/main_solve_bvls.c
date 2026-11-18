@@ -1,5 +1,5 @@
-#define DETECTUM_ENABLE_PRINT
-#define DETECTUM_ENABLE_ALLOC
+#include "detectum_print.h"
+#include "detectum_alloc.h"
 #include "detectum.h"
 #include <math.h>
 
@@ -8,7 +8,7 @@
 #define m 100
 #define n 90
 
-int main()
+int main(void)
 {
   int j, exitflag;
   float* lb = malloc(sizeof(float) * n);
@@ -47,7 +47,7 @@ int main()
 #define m 10
 #define n 5
 
-int main()
+int main(void)
 {
 #if 1
   float C_data[m * n] = {

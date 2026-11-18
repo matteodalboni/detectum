@@ -1,5 +1,5 @@
-#define DETECTUM_ENABLE_PRINT
-#define DETECTUM_ENABLE_ALLOC
+#include "detectum_print.h"
+#include "detectum_alloc.h"
 #include "detectum.h"
 #include <math.h>
 
@@ -26,7 +26,7 @@ static void print_complex_eigenvectors(Matrixf* T, Matrixf* V)
 #define n 4
 #define TOL 1e-5f
 
-int main()
+int main(void)
 {
   int i;
   Matrixf A = matrixf(n, n);

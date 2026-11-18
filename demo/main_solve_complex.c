@@ -1,4 +1,4 @@
-#define DETECTUM_ENABLE_PRINT
+#include "detectum_print.h"
 #include "detectum.h"
 
 static void print_complex(float* Real, float* Imag, size_t rows, size_t cols, char* format) {
@@ -16,7 +16,7 @@ static void print_complex(float* Real, float* Imag, size_t rows, size_t cols, ch
 #define m 4
 #define n 3
 
-int main() 
+int main(void) 
 {
   float A_real_data[] = {
     -5, -8,  2, 

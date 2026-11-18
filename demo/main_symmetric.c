@@ -1,5 +1,5 @@
-#define DETECTUM_ENABLE_PRINT
-#define DETECTUM_ENABLE_ALLOC
+#include "detectum_print.h"
+#include "detectum_alloc.h"
 #include "detectum.h"
 
 #define N (7)
@@ -16,7 +16,7 @@ static void make_positive_definite(Matrixf* A)
   matrixf_multiply(&B, &B, A, 1.0f, 0.0f, 0, 1);
 }
 
-int main()
+int main(void)
 {
   int i, j, positive_definite;
   float work[N], copy[N * N];

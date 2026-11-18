@@ -1,5 +1,5 @@
-#define DETECTUM_ENABLE_PRINT
-#define DETECTUM_ENABLE_ALLOC
+#include "detectum_print.h"
+#include "detectum_alloc.h"
 #include "detectum.h"
 #include <math.h>
 
@@ -46,7 +46,7 @@ float A_data[] = {
 #endif
 };
 
-int main()
+int main(void)
 {
   const size_t n = (int)roundf(sqrtf(sizeof(A_data) / sizeof(A_data[0])));
   size_t i;
