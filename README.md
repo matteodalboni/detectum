@@ -29,8 +29,8 @@ The library includes:
 * Principal matrix logarithm
 * Principal matrix square root
 
-## Testing on Linux
-gcc -o mydemo demo/main_linsolve.c src/detectum.c -lm -I inc
+## Building using GCC
+gcc -Wall -Wextra -Wpedantic -I inc src/detectum.c demo/main_linsolve.c -lm -o demo
 
 ## References
 [1] Golub, Gene H., and Charles F. Van Loan. *Matrix computations*. JHU press, 2013.\
