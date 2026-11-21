@@ -29,8 +29,15 @@ The library includes:
 * Principal matrix logarithm
 * Principal matrix square root
 
-## Building using GCC
-gcc -Wall -Wextra -Wpedantic -I inc src/detectum.c demo/main_linsolve.c -lm -o main_linsolve
+## Building Demos
+To build a demo using GCC, run:
+```
+gcc -Wall -Wextra -Wpedantic -I inc src/detectum.c demo/<demo_name>.c -lm -o <demo_name>
+```
+Alternatively, use `make` to build the default demo (`main_linsolve`), or specify a different demo with 
+```
+make TARGET=<demo_name>
+```
 
 ## References
 1. Golub, Gene H., and Charles F. Van Loan. "Matrix computations." JHU press, 2013.
