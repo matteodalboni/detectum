@@ -1,23 +1,61 @@
 #include "detectum.h"
+#include <float.h>
 #include <math.h>
+
+#ifndef NORMF_TSML
+#define NORMF_TSML (1.0842022e-19f)
+#endif
+#ifndef NORMF_TBIG
+#define NORMF_TBIG (4.5035996e+15f)
+#endif
+#ifndef MATRIXF_DECOMP_SVD_MAX_ITER
+#define MATRIXF_DECOMP_SVD_MAX_ITER (100 * (int)n)
+#endif
+#ifndef MATRIXF_DECOMP_SVD_TOL
+#define MATRIXF_DECOMP_SVD_TOL (2e-7f)
+#endif
+#ifndef MATRIXF_DECOMP_SVD_JACOBI_MAX_ITER
+#define MATRIXF_DECOMP_SVD_JACOBI_MAX_ITER (10 * (int)n)
+#endif
+#ifndef MATRIXF_DECOMP_SVD_JACOBI_TOL
+#define MATRIXF_DECOMP_SVD_JACOBI_TOL (1e-6f)
+#endif
+#ifndef MATRIXF_DECOMP_SCHUR_SYMM_MAX_ITER
+#define MATRIXF_DECOMP_SCHUR_SYMM_MAX_ITER (100 * (int)n)
+#endif
+#ifndef MATRIXF_DECOMP_SCHUR_SYMM_TOL
+#define MATRIXF_DECOMP_SCHUR_SYMM_TOL (1e-6f)
+#endif
+#ifndef MATRIXF_DECOMP_SCHUR_MAX_ITER
+#define MATRIXF_DECOMP_SCHUR_MAX_ITER (100 * (int)n)
+#endif
+#ifndef MATRIXF_DECOMP_SCHUR_TOL
+#define MATRIXF_DECOMP_SCHUR_TOL (1e-6f)
+#endif
+#ifndef MATRIXF_DECOMP_SCHUR_AD_HOC_SHIFT_COUNT
+#define MATRIXF_DECOMP_SCHUR_AD_HOC_SHIFT_COUNT (5)
+#endif
+#ifndef MATRIXF_EXP_PADE_ORDER
+#define MATRIXF_EXP_PADE_ORDER (4)
+#endif
+#ifndef MATRIXF_LOG_ISS_THR
+#define MATRIXF_LOG_ISS_THR (0.5f)
+#endif
+#ifndef MATRIXF_LOG_NTERMS
+#define MATRIXF_LOG_NTERMS (5)
+#endif
 
 float epsf(float x)
 {
   return powf(2.0f, floorf(log2f(fabsf(x))) - 23.0f);
 }
 
-#ifndef DETECTUM_FLT_TSML
-#define DETECTUM_FLT_TSML (1.0842022e-19f)
-#endif
-#ifndef DETECTUM_FLT_TBIG
-#define DETECTUM_FLT_TBIG (4.5035996e+15f)
-#endif
 float normf(const float* v, size_t length, size_t stride)
 {
   size_t i;
   float s = 0, h = 0, a;
-  const float tsml = DETECTUM_FLT_TSML;
-  const float tbig = DETECTUM_FLT_TBIG;
+  const float tsml = NORMF_TSML;
+  const float tbig = NORMF_TBIG;
 
   for (i = 0; i < length; i++) {
     a = fabsf(v[i * stride]);
@@ -52,7 +90,7 @@ float housef(float* x, size_t length, size_t stride)
   size_t i;
   float b, beta = 0;
   const float a = x[0];
-  const float eps = DETECTUM_FLT_EPS;
+  const float eps = FLT_EPSILON;
   const float nrm = normf(x + stride, length - 1, stride);
 
   if (nrm > eps) {
@@ -73,7 +111,7 @@ float housef(float* x, size_t length, size_t stride)
 
 // Householder transformation X(imin:imax,jmin:jmax) = H*X(imin:imax,jmin:jmax),
 // where H = I - beta*v*v' and v(0) = 1. stride is the increment of v.
-static void housef_apply_l(Matrixf* X, const float* v, float beta,
+static void housef_lmul(Matrixf* X, const float* v, float beta,
   size_t imin, size_t imax, size_t jmin, size_t jmax, size_t stride)
 {
   size_t i, j;
@@ -97,7 +135,7 @@ static void housef_apply_l(Matrixf* X, const float* v, float beta,
 
 // Householder transformation X(imin:imax,jmin:jmax) = X(imin:imax,jmin:jmax)*H,
 // where H = I - beta*v*v' and v(0) = 1. stride is the increment of v.
-static void housef_apply_r(Matrixf* X, const float* v, float beta,
+static void housef_rmul(Matrixf* X, const float* v, float beta,
   size_t imin, size_t imax, size_t jmin, size_t jmax, size_t stride)
 {
   size_t i, j;
@@ -547,9 +585,9 @@ int matrixf_decomp_qr(Matrixf* A, Matrixf* Q, Matrixf* perm, Matrixf* B)
     }
     v = Ak + k;
     beta = housef(v, m - k, 1);
-    housef_apply_l(A, v, beta, k, m - 1, k + 1, n - 1, 1);
+    housef_lmul(A, v, beta, k, m - 1, k + 1, n - 1, 1);
     if (B) {
-      housef_apply_l(B, v, beta, k, m - 1, 0, B->cols - 1, 1);
+      housef_lmul(B, v, beta, k, m - 1, 0, B->cols - 1, 1);
     }
   }
   if (Q) {
@@ -600,7 +638,7 @@ int matrixf_unpack_house(Matrixf* A, Matrixf* B, size_t s, int fwd)
     }
     if (gamma > 0) {
       beta = 2.0f / (1.0f + gamma);
-      housef_apply_l(B, v + k + s, beta, k + s, m - 1, 0, p - 1, 1);
+      housef_lmul(B, v + k + s, beta, k + s, m - 1, 0, p - 1, 1);
     }
   }
   return 0;
@@ -629,11 +667,11 @@ int matrixf_decomp_bidiag(Matrixf* A, Matrixf* U, Matrixf* V)
   for (k = 0; k < kend; k++) {
     v = &at(A, k, k);
     beta = housef(v, m - k, 1);
-    housef_apply_l(A, v, beta, k, m - 1, k + 1, n - 1, 1);
+    housef_lmul(A, v, beta, k, m - 1, k + 1, n - 1, 1);
     if (k + 2 < n) {
       v = &at(A, k, k + 1);
       beta = housef(v, n - k - 1, m);
-      housef_apply_r(A, v, beta, k + 1, m - 1, k + 1, n - 1, m);
+      housef_rmul(A, v, beta, k + 1, m - 1, k + 1, n - 1, m);
     }
   }
   if (U) {
@@ -713,20 +751,14 @@ int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* perm, float 
   return (int)rank;
 }
 
-#ifndef DETECTUM_SVD_ITER_MAX
-#define DETECTUM_SVD_ITER_MAX (100 * (int)n)
-#endif
-#ifndef DETECTUM_SVD_TOL
-#define DETECTUM_SVD_TOL (2e-7f)
-#endif
 int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
 {
   const size_t m = A->rows;
   const size_t n = A->cols;
   size_t i, j, k, q, r = n - 1;
   int f, iter = 0;
-  const int iter_max = DETECTUM_SVD_ITER_MAX;
-  const float tol = DETECTUM_SVD_TOL;
+  const int max_iter = MATRIXF_DECOMP_SVD_MAX_ITER;
+  const float tol = MATRIXF_DECOMP_SVD_TOL;
   float small, nrm1, tmp, cosine, sine, a, b;
   float c00, c01, c11, y, z, mu;
   float* s = A->data, * p = 0;
@@ -757,7 +789,7 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
     }
   }
   small = tol * nrm1;
-  while (r > 0 && iter < iter_max) {
+  while (r > 0 && iter < max_iter) {
     while (r > 0 && fabsf(at(A, r - 1, r)) <= small) {
       r--;
     }
@@ -932,15 +964,9 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V)
       s[j] = 0;
     }
   }
-  return iter == iter_max ? -2 : iter;
+  return iter == max_iter ? -2 : iter;
 }
 
-#ifndef DETECTUM_SVD_JACOBI_ITER_MAX
-#define DETECTUM_SVD_JACOBI_ITER_MAX (10 * (int)n)
-#endif
-#ifndef DETECTUM_SVD_JACOBI_TOL
-#define DETECTUM_SVD_JACOBI_TOL (1e-6f)
-#endif
 int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
 {
   size_t i, j, k, count = 1;
@@ -949,8 +975,8 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
   float* Xj, * Xk;
   const size_t m = A->rows;
   const size_t n = A->cols;
-  const int iter_max = DETECTUM_SVD_JACOBI_ITER_MAX;
-  const float tol = DETECTUM_SVD_JACOBI_TOL;
+  const int max_iter = MATRIXF_DECOMP_SVD_JACOBI_MAX_ITER;
+  const float tol = MATRIXF_DECOMP_SVD_JACOBI_TOL;
 
   if (m < n) {
     matrixf_transpose(A);
@@ -973,7 +999,7 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
       }
     }
   }
-  while (count > 0 && iter < iter_max) {
+  while (count > 0 && iter < max_iter) {
     count = n * (n - 1) / 2;
     for (j = 0; j < n - 1; j++) {
       for (k = j + 1; k < n; k++) {
@@ -1040,7 +1066,7 @@ int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V)
       }
     }
   }
-  return iter == iter_max ? -2 : iter;
+  return iter == max_iter ? -2 : iter;
 }
 
 int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
@@ -1055,8 +1081,8 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
   for (k = 0; k + 2 < n; k++) {
     v = &at(A, k + 1, k);
     beta = housef(v, n - k - 1, 1);
-    housef_apply_l(A, v, beta, k + 1, n - 1, k + 1, n - 1, 1);
-    housef_apply_r(A, v, beta, 0, n - 1, k + 1, n - 1, 1);
+    housef_lmul(A, v, beta, k + 1, n - 1, k + 1, n - 1, 1);
+    housef_rmul(A, v, beta, 0, n - 1, k + 1, n - 1, 1);
   }
   if (P) {
     for (j = k = 0; j < n; j++) {
@@ -1076,19 +1102,13 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P)
   return 0;
 }
 
-#ifndef DETECTUM_SCHUR_SYMM_ITER_MAX
-#define DETECTUM_SCHUR_SYMM_ITER_MAX (100 * (int)n)
-#endif
-#ifndef DETECTUM_SCHUR_SYMM_TOL
-#define DETECTUM_SCHUR_SYMM_TOL (1e-6f)
-#endif
 int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
 {
   const size_t n = A->rows;
   size_t i, j, k, imin, imax, q, m = n - 1;
   int iter = 0;
-  const int iter_max = DETECTUM_SCHUR_SYMM_ITER_MAX;
-  const float tol = DETECTUM_SCHUR_SYMM_TOL;
+  const int max_iter = MATRIXF_DECOMP_SCHUR_SYMM_MAX_ITER;
+  const float tol = MATRIXF_DECOMP_SCHUR_SYMM_TOL;
   float a, b, d, f, g, x, y, cosine, sine;
   float* Uk, * Uk1;
 
@@ -1100,7 +1120,7 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
       at(A, k + 2, k) = 0;
     }
   }
-  while (m > 0 && iter < iter_max) {
+  while (m > 0 && iter < max_iter) {
     while (m > 0 && at(A, m, m - 1) == 0) {
       m--;
     }
@@ -1161,27 +1181,18 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U)
       }
     }
   }
-  return iter == iter_max ? -2 : iter;
+  return iter == max_iter ? -2 : iter;
 }
 
-#ifndef DETECTUM_SCHUR_ITER_MAX
-#define DETECTUM_SCHUR_ITER_MAX (100 * (int)n)
-#endif
-#ifndef DETECTUM_SCHUR_TOL
-#define DETECTUM_SCHUR_TOL (1e-6f)
-#endif
-#ifndef DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT
-#define DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT (5)
-#endif
 int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
 {
   const size_t n = A->rows;
   size_t i, j, k, q, m = n - 1;
   int iter = 0, ad_hoc_shift;
-  const int iter_max = DETECTUM_SCHUR_ITER_MAX;
-  const int ahsc = DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT;
-  const float tol = DETECTUM_SCHUR_TOL;
-  const float eps = DETECTUM_FLT_EPS;
+  const int max_iter = MATRIXF_DECOMP_SCHUR_MAX_ITER;
+  const int ahsc = MATRIXF_DECOMP_SCHUR_AD_HOC_SHIFT_COUNT;
+  const float tol = MATRIXF_DECOMP_SCHUR_TOL;
+  const float eps = FLT_EPSILON;
   float r, s, t, x, y, z, mu, beta, v[3] = { 1, 0, 0 };
   float sine, cosine, a, b;
   float* Xk, * Xk1;
@@ -1199,7 +1210,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
   else {
     matrixf_transpose(U);
   }
-  while (m > 1 && iter < iter_max) {
+  while (m > 1 && iter < max_iter) {
     while (m > 1 && (at(A, m, m - 1) == 0 || at(A, m - 1, m - 2) == 0)) {
       if (at(A, m, m - 1) == 0) {
         m--;
@@ -1247,10 +1258,10 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
             v[1] = y / t;
             v[2] = z / t;
             beta = t * s / mu;
-            housef_apply_l(A, v, beta, k, k + 2, q >= k ? q : k - 1, n - 1, 1);
-            housef_apply_r(A, v, beta, 0, (k + 3) < m ? (k + 3) : m, k, k + 2, 1);
+            housef_lmul(A, v, beta, k, k + 2, q >= k ? q : k - 1, n - 1, 1);
+            housef_rmul(A, v, beta, 0, (k + 3) < m ? (k + 3) : m, k, k + 2, 1);
             if (U) {
-              housef_apply_l(U, v, beta, k, k + 2, 0, n - 1, 1);
+              housef_lmul(U, v, beta, k, k + 2, 0, n - 1, 1);
             }
           }
           x = at(A, k + 1, k);
@@ -1265,10 +1276,10 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
           t = x + s * mu;
           v[1] = y / t;
           beta = t * s / mu;
-          housef_apply_l(A, v, beta, m - 1, m, m - 2, n - 1, 1);
-          housef_apply_r(A, v, beta, 0, m, m - 1, m, 1);
+          housef_lmul(A, v, beta, m - 1, m, m - 2, n - 1, 1);
+          housef_rmul(A, v, beta, 0, m, m - 1, m, 1);
           if (U) {
-            housef_apply_l(U, v, beta, m - 1, m, 0, n - 1, 1);
+            housef_lmul(U, v, beta, m - 1, m, 0, n - 1, 1);
           }
         }
       }
@@ -1351,7 +1362,7 @@ int matrixf_decomp_schur(Matrixf* A, Matrixf* U)
       at(A, i, k) = 0;
     }
   }
-  return iter == iter_max ? -2 : iter;
+  return iter == max_iter ? -2 : iter;
 }
 
 static inline float solve_eigvec(Matrixf* A, Matrixf* b, float eigval_re, float eigval_im)
@@ -1360,10 +1371,10 @@ static inline float solve_eigvec(Matrixf* A, Matrixf* b, float eigval_re, float 
   const size_t n = A->rows;
   float aii, r, * b0 = b->data;
   float scale = 0, scale_inv, scale_out = 1.0f;
-  float shift = DETECTUM_FLT_EPS * hypotf(eigval_re, eigval_im);
+  float shift = FLT_EPSILON * hypotf(eigval_re, eigval_im);
 
   if (shift == 0) {
-    shift = DETECTUM_FLT_MIN;
+    shift = FLT_MIN;
   }
   for (i = 0; i < n; i++) {
     if (at(A, i, i) == 0) {
@@ -1401,7 +1412,7 @@ static inline float solve_eigvec(Matrixf* A, Matrixf* b, float eigval_re, float 
       aii = at(A, i, i);
       if (b0[i] != 0) {
         r = n * fabsf(b0[i] / aii);
-        if (r > DETECTUM_FLT_MAX) {
+        if (r > FLT_MAX) {
           for (j = i + 1; j < n; j++) {
             b0[j] *= aii;
           }
@@ -2253,14 +2264,11 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work)
   return iter;
 }
 
-#ifndef DETECTUM_EXP_PADE_ORDER
-#define DETECTUM_EXP_PADE_ORDER (4)
-#endif
 int matrixf_exp(Matrixf* A, float* work)
 {
   size_t i, j, k, z, s;
   const size_t n = A->rows;
-  const size_t q = DETECTUM_EXP_PADE_ORDER;
+  const size_t q = MATRIXF_EXP_PADE_ORDER;
   float c, t, nrm_inf;
   Matrixf X = { n, n, work + n };
   Matrixf N = { n, n, X.data + n * n };
@@ -2313,19 +2321,13 @@ int matrixf_exp(Matrixf* A, float* work)
   return 0;
 }
 
-#ifndef DETECTUM_LOG_ISS_THR
-#define DETECTUM_LOG_ISS_THR (0.5f)
-#endif
-#ifndef DETECTUM_LOG_NTERMS
-#define DETECTUM_LOG_NTERMS (5)
-#endif
 int matrixf_log(Matrixf* A, float* work)
 {
   size_t i, j, k, s = 1;
   int f;
   const size_t n = A->rows;
-  const size_t nterms = DETECTUM_LOG_NTERMS;
-  const float thr = DETECTUM_LOG_ISS_THR;
+  const size_t nterms = MATRIXF_LOG_NTERMS;
+  const float thr = MATRIXF_LOG_ISS_THR;
   float t, nrm1;
   Matrixf U = { n, n, work + n };
   Matrixf N = { n, n, U.data + n * n };

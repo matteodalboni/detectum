@@ -30,7 +30,7 @@ The library includes:
 * Principal matrix square root
 
 ## Building using GCC
-gcc -Wall -Wextra -Wpedantic -I inc src/detectum.c demo/main_linsolve.c -lm -o demo
+gcc -Wall -Wextra -Wpedantic -I inc src/detectum.c demo/main_linsolve.c -lm -o main_linsolve
 
 ## References
 1. Golub, Gene H., and Charles F. Van Loan. "Matrix computations." JHU press, 2013.

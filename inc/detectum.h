@@ -11,21 +11,6 @@ typedef struct {
   float* data; // pointer to the elements
 } Matrixf;
 
-// Minimum positive value
-#ifndef DETECTUM_FLT_MIN 
-#define DETECTUM_FLT_MIN (1.1754944e-38f)
-#endif
-
-// Maximum representable number
-#ifndef DETECTUM_FLT_MAX 
-#define DETECTUM_FLT_MAX (3.4028235e+38f)
-#endif
-
-// Machine precision
-#ifndef DETECTUM_FLT_EPS 
-#define DETECTUM_FLT_EPS (1.1920929e-07f)
-#endif
-
 // This macro initializes a rows-by-cols matrix A, allocating its data 
 // memory on the stack. rows and cols must be known at compile time.
 #define Matrixf(A, rows, cols) \
@@ -43,10 +28,10 @@ float epsf(float x);
 // overflow. The number of elements of v is length, and stride (> 0) 
 // is its increment.
 // Related macros
-// - DETECTUM_FLT_TSML: Blue's underflow threshold. The default 
-//   value is 1.0842022e-19. 
-// - DETECTUM_FLT_TBIG: Blue's overflow threshold. The default 
-//   value is 4.5035996e+15.
+// - NORMF_TSML: Blue's underflow threshold. The default value is 
+//   1.0842022e-19. 
+// - NORMF_TBIG: Blue's overflow threshold. The default value is 
+//   4.5035996e+15.
 float normf(const float* v, size_t length, size_t stride);
 
 // This function computes the Givens rotation pair (c,s) so that 
@@ -234,9 +219,9 @@ int matrixf_decomp_cod(Matrixf* A, Matrixf* U, Matrixf* V, Matrixf* perm, float 
 // of iterations is reached: results may be inaccurate. On success, it returns the
 // number of iterations performed. 
 // Related macros
-// - DETECTUM_SVD_ITER_MAX: maximum number of iterations. The default value is 
-//   100*min(m,n).  
-// - DETECTUM_SVD_TOL: tolerance. The default value is 2e-7.
+// - MATRIXF_DECOMP_SVD_MAX_ITER: maximum number of iterations. The default value 
+//   is 100*min(m,n).  
+// - MATRIXF_DECOMP_SVD_TOL: tolerance. The default value is 2e-7.
 int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V);
 
 // This function performs the singular value decomposition of the m-by-n matrix A
@@ -270,9 +255,9 @@ int matrixf_decomp_svd(Matrixf* A, Matrixf* U, Matrixf* V);
 // number of iterations is reached: results may be inaccurate. On success, it
 // returns the number of iterations performed.
 // Related macros
-// - DETECTUM_SVD_JACOBI_ITER_MAX: maximum number of iterations. The default
-//   value is 10*min(m,n).
-// - DETECTUM_SVD_JACOBI_TOL: tolerance. The default value is 1e-6.
+// - MATRIXF_DECOMP_SVD_JACOBI_MAX_ITER: maximum number of iterations. The
+//   default value is 10*min(m,n).
+// - MATRIXF_DECOMP_SVD_JACOBI_TOL: tolerance. The default value is 1e-6.
 int matrixf_decomp_svd_jacobi(Matrixf* A, Matrixf* U, Matrixf* V);
 
 // This function performs the Hessenberg decomposition of the square matrix A, 
@@ -292,9 +277,9 @@ int matrixf_decomp_hess(Matrixf* A, Matrixf* P);
 // results may be inaccurate. On success, it returns the number of iterations 
 // performed.
 // Related macros
-// - DETECTUM_SCHUR_SYMM_ITER_MAX: maximum number of iterations. The default value
-//   is 100*n, where n is the number of rows.
-// - DETECTUM_SCHUR_SYMM_TOL: tolerance. The default value is 1e-6.
+// - MATRIXF_DECOMP_SCHUR_SYMM_MAX_ITER: maximum number of iterations. The default
+//   value is 100*n, where n is the number of rows.
+// - MATRIXF_DECOMP_SCHUR_SYMM_TOL: tolerance. The default value is 1e-6.
 int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U);
 
 // This function performs the Schur decomposition of the square matrix A so that
@@ -308,11 +293,11 @@ int matrixf_decomp_schur_symm(Matrixf* A, Matrixf* U);
 // -2 if the maximum number of iterations is reached: results may be inaccurate. On 
 // success, it returns the number of iterations performed.
 // Related macros
-// - DETECTUM_SCHUR_ITER_MAX: maximum number of iterations. The default value is 
-//   100*n, where n is the number of rows.
-// - DETECTUM_SCHUR_TOL: tolerance. The default value is 1e-6.
-// - DETECTUM_SCHUR_AD_HOC_SHIFT_COUNT: iteration count defining the period for the
-//   application of ad hoc shifts. The default value is 5.
+// - MATRIXF_DECOMP_SCHUR_MAX_ITER: maximum number of iterations. The default value 
+//   is 100*n, where n is the number of rows.
+// - MATRIXF_DECOMP_SCHUR_TOL: tolerance. The default value is 1e-6.
+// - MATRIXF_DECOMP_SCHUR_AD_HOC_SHIFT_COUNT: iteration count defining the period
+//   for the application of ad hoc shifts. The default value is 5.
 int matrixf_decomp_schur(Matrixf* A, Matrixf* U);
 
 // This function computes the matrices of right (V) and left (W) eigenvectors
@@ -444,7 +429,7 @@ int matrixf_pseudoinv(Matrixf* A, float tol, float* work);
 // exponential cannot be computed due to a singularity, it returns -2. On 
 // success, it returns 0.
 // Related macros
-// - DETECTUM_EXP_PADE_ORDER: order of diagonal Padé approximation. The 
+// - MATRIXF_EXP_PADE_ORDER: order of diagonal Padé approximation. The 
 //   default value is 4.
 int matrixf_exp(Matrixf* A, float* work);
 
@@ -457,9 +442,9 @@ int matrixf_exp(Matrixf* A, float* work);
 // function returns -3. If the matrix logarithm cannot be computed due to a 
 // singularity, it returns -4. On success, it returns 0.
 // Related macros
-// - DETECTUM_LOG_ISS_THR: inverse scaling and squaring threshold. The default 
+// - MATRIXF_LOG_ISS_THR: inverse scaling and squaring threshold. The default 
 //   value is 0.5.
-// - DETECTUM_LOG_NTERMS: number of terms of Gregory series expansion. The 
+// - MATRIXF_LOG_NTERMS: number of terms of Gregory series expansion. The 
 //   default value is 5.
 int matrixf_log(Matrixf* A, float* work);
 

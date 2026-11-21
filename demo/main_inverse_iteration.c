@@ -1,6 +1,7 @@
 #include "detectum_print.h"
 #include "detectum_alloc.h"
 #include "detectum.h"
+#include <float.h>
 #include <math.h>
 
 // This function computes the right eigenvector v of a square matrix A corresponding
@@ -24,8 +25,8 @@ int matrixf_get_eigenvector(Matrixf* A, Matrixf* v,
   const size_t q = v->cols;
   const int p = eigval_im == 0 ? 1 : 2;
   float nrm_inv, nrmA = normf(A->data, n * n, 1);
-  float del = nrmA * DETECTUM_FLT_MIN;
-  float tol = nrmA * DETECTUM_FLT_EPS;
+  float del = nrmA * FLT_MIN;
+  float tol = nrmA * FLT_EPSILON;
   Matrixf perm = { p * n, 1, work };
   Matrixf C = { p * n, p * n, work + p * n };
 
