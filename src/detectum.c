@@ -2038,7 +2038,7 @@ int matrixf_solve_bvls(Matrixf* C, Matrixf* d, Matrixf* x,
   int done, ito = 0, iti = 0;
   const size_t m = C->rows;
   const size_t n = C->cols;
-  const int itimax = 3 * (int)n;
+  const int max_iti = 3 * (int)n;
   float nrm1, tmp, alpha;
   float* xset = work;
   float* w_data = work + n;
@@ -2154,7 +2154,7 @@ int matrixf_solve_bvls(Matrixf* C, Matrixf* d, Matrixf* x,
         break;
       }
       iti++;
-      if (iti > itimax) {
+      if (iti > max_iti) {
         for (j = 0; j < n; j++) {
           x->data[j] = z.data[j];
         }

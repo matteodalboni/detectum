@@ -1,5 +1,6 @@
 #include "detectum_print.h"
 #include "detectum.h"
+#include <stdio.h>
 
 #define M 5
 #define N 4
