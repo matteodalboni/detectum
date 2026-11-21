@@ -34,9 +34,17 @@ To build a demo using GCC, run:
 ```
 gcc -Wall -Wextra -Wpedantic -I inc src/detectum.c demo/<demo_name>.c -lm -o <demo_name>
 ```
-Alternatively, use `make` to build the default demo (`main_linsolve`), or specify a different demo with 
+Alternatively, use `make` to build the default demo (`main_linsolve`):
+```
+make
+```
+To build a different demo, specify its name using `TARGET`:
 ```
 make TARGET=<demo_name>
+```
+Additional compiler flags can be passed through `EXTRA_CFLAGS`. For example, to enable optimization and vectorization diagnostics:
+```
+make TARGET=<demo_name> EXTRA_CFLAGS="-O3 -fopt-info-vec=vec.log"
 ```
 
 ## References

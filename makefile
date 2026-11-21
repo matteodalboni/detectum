@@ -4,7 +4,7 @@ TARGET ?= main_linsolve
 # Directory of the target's source file
 TARGET_DIR ?= demo
 
-# Addition compiler flags (e.g. EXTRA_CFLAGS="-O3 -fopt-info-vec=vec.log")
+# Additional compiler flags (e.g. EXTRA_CFLAGS="-O3 -fopt-info-vec=vec.log")
 EXTRA_CFLAGS ?=
 
 CC = gcc
