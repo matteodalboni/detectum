@@ -34,7 +34,7 @@ To build a demo using GCC, run:
 ```
 gcc -Wall -Wextra -Wpedantic -I inc src/detectum.c demo/<demo_name>.c -lm -o <demo_name>
 ```
-Alternatively, use `make` to build the default demo (`main_linsolve`):
+Alternatively, run `make` alone to build the default demo (`main_linsolve`):
 ```
 make
 ```
@@ -56,3 +56,4 @@ make TARGET=<demo_name> EXTRA_CFLAGS="-O3 -fopt-info-vec=vec.log"
 6. Anderson, Edward. "Algorithm 978: Safe scaling in the level 1 BLAS." ACM Transactions on Mathematical Software (TOMS) 44.1 (2017): 1-28.
 7. Lawson, Charles L., and Richard J. Hanson. "Solving least squares problems." Society for Industrial and Applied Mathematics, 1995.
 8. Stark, Philip B., and Robert L. Parker. "Bounded-variable least-squares: an algorithm and applications." Computational Statistics 10 (1995): 129-129.
+9. Moler, Cleve, and Charles Van Loan. "Nineteen dubious ways to compute the exponential of a matrix, twenty-five years later." SIAM review 45.1 (2003): 3-49.
