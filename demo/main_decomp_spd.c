@@ -51,6 +51,7 @@ int main(void)
   matrixf_init(&A, n, n, A_data, 1);
   printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
   for (i = 0; i < n * n; i++) A_data_copy[i] = A_data[i];
+  
   printf("\nLDL decomposition\n");
   matrixf_decomp_ldl(&A);
   for (j = 0; j < n; j++) {

@@ -88,6 +88,9 @@ int main(void)
   for (i = 0; i < m * n; i++) A_copy[i] = A_data[i];
   printf("\nA = \n"); matrixf_print(&A, "%9.4f ");
 #if (ALGO == 0)
+  // Paul Godfrey (2026). Simple SVD 
+  // (https://www.mathworks.com/matlabcentral/fileexchange/12674-simple-svd), 
+  // MATLAB Central File Exchange. Retrieved November 26, 2026. 
   for (i = 0; i < p * p; i++) {
     if (i < m * m) U.data[i] = !(i % (m + 1));
     if (i < n * n) V.data[i] = !(i % (n + 1));
@@ -111,7 +114,8 @@ int main(void)
     for (i = 0; i < n; i++) at(&V, i, j) *= s;
     for (i = 0; i < m; i++) at(&A, i, j) *= s;
   }
-#elif (ALGO == 1)
+#elif (ALGO == 1) 
+  // See "Matrix Computations", Section 8.6.3 
   matrixf_init(&Q, n, n, Q_data, 0);
   matrixf_init(&P, 1, n, P_data, 0);
   matrixf_multiply(&A, &A, &Q, 1, 0, 1, 0);

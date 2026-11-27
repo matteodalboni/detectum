@@ -1,6 +1,7 @@
 #include "detectum_print.h"
 #include "detectum.h"
 
+// A^p = exp(log(A^p)) = exp(p*log(A))
 static int powm(Matrixf* A, float p, float* work)
 {
   const size_t numel = A->rows * A->cols;
@@ -25,23 +26,31 @@ int main(void)
   float A_data[n * n] = {
     7,  2,  1,  5,  7,  8, -3, -4,   3,  1,
     0, -2, -4,  0,  6, -9,  7,  3,  -1, -2,
-     -1, -4,  4, 11,  8, -1, 12, -2,   4,  1,
+   -1, -4,  4, 11,  8, -1, 12, -2,   4,  1,
     1,  4, -4, -6,  1,  4,  5, -3,  -9, -5,
     3, -4, -7,  6,  0,  4,  4,  4,  -8, 10,
-     -7, -2,-10, -9, -5,  4,  4, 10,  -8,  7,
+   -7, -2,-10, -9, -5,  4,  4, 10,  -8,  7,
     7,  1,  6,  6, -4, -1,  1, 10,   6,  9,
-     -8, -4, -5,  2, -8, -9, -6,  1,  -7, -7,
-     -8, 12,  5,  4, -7,  0,  9, -1,   1, -7,
-    -10,  7,  5, -9,  3, -7, -2,  8, -11, -2
+   -8, -4, -5,  2, -8, -9, -6,  1,  -7, -7,
+   -8, 12,  5,  4, -7,  0,  9, -1,   1, -7,
+  -10,  7,  5, -9,  3, -7, -2,  8, -11, -2
   };
   float p = -0.6f;
   float work[3 * n * n + n] = { 0 };
-  int exitflag;
+  float A_data_copy[n * n] = { 0 };
+  int i, exitflag;
   Matrixf A;
 
   matrixf_init(&A, n, n, A_data, 1);
   printf("\nA = \n"); matrixf_print(&A, "%5.4g ");
+  for (i = 0; i < n * n; i++) A_data_copy[i] = A_data[i];
   exitflag = powm(&A, p, work);
+  if (exitflag) return exitflag;
   printf("\nA^(%g) = \n", p); matrixf_print(&A, "%9.4f ");
-  return exitflag;
+  exitflag = powm(&A, 1.0f / p, work);
+  if (exitflag) return exitflag;
+  printf("\nA^(%g)^(1/%g) = \n", p, p); matrixf_print(&A, "%9.4f ");
+  for (i = 0; i < n * n; i++) A_data_copy[i] -= A.data[i];
+  printf("\n||A^(%g)^(1/%g) - A||_F = %g\n", p, p, normf(A_data_copy, n * n, 1));
+  return 0;
 }
